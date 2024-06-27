@@ -34,22 +34,7 @@ class _AuthPageState extends State<AuthPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Auth'),
       ),
-      body: SignInScreen(
-        actions: [
-          AuthStateChangeAction<SignedIn>((context, state) {
-            if (state.user != null) {
-              print('user EXIST');
-            } else {
-              print('user == null');
-            }
-            if (!state.user!.emailVerified) {
-              print('Navigator.pushNamed(context, \'/verify-email\');');
-            } else {
-              print('Navigator.pushReplacementNamed(context, \'/profile\');');
-            }
-          }),
-        ],
-      ),
+      body: const SignInScreen(),
     );
   }
 }
