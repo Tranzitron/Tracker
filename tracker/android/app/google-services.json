@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "165619535126",
+    "project_id": "tracker-1d28c",
+    "storage_bucket": "tracker-1d28c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:165619535126:android:e6da295bff36c357ce9437",
+        "android_client_info": {
+          "package_name": "me.raph.tracker"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDRW5MrTxYS8tyU8n10FCbvZfhJemslyuM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
