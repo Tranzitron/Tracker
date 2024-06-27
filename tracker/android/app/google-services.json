@@ -12,7 +12,20 @@
           "package_name": "me.raph.tracker"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "165619535126-7mmjk6mhts6cpvhm6qnbdj9q503i7q1v.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "me.raph.tracker",
+            "certificate_hash": "1ed86fb9bc5b7e48ae5101f2da304587f39fcb7a"
+          }
+        },
+        {
+          "client_id": "165619535126-v10qhtub8ucbcbgtbn4l85vg8s0carvl.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyDRW5MrTxYS8tyU8n10FCbvZfhJemslyuM"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "165619535126-v10qhtub8ucbcbgtbn4l85vg8s0carvl.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "165619535126-jagolbg46rjh32j9r979h9ndkrm3p1ah.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "me.raph.tracker"
+              }
+            }
+          ]
         }
       }
     }

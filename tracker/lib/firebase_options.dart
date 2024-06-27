@@ -64,6 +64,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '165619535126',
     projectId: 'tracker-1d28c',
     storageBucket: 'tracker-1d28c.appspot.com',
+    androidClientId:
+        '165619535126-7mmjk6mhts6cpvhm6qnbdj9q503i7q1v.apps.googleusercontent.com',
+    iosClientId:
+        '165619535126-jagolbg46rjh32j9r979h9ndkrm3p1ah.apps.googleusercontent.com',
     iosBundleId: 'me.raph.tracker',
   );
 
@@ -73,6 +77,10 @@ class DefaultFirebaseOptions {
     messagingSenderId: '165619535126',
     projectId: 'tracker-1d28c',
     storageBucket: 'tracker-1d28c.appspot.com',
+    androidClientId:
+        '165619535126-7mmjk6mhts6cpvhm6qnbdj9q503i7q1v.apps.googleusercontent.com',
+    iosClientId:
+        '165619535126-jagolbg46rjh32j9r979h9ndkrm3p1ah.apps.googleusercontent.com',
     iosBundleId: 'me.raph.tracker',
   );
 
@@ -85,4 +93,5 @@ class DefaultFirebaseOptions {
     storageBucket: 'tracker-1d28c.appspot.com',
     measurementId: 'G-3LJ3W2R474',
   );
+
 }
