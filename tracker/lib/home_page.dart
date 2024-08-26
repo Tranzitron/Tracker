@@ -1,8 +1,4 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:tracker/logout.dart';
-import 'package:tracker/profile.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -12,18 +8,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late User user;
-
-  @override
-  void initState() {
-    super.initState();
-
-    user = FirebaseAuth.instance.currentUser!;
-    setState(() {
-      user;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -31,14 +15,13 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Home'),
         actions: [
-          const Logout(),
           IconButton(
             icon: const Icon(Icons.person),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute<ProfileScreen>(
-                  builder: (context) => const Profile(),
+                MaterialPageRoute<HomePage>(
+                  builder: (context) => const HomePage(),
                 ),
               );
             },
@@ -46,15 +29,15 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
       backgroundColor: Colors.red,
-      body: Center(
+      body: const Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('uid: ${user.uid}'),
-            Text('displayName: ${user.displayName}'),
-            Text('email: ${user.email}'),
-            Text('phoneNumber: ${user.phoneNumber}'),
+            Text('uid: '),
+            Text('displayName: '),
+            Text('email: '),
+            Text('phoneNumber: '),
           ],
         ),
       ),

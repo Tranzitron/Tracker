@@ -1,11 +1,6 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_ui_auth/firebase_ui_auth.dart';
-import 'package:firebase_ui_oauth_google/firebase_ui_oauth_google.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-
-import 'auth_page.dart';
-import 'firebase_options.dart';
+import 'package:tracker/home_page.dart';
 
 const iOSClientId =
     '165619535126-jagolbg46rjh32j9r979h9ndkrm3p1ah.apps.googleusercontent.com';
@@ -21,13 +16,6 @@ String get googleClientId {
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
-  FirebaseUIAuth.configureProviders([
-    EmailAuthProvider(),
-    GoogleProvider(clientId: googleClientId),
-  ]);
   runApp(const MyApp());
 }
 
@@ -42,7 +30,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const AuthPage(),
+      home: const HomePage(),
     );
   }
 }
