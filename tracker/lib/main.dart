@@ -1,5 +1,5 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:tracker/home_page.dart';
 
 const iOSClientId =
@@ -24,13 +24,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const CupertinoApp(
       title: 'Flutter Demo',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+      home: HomePage(),
+      theme: CupertinoThemeData(
+        brightness: Brightness.light,
       ),
-      home: const HomePage(),
+      debugShowCheckedModeBanner: false,
     );
   }
 }
