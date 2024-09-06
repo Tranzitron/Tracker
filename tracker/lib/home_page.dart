@@ -43,28 +43,14 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(0),
           child: const Text("Add"),
           onPressed: () async {
-            final newUser = User()
-              ..name = 'Jane Doe'
-              ..age = Random().nextInt(100);
-
-            await isar.writeTxn(() async {
-              await isar.users.put(newUser); // insert & update
-            });
-
-            refreshUsers();
+            await addBtn();
           },
         ),
         leading: CupertinoButton(
           padding: const EdgeInsets.all(0),
           child: const Text("Clear"),
           onPressed: () async {
-            await isar.writeTxn(
-              () async {
-                //await isar.users.where().deleteAll();
-                await isar.users.clear();
-              },
-            );
-            refreshUsers();
+            await clearBtn();
           },
         ),
       ),
@@ -92,5 +78,27 @@ class _HomePageState extends State<HomePage> {
         ),
       ),
     );
+  }
+
+  Future<void> clearBtn() async {
+    await isar.writeTxn(
+      () async {
+        //await isar.users.where().deleteAll();
+        await isar.users.clear();
+      },
+    );
+    refreshUsers();
+  }
+
+  Future<void> addBtn() async {
+    final newUser = User()
+      ..name = 'Jane Doe'
+      ..age = Random().nextInt(100);
+
+    await isar.writeTxn(() async {
+      await isar.users.put(newUser); // insert & update
+    });
+
+    refreshUsers();
   }
 }
