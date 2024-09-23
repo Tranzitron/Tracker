@@ -2,6 +2,6 @@
 *.cc linguist-vendored
 *.h linguist-vendored
 *.cpp linguist-vendored
-CMakeLists.txt linguist-vendored
+**/CMakeLists.txt linguist-vendored
 *.cmake linguist-vendored
-Podfile linguist-vendored
+**/Podfile linguist-vendored
