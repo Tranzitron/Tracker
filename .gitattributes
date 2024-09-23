@@ -4,3 +4,4 @@
 *.cpp linguist-vendored
 CMakeLists.txt linguist-vendored
 *.cmake linguist-vendored
+Podfile linguist-vendored
