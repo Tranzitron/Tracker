@@ -1,0 +1,6 @@
+# Exclude langages from stats
+*.cc linguist-vendored
+*.h linguist-vendored
+*.cpp linguist-vendored
+CMakeLists.txt linguist-vendored
+*.cmake linguist-vendored
