@@ -3,7 +3,7 @@ import 'package:isar/isar.dart';
 import 'muscle.dart';
 
 part 'exercise.g.dart';
-// flutter pub run build_runner build
+// dart run build_runner build
 
 @collection
 class Exercise {
