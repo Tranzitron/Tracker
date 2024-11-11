@@ -1,9 +1,10 @@
-import 'dart:math';
-
 import 'package:flutter/cupertino.dart';
-import 'package:isar/isar.dart';
-import 'package:tracker/main.dart';
-import 'package:tracker/user.dart';
+
+import 'pages/exercices_page.dart';
+import 'pages/feed_page.dart';
+import 'pages/history_page.dart';
+import 'pages/settings_page.dart';
+import 'pages/workout_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,92 +14,47 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late Isar isar;
-  late List<User> users = [];
-
-  @override
-  void initState() {
-    super.initState();
-    initDb();
-  }
-
-  Future<void> initDb() async {
-    isar = await DbInstance.getIsar();
-    refreshUsers();
-  }
-
-  void refreshUsers() async {
-    users = await isar.users.where().findAll();
-    setState(() {
-      users;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      navigationBar: CupertinoNavigationBar(
-        middle: const Text('Home'),
-        trailing: CupertinoButton(
-          padding: const EdgeInsets.all(0),
-          child: const Text("Add"),
-          onPressed: () async {
-            await addBtn();
-          },
-        ),
-        leading: CupertinoButton(
-          padding: const EdgeInsets.all(0),
-          child: const Text("Clear"),
-          onPressed: () async {
-            await clearBtn();
-          },
-        ),
+    return CupertinoTabScaffold(
+      tabBar: CupertinoTabBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.house_fill),
+            label: 'Feed',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.clock_solid),
+            label: 'History',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.plus_app_fill),
+            label: 'Workout',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.tray_full_fill),
+            label: 'Exercices',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(CupertinoIcons.settings),
+            label: 'Settings',
+          ),
+        ],
       ),
-      resizeToAvoidBottomInset: true,
-      child: SafeArea(
-        child: Center(
-          child: users.isNotEmpty
-              // fix list too long overflow
-              ? CupertinoListSection(
-                  children: List.generate(
-                    users.length,
-                    (index) {
-                      final user = users[index];
-                      return CupertinoListTile(
-                        title: Text("Hi ${user.name} : ${user.id}"),
-                        trailing: const CupertinoListTileChevron(),
-                      );
-                    },
-                  ),
-                )
-              : const SizedBox(
-                  width: 0,
-                  height: 0,
-                ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> clearBtn() async {
-    await isar.writeTxn(
-      () async {
-        //await isar.users.where().deleteAll();
-        await isar.users.clear();
+      tabBuilder: (BuildContext context, int index) {
+        return CupertinoTabView(
+          builder: (BuildContext context) {
+            return switch (index) {
+              0 => FeedPage(),
+              1 => HistoryPage(),
+              2 => WorkoutPage(),
+              3 => ExercicesPage(),
+              4 => SettingsPage(),
+              int() => throw UnimplementedError(),
+            };
+          },
+        );
       },
     );
-    refreshUsers();
-  }
-
-  Future<void> addBtn() async {
-    final newUser = User()
-      ..name = 'Jane Doe'
-      ..age = Random().nextInt(100);
-
-    await isar.writeTxn(() async {
-      await isar.users.put(newUser); // insert & update
-    });
-
-    refreshUsers();
   }
 }
