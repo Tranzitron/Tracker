@@ -16,18 +16,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Get Flutter Version
-      id: lookupFlutterSDKVersion
-      uses: mikefarah/yq@master
+    - name: Clone repository
+      uses: actions/checkout@v4
+    - name: Set up Flutter
+      uses: subosito/flutter-action@v2
       with:
-        cmd: yq -r '.version' 'pubspec.yaml'
-    - name: Reuse a variable obtained in another step
-      run: echo ${{ steps.get_username.outputs.result }}
-    #- name: Clone repository
-    #  uses: actions/checkout@v4
-    #- name: Set up Flutter
-    #  uses: subosito/flutter-action@v2
-    #  with:
-    #    channel: stable
-    #    flutter-version-file: tracker/pubspec.yaml # path to pubspec.yaml
-    #- run: flutter --version
+        channel: stable
+        flutter-version: 3.27.x # path to pubspec.yaml
+    - run: flutter --version
