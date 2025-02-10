@@ -16,6 +16,8 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+    - name: yq - portable yaml processor
+      uses: mikefarah/yq@v4.45.1
     - name: Clone repository
       uses: actions/checkout@v4
     - name: Set up Flutter
