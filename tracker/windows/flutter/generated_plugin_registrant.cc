@@ -8,7 +8,7 @@
 
 #include <isar_flutter_libs/isar_flutter_libs_plugin.h>
 
-void RegisterPlugins(flutter::PluginRegistry* registry) {
-  IsarFlutterLibsPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("IsarFlutterLibsPlugin"));
+void RegisterPlugins(flutter::PluginRegistry *registry) {
+    IsarFlutterLibsPluginRegisterWithRegistrar(
+            registry->GetRegistrarForPlugin("IsarFlutterLibsPlugin"));
 }
