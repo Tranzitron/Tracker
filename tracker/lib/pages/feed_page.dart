@@ -41,7 +41,7 @@ class FeedPage extends StatelessWidget {
                       ),
                     );
                   },
-                  child: const Text('Go to Next Page'),
+                  child: const Text('Go to Workout Page'),
                 ),
               ],
             ),
