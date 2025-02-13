@@ -1,13 +1,13 @@
 import 'package:isar/isar.dart';
 
 @embedded
-class SplitDay {
+class WorkoutSplitDay {
   String title;
   String description;
   List<int> exercises; // TODO create ExerciceItem model
   int order;
 
-  SplitDay({
+  WorkoutSplitDay({
     this.title = "Split Day",
     this.description = "",
     this.exercises = const [],
