@@ -28,7 +28,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Demo',
       home: HomePage(),
       theme: CupertinoThemeData(
-        brightness: Brightness.light,
+        brightness: Brightness.dark,
       ),
       debugShowCheckedModeBanner: false,
     );

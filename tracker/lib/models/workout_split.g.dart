@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'split.dart';
+part of 'workout_split.dart';
 
 // **************************************************************************
 // IsarCollectionGenerator
@@ -9,13 +9,13 @@ part of 'split.dart';
 // coverage:ignore-file
 // ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
 
-extension GetSplitCollection on Isar {
-  IsarCollection<Split> get splits => this.collection();
+extension GetWorkoutSplitCollection on Isar {
+  IsarCollection<WorkoutSplit> get workoutSplits => this.collection();
 }
 
-const SplitSchema = CollectionSchema(
-  name: r'Split',
-  id: -746995213775774434,
+const WorkoutSplitSchema = CollectionSchema(
+  name: r'WorkoutSplit',
+  id: 656367487967778737,
   properties: {
     r'description': PropertySchema(
       id: 0,
@@ -31,7 +31,7 @@ const SplitSchema = CollectionSchema(
       id: 2,
       name: r'splitDays',
       type: IsarType.objectList,
-      target: r'SplitDay',
+      target: r'WorkoutSplitDay',
     ),
     r'title': PropertySchema(
       id: 3,
@@ -39,22 +39,22 @@ const SplitSchema = CollectionSchema(
       type: IsarType.string,
     )
   },
-  estimateSize: _splitEstimateSize,
-  serialize: _splitSerialize,
-  deserialize: _splitDeserialize,
-  deserializeProp: _splitDeserializeProp,
+  estimateSize: _workoutSplitEstimateSize,
+  serialize: _workoutSplitSerialize,
+  deserialize: _workoutSplitDeserialize,
+  deserializeProp: _workoutSplitDeserializeProp,
   idName: r'id',
   indexes: {},
   links: {},
-  embeddedSchemas: {r'SplitDay': SplitDaySchema},
-  getId: _splitGetId,
-  getLinks: _splitGetLinks,
-  attach: _splitAttach,
+  embeddedSchemas: {r'WorkoutSplitDay': WorkoutSplitDaySchema},
+  getId: _workoutSplitGetId,
+  getLinks: _workoutSplitGetLinks,
+  attach: _workoutSplitAttach,
   version: '3.1.0+1',
 );
 
-int _splitEstimateSize(
-  Split object,
+int _workoutSplitEstimateSize(
+  WorkoutSplit object,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
@@ -62,47 +62,48 @@ int _splitEstimateSize(
   bytesCount += 3 + object.description.length * 3;
   bytesCount += 3 + object.splitDays.length * 3;
   {
-    final offsets = allOffsets[SplitDay]!;
+    final offsets = allOffsets[WorkoutSplitDay]!;
     for (var i = 0; i < object.splitDays.length; i++) {
       final value = object.splitDays[i];
-      bytesCount += SplitDaySchema.estimateSize(value, offsets, allOffsets);
+      bytesCount +=
+          WorkoutSplitDaySchema.estimateSize(value, offsets, allOffsets);
     }
   }
   bytesCount += 3 + object.title.length * 3;
   return bytesCount;
 }
 
-void _splitSerialize(
-  Split object,
+void _workoutSplitSerialize(
+  WorkoutSplit object,
   IsarWriter writer,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.description);
   writer.writeLong(offsets[1], object.order);
-  writer.writeObjectList<SplitDay>(
+  writer.writeObjectList<WorkoutSplitDay>(
     offsets[2],
     allOffsets,
-    SplitDaySchema.serialize,
+    WorkoutSplitDaySchema.serialize,
     object.splitDays,
   );
   writer.writeString(offsets[3], object.title);
 }
 
-Split _splitDeserialize(
+WorkoutSplit _workoutSplitDeserialize(
   Id id,
   IsarReader reader,
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  final object = Split(
+  final object = WorkoutSplit(
     description: reader.readStringOrNull(offsets[0]) ?? "",
     order: reader.readLongOrNull(offsets[1]) ?? -1,
-    splitDays: reader.readObjectList<SplitDay>(
+    splitDays: reader.readObjectList<WorkoutSplitDay>(
           offsets[2],
-          SplitDaySchema.deserialize,
+          WorkoutSplitDaySchema.deserialize,
           allOffsets,
-          SplitDay(),
+          WorkoutSplitDay(),
         ) ??
         const [],
     title: reader.readStringOrNull(offsets[3]) ?? "Split",
@@ -111,7 +112,7 @@ Split _splitDeserialize(
   return object;
 }
 
-P _splitDeserializeProp<P>(
+P _workoutSplitDeserializeProp<P>(
   IsarReader reader,
   int propertyId,
   int offset,
@@ -123,11 +124,11 @@ P _splitDeserializeProp<P>(
     case 1:
       return (reader.readLongOrNull(offset) ?? -1) as P;
     case 2:
-      return (reader.readObjectList<SplitDay>(
+      return (reader.readObjectList<WorkoutSplitDay>(
             offset,
-            SplitDaySchema.deserialize,
+            WorkoutSplitDaySchema.deserialize,
             allOffsets,
-            SplitDay(),
+            WorkoutSplitDay(),
           ) ??
           const []) as P;
     case 3:
@@ -137,28 +138,31 @@ P _splitDeserializeProp<P>(
   }
 }
 
-Id _splitGetId(Split object) {
+Id _workoutSplitGetId(WorkoutSplit object) {
   return object.id;
 }
 
-List<IsarLinkBase<dynamic>> _splitGetLinks(Split object) {
+List<IsarLinkBase<dynamic>> _workoutSplitGetLinks(WorkoutSplit object) {
   return [];
 }
 
-void _splitAttach(IsarCollection<dynamic> col, Id id, Split object) {
+void _workoutSplitAttach(
+    IsarCollection<dynamic> col, Id id, WorkoutSplit object) {
   object.id = id;
 }
 
-extension SplitQueryWhereSort on QueryBuilder<Split, Split, QWhere> {
-  QueryBuilder<Split, Split, QAfterWhere> anyId() {
+extension WorkoutSplitQueryWhereSort
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QWhere> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhere> anyId() {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(const IdWhereClause.any());
     });
   }
 }
 
-extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
-  QueryBuilder<Split, Split, QAfterWhereClause> idEqualTo(Id id) {
+extension WorkoutSplitQueryWhere
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QWhereClause> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhereClause> idEqualTo(Id id) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IdWhereClause.between(
         lower: id,
@@ -167,7 +171,8 @@ extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterWhereClause> idNotEqualTo(Id id) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhereClause> idNotEqualTo(
+      Id id) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -189,7 +194,8 @@ extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterWhereClause> idGreaterThan(Id id,
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhereClause> idGreaterThan(
+      Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -198,7 +204,7 @@ extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterWhereClause> idLessThan(Id id,
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhereClause> idLessThan(Id id,
       {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
@@ -207,7 +213,7 @@ extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterWhereClause> idBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterWhereClause> idBetween(
     Id lowerId,
     Id upperId, {
     bool includeLower = true,
@@ -224,8 +230,10 @@ extension SplitQueryWhere on QueryBuilder<Split, Split, QWhereClause> {
   }
 }
 
-extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionEqualTo(
+extension WorkoutSplitQueryFilter
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QFilterCondition> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -238,7 +246,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionGreaterThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -253,7 +262,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionLessThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -268,7 +278,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -287,7 +298,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionStartsWith(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -300,7 +312,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionEndsWith(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -313,9 +326,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionContains(
-      String value,
-      {bool caseSensitive = true}) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
         property: r'description',
@@ -325,9 +337,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
         property: r'description',
@@ -337,7 +348,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionIsEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'description',
@@ -346,7 +358,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> descriptionIsNotEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      descriptionIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'description',
@@ -355,7 +368,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> idEqualTo(Id value) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> idEqualTo(
+      Id value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'id',
@@ -364,7 +378,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> idGreaterThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> idGreaterThan(
     Id value, {
     bool include = false,
   }) {
@@ -377,7 +391,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> idLessThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> idLessThan(
     Id value, {
     bool include = false,
   }) {
@@ -390,7 +404,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> idBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> idBetween(
     Id lower,
     Id upper, {
     bool includeLower = true,
@@ -407,7 +421,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> orderEqualTo(int value) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> orderEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'order',
@@ -416,7 +431,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> orderGreaterThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      orderGreaterThan(
     int value, {
     bool include = false,
   }) {
@@ -429,7 +445,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> orderLessThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> orderLessThan(
     int value, {
     bool include = false,
   }) {
@@ -442,7 +458,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> orderBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> orderBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -459,8 +475,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysLengthEqualTo(
-      int length) {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'splitDays',
@@ -472,7 +488,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysIsEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'splitDays',
@@ -484,7 +501,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysIsNotEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.listLength(
         r'splitDays',
@@ -496,7 +514,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysLengthLessThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysLengthLessThan(
     int length, {
     bool include = false,
   }) {
@@ -511,7 +530,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysLengthGreaterThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysLengthGreaterThan(
     int length, {
     bool include = false,
   }) {
@@ -526,7 +546,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysLengthBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -543,7 +564,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleEqualTo(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleEqualTo(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -556,7 +577,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleGreaterThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      titleGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -571,7 +593,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleLessThan(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleLessThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
@@ -586,7 +608,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleBetween(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -605,7 +627,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleStartsWith(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      titleStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -618,7 +641,7 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleEndsWith(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
@@ -631,7 +654,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleContains(String value,
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleContains(
+      String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
@@ -642,7 +666,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleMatches(String pattern,
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition> titleMatches(
+      String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
@@ -653,7 +678,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleIsEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'title',
@@ -662,7 +688,8 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
     });
   }
 
-  QueryBuilder<Split, Split, QAfterFilterCondition> titleIsNotEmpty() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         property: r'title',
@@ -672,120 +699,127 @@ extension SplitQueryFilter on QueryBuilder<Split, Split, QFilterCondition> {
   }
 }
 
-extension SplitQueryObject on QueryBuilder<Split, Split, QFilterCondition> {
-  QueryBuilder<Split, Split, QAfterFilterCondition> splitDaysElement(
-      FilterQuery<SplitDay> q) {
+extension WorkoutSplitQueryObject
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QFilterCondition> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterFilterCondition>
+      splitDaysElement(FilterQuery<WorkoutSplitDay> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'splitDays');
     });
   }
 }
 
-extension SplitQueryLinks on QueryBuilder<Split, Split, QFilterCondition> {}
+extension WorkoutSplitQueryLinks
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QFilterCondition> {}
 
-extension SplitQuerySortBy on QueryBuilder<Split, Split, QSortBy> {
-  QueryBuilder<Split, Split, QAfterSortBy> sortByDescription() {
+extension WorkoutSplitQuerySortBy
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QSortBy> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> sortByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> sortByDescriptionDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy>
+      sortByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> sortByOrder() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> sortByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> sortByOrderDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> sortByOrderDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.desc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> sortByTitle() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> sortByTitleDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> sortByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
     });
   }
 }
 
-extension SplitQuerySortThenBy on QueryBuilder<Split, Split, QSortThenBy> {
-  QueryBuilder<Split, Split, QAfterSortBy> thenByDescription() {
+extension WorkoutSplitQuerySortThenBy
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QSortThenBy> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByDescription() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByDescriptionDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy>
+      thenByDescriptionDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'description', Sort.desc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenById() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenById() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByIdDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByIdDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'id', Sort.desc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByOrder() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByOrderDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByOrderDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'order', Sort.desc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByTitle() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
     });
   }
 
-  QueryBuilder<Split, Split, QAfterSortBy> thenByTitleDesc() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QAfterSortBy> thenByTitleDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.desc);
     });
   }
 }
 
-extension SplitQueryWhereDistinct on QueryBuilder<Split, Split, QDistinct> {
-  QueryBuilder<Split, Split, QDistinct> distinctByDescription(
+extension WorkoutSplitQueryWhereDistinct
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QDistinct> {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QDistinct> distinctByDescription(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'description', caseSensitive: caseSensitive);
     });
   }
 
-  QueryBuilder<Split, Split, QDistinct> distinctByOrder() {
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QDistinct> distinctByOrder() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'order');
     });
   }
 
-  QueryBuilder<Split, Split, QDistinct> distinctByTitle(
+  QueryBuilder<WorkoutSplit, WorkoutSplit, QDistinct> distinctByTitle(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
@@ -793,32 +827,34 @@ extension SplitQueryWhereDistinct on QueryBuilder<Split, Split, QDistinct> {
   }
 }
 
-extension SplitQueryProperty on QueryBuilder<Split, Split, QQueryProperty> {
-  QueryBuilder<Split, int, QQueryOperations> idProperty() {
+extension WorkoutSplitQueryProperty
+    on QueryBuilder<WorkoutSplit, WorkoutSplit, QQueryProperty> {
+  QueryBuilder<WorkoutSplit, int, QQueryOperations> idProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'id');
     });
   }
 
-  QueryBuilder<Split, String, QQueryOperations> descriptionProperty() {
+  QueryBuilder<WorkoutSplit, String, QQueryOperations> descriptionProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'description');
     });
   }
 
-  QueryBuilder<Split, int, QQueryOperations> orderProperty() {
+  QueryBuilder<WorkoutSplit, int, QQueryOperations> orderProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'order');
     });
   }
 
-  QueryBuilder<Split, List<SplitDay>, QQueryOperations> splitDaysProperty() {
+  QueryBuilder<WorkoutSplit, List<WorkoutSplitDay>, QQueryOperations>
+      splitDaysProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'splitDays');
     });
   }
 
-  QueryBuilder<Split, String, QQueryOperations> titleProperty() {
+  QueryBuilder<WorkoutSplit, String, QQueryOperations> titleProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'title');
     });
