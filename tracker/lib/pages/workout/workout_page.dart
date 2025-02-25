@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:tracker/models/workout_split.dart';
-
-import '../models/workout_split_day.dart';
+import 'package:tracker/pages/workout/new_split.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
@@ -20,7 +19,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
     super.initState();
     splits.add(
       WorkoutSplit(
-        title: 'Split 1',
+        title: 'PPL',
         description: 'Description 1',
         order: 0,
         splitDays: [
@@ -30,6 +29,27 @@ class _WorkoutPageState extends State<WorkoutPage> {
             description: 'Chest, Triceps, Shoulders',
             order: 0,
           ),
+          WorkoutSplitDay(
+            title: 'Pull',
+            exercises: [5, 7, 1, 3],
+            description: 'Back, Biceps, Trapz',
+            order: 4,
+          ),
+        ],
+      ),
+    );
+    splits.add(
+      WorkoutSplit(
+        title: 'Full body',
+        description: 'Description 2',
+        order: 5,
+        splitDays: [
+          WorkoutSplitDay(
+            title: 'FB 1',
+            exercises: [5, 7, 1, 3],
+            description: 'Back, Biceps, Trapz',
+            order: 4,
+          ),
         ],
       ),
     );
@@ -37,38 +57,35 @@ class _WorkoutPageState extends State<WorkoutPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoPageScaffold(
-      child: CustomScrollView(
-        slivers: <Widget>[
-          CupertinoSliverNavigationBar(
-            largeTitle: Text('Workout'),
-          ),
-          SliverFillRemaining(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  BuildStartWorkoutButton(),
-                  if (splits.isNotEmpty)
-                    Flexible(
-                      child: ListView.builder(
-                        padding: EdgeInsets.all(0),
-                        shrinkWrap: true,
-                        itemCount: splits.length,
-                        prototypeItem: BuildSplit(splits.first),
-                        itemBuilder: (context, index) {
-                          return BuildSplit(splits[index]);
-                        },
-                      ),
+    return CustomScrollView(
+      slivers: <Widget>[
+        CupertinoSliverNavigationBar(
+          largeTitle: Text('Workout'),
+        ),
+        SliverFillRemaining(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: <Widget>[
+                BuildStartWorkoutButton(),
+                if (splits.isNotEmpty)
+                  Flexible(
+                    child: ListView.builder(
+                      padding: EdgeInsets.all(0),
+                      shrinkWrap: true,
+                      itemCount: splits.length,
+                      itemBuilder: (context, index) {
+                        return BuildSplit(splits[index]);
+                      },
                     ),
-                  BuildNewWorkoutButton(),
-                ],
-              ),
+                  ),
+                BuildNewWorkoutButton(),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -130,7 +147,16 @@ class BuildNewWorkoutButton extends StatelessWidget {
               ),
             ],
           ),
-          onTap: () => (),
+          onTap: () => {
+            Navigator.push(
+              context,
+              CupertinoPageRoute<Widget>(
+                builder: (BuildContext context) {
+                  return const NewSplitPage();
+                },
+              ),
+            )
+          },
         ),
       ],
     );
