@@ -43,6 +43,5 @@ class _NewSplitPageState extends State<NewSplitPage> {
         ],
       ),
     );
-    ;
   }
 }

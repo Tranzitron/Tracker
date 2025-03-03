@@ -22,6 +22,11 @@ linter:
   # producing the lint.
   rules:
     - require_trailing_commas
+    - avoid_relative_lib_imports
+    - file_names
+    - no_logic_in_create_state
+    - sized_box_for_whitespace
+    - unnecessary_const
   # avoid_print: false  # Uncomment to disable the `avoid_print` rule
   # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 

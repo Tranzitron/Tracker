@@ -155,7 +155,7 @@ class BuildNewWorkoutButton extends StatelessWidget {
                   return const NewSplitPage();
                 },
               ),
-            )
+            ),
           },
         ),
       ],

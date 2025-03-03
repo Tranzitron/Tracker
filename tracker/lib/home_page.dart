@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:quiver/collection.dart';
 
 import 'pages/exercices_page.dart';
@@ -15,53 +15,88 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  get controller => HomePageSingleton().controller;
+  @override
+  void initState() {
+    super.initState();
+    HomePageSingleton().indexSetState = indexSetState;
+  }
+
+  void indexSetState() {
+    setState(() {
+      HomePageSingleton().selectedTabIndex;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoTabScaffold(
-      controller: controller,
-      tabBar: CupertinoTabBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.house_fill),
+    return Scaffold(
+      body: goToTab(HomePageSingleton().selectedTabIndex),
+      bottomNavigationBar: NavigationBar(
+        animationDuration: Duration(seconds: 0),
+        indicatorColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        //overlayColor: WidgetStatePropertyAll(Colors.transparent),
+        selectedIndex: HomePageSingleton().selectedTabIndex,
+        onDestinationSelected: (index) => setState(() {
+          HomePageSingleton().selectedTabIndex = index;
+        }),
+        destinations: const <Widget>[
+          NavigationDestination(
+            icon: Icon(Icons.house_sharp),
+            selectedIcon: Icon(
+              Icons.house_sharp,
+              color: Colors.blueAccent,
+            ),
             label: 'Feed',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.clock_solid),
+          NavigationDestination(
+            icon: Icon(Icons.access_time_filled_sharp),
+            selectedIcon: Icon(
+              Icons.access_time_filled_sharp,
+              color: Colors.blueAccent,
+            ),
             label: 'History',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.plus_app_fill),
+          NavigationDestination(
+            icon: Icon(Icons.add_box_sharp),
+            selectedIcon: Icon(
+              Icons.add_box_sharp,
+              color: Colors.blueAccent,
+            ),
             label: 'Workout',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.tray_full_fill),
+          NavigationDestination(
+            icon: Icon(Icons.fitness_center_sharp),
+            selectedIcon: Icon(
+              Icons.fitness_center_sharp,
+              color: Colors.blueAccent,
+            ),
             label: 'Exercices',
           ),
-          BottomNavigationBarItem(
-            icon: Icon(CupertinoIcons.settings),
+          NavigationDestination(
+            icon: Icon(Icons.settings_sharp),
             label: 'Settings',
+            selectedIcon: Icon(
+              Icons.settings_sharp,
+              color: Colors.blueAccent,
+            ),
           ),
         ],
       ),
-      tabBuilder: (BuildContext context, int index) {
-        return CupertinoTabView(
-          builder: (BuildContext context) {
-            return CupertinoPageScaffold(
-              child: switch (index) {
-                0 => FeedPage(),
-                1 => HistoryPage(),
-                2 => WorkoutPage(),
-                3 => ExercicesPage(),
-                4 => SettingsPage(),
-                int() => throw UnimplementedError(),
-              },
-            );
-          },
-        );
-      },
     );
+  }
+
+  Widget goToTab(int index) {
+    return switch (index) {
+      0 => FeedPage(),
+      1 => HistoryPage(),
+      2 => WorkoutPage(),
+      3 => ExercicesPage(),
+      4 => SettingsPage(),
+      int() => throw UnimplementedError(),
+    };
   }
 }
 
@@ -84,7 +119,16 @@ class HomePageSingleton {
     );
   }
 
-  CupertinoTabController controller = CupertinoTabController();
+  Function? indexSetState;
+
+  int selectedTabIndex = 0;
+
+  void changeTab(TabName tabName) {
+    int? index = tabMap[tabName];
+    assert(index != null);
+    selectedTabIndex = index!;
+    indexSetState!();
+  }
 
   BiMap<TabName, int> tabMap = BiMap<TabName, int>();
 }

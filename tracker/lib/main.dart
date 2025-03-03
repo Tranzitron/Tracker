@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tracker/Models/exercise.dart';
@@ -25,12 +25,10 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const CupertinoApp(
+    return const MaterialApp(
       title: 'Flutter Demo',
       home: HomePage(),
-      theme: CupertinoThemeData(
-        brightness: Brightness.dark,
-      ),
+      // themeMode: ThemeMode.light,
       debugShowCheckedModeBanner: false,
     );
   }
