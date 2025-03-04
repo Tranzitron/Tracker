@@ -18,7 +18,7 @@ class CustomAppBar extends StatelessWidget {
       snap: false,
       floating: false,
       flexibleSpace: FlexibleSpaceBar(
-        title: Text('Feed'),
+        title: Text(title),
         background: Center(
           child: Padding(
             padding: EdgeInsets.only(
@@ -30,13 +30,6 @@ class CustomAppBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (Navigator.canPop(context))
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    child: Text('Back'),
-                  ),
                 if (actionButton != null)
                   TextButton(
                     onPressed: actionButton!.onPressed,

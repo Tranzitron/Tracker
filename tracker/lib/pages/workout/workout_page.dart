@@ -1,6 +1,9 @@
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:tracker/models/workout_split.dart';
-import 'package:tracker/pages/workout/new_split.dart';
+import 'package:tracker/pages/custom/custom_app_bar.dart';
+
+import 'new_split.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
@@ -59,8 +62,9 @@ class _WorkoutPageState extends State<WorkoutPage> {
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: <Widget>[
-        CupertinoSliverNavigationBar(
-          largeTitle: Text('Workout'),
+        CustomAppBar(
+          context,
+          title: 'Workout',
         ),
         SliverFillRemaining(
           child: Padding(
@@ -75,12 +79,24 @@ class _WorkoutPageState extends State<WorkoutPage> {
                       padding: EdgeInsets.all(0),
                       shrinkWrap: true,
                       itemCount: splits.length,
+                      physics: NeverScrollableScrollPhysics(),
                       itemBuilder: (context, index) {
-                        return BuildSplit(splits[index]);
+                        return BuildMaterialSplit(splits[index]);
                       },
                     ),
                   ),
-                BuildNewWorkoutButton(),
+                // Flexible(
+                //   child: ListView.builder(
+                //     padding: EdgeInsets.all(0),
+                //     shrinkWrap: true,
+                //     itemCount: splits.length,
+                //     physics: NeverScrollableScrollPhysics(),
+                //     itemBuilder: (context, index) {
+                //       return BuildSplit(splits[index]);
+                //     },
+                //   ),
+                // ),
+                BuildNewSplitButton(),
               ],
             ),
           ),
@@ -100,19 +116,33 @@ class BuildStartWorkoutButton extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: CupertinoButton.filled(
-            padding: EdgeInsets.all(0),
+          child: FilledButton(
+            style: ButtonStyle(
+              padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
+                EdgeInsets.symmetric(vertical: 16),
+              ),
+              shape: WidgetStateProperty.all<RoundedRectangleBorder>(
+                RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            ),
             onPressed: () {
               Navigator.push(
                 context,
-                CupertinoPageRoute<Widget>(
+                MaterialPageRoute<Widget>(
                   builder: (BuildContext context) {
                     return const Text('restart if stuck here');
                   },
                 ),
               );
             },
-            child: const Text('Start Workout'),
+            child: const Text(
+              'Start Workout',
+              style: TextStyle(
+                fontSize: 16,
+              ),
+            ),
           ),
         ),
       ],
@@ -120,8 +150,8 @@ class BuildStartWorkoutButton extends StatelessWidget {
   }
 }
 
-class BuildNewWorkoutButton extends StatelessWidget {
-  const BuildNewWorkoutButton({
+class BuildNewSplitButton extends StatelessWidget {
+  const BuildNewSplitButton({
     super.key,
   });
 
@@ -158,6 +188,63 @@ class BuildNewWorkoutButton extends StatelessWidget {
             ),
           },
         ),
+      ],
+    );
+  }
+}
+
+class BuildMaterialSplit extends StatelessWidget {
+  const BuildMaterialSplit(this.split, {super.key});
+
+  final WorkoutSplit split;
+
+  final roundBorderRadius = 16.0;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListBody(
+      mainAxis: Axis.vertical,
+      children: <ListTile>[
+        ListTile(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.only(
+              topLeft: Radius.circular(roundBorderRadius),
+              topRight: Radius.circular(roundBorderRadius),
+              bottomLeft: Radius.circular(0),
+              bottomRight: Radius.circular(0),
+            ),
+          ),
+          title: Text(
+            split.title,
+            overflow: TextOverflow.ellipsis,
+          ),
+          trailing: const CupertinoListTileChevron(),
+          onTap: () => (),
+        ),
+        for (final splitDay in split.splitDays)
+          ListTile(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(0),
+                topRight: Radius.circular(0),
+                bottomLeft: Radius.circular(roundBorderRadius),
+                bottomRight: Radius.circular(roundBorderRadius),
+              ),
+            ),
+            contentPadding: EdgeInsets.symmetric(horizontal: 20, vertical: 0),
+            title: Text(
+              splitDay.title,
+              style: TextStyle(
+                color: CupertinoColors.activeBlue,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              splitDay.exercises.join(', '),
+              overflow: TextOverflow.ellipsis,
+            ),
+            onTap: () => (),
+          ),
       ],
     );
   }

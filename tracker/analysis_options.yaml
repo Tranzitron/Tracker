@@ -27,6 +27,7 @@ linter:
     - no_logic_in_create_state
     - sized_box_for_whitespace
     - unnecessary_const
+    - use_named_constants
   # avoid_print: false  # Uncomment to disable the `avoid_print` rule
   # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
 

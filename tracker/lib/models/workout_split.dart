@@ -23,7 +23,7 @@ class WorkoutSplit {
 class WorkoutSplitDay {
   String title;
   String description;
-  List<int> exercises; // TODO create ExerciceItem model
+  List<int> exercises; // TODO create ExerciseItem model
   int order;
 
   WorkoutSplitDay({

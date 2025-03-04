@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:quiver/collection.dart';
 
-import 'pages/exercices_page.dart';
+import 'pages/exercises_page.dart';
 import 'pages/feed_page.dart';
 import 'pages/history_page.dart';
 import 'pages/settings_page.dart';
@@ -15,33 +15,62 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  int _currentIndex = 0;
+  final List<GlobalKey<NavigatorState>> _navigatorKeys =
+      List.generate(5, (index) => GlobalKey<NavigatorState>());
+
+  void _selectTab(int index) {
+    if (index != _currentIndex) {
+      setState(() => _currentIndex = index);
+    } else {
+      _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
+    }
+  }
+
+  Widget _buildOffstageNavigator(int index, Widget child) {
+    return Offstage(
+      offstage: _currentIndex != index,
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (settings) =>
+            MaterialPageRoute(builder: (context) => child),
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     HomePageSingleton().indexSetState = indexSetState;
   }
 
-  void indexSetState() {
+  void indexSetState(int index) {
     setState(() {
-      HomePageSingleton().selectedTabIndex;
+      _currentIndex = index;
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: goToTab(HomePageSingleton().selectedTabIndex),
+      body: Stack(
+        children: [
+          _buildOffstageNavigator(0, const FeedPage()),
+          _buildOffstageNavigator(1, const HistoryPage()),
+          _buildOffstageNavigator(2, const WorkoutPage()),
+          _buildOffstageNavigator(3, const ExercisesPage()),
+          _buildOffstageNavigator(4, const SettingsPage()),
+        ],
+      ),
       bottomNavigationBar: NavigationBar(
-        animationDuration: Duration(seconds: 0),
+        animationDuration: Duration.zero,
         indicatorColor: Colors.transparent,
         shadowColor: Colors.transparent,
         backgroundColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
-        //overlayColor: WidgetStatePropertyAll(Colors.transparent),
-        selectedIndex: HomePageSingleton().selectedTabIndex,
-        onDestinationSelected: (index) => setState(() {
-          HomePageSingleton().selectedTabIndex = index;
-        }),
+        selectedIndex: _currentIndex,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        onDestinationSelected: _selectTab,
         destinations: const <Widget>[
           NavigationDestination(
             icon: Icon(Icons.house_sharp),
@@ -50,6 +79,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blueAccent,
             ),
             label: 'Feed',
+            tooltip: '',
           ),
           NavigationDestination(
             icon: Icon(Icons.access_time_filled_sharp),
@@ -58,6 +88,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blueAccent,
             ),
             label: 'History',
+            tooltip: '',
           ),
           NavigationDestination(
             icon: Icon(Icons.add_box_sharp),
@@ -66,6 +97,7 @@ class _HomePageState extends State<HomePage> {
               color: Colors.blueAccent,
             ),
             label: 'Workout',
+            tooltip: '',
           ),
           NavigationDestination(
             icon: Icon(Icons.fitness_center_sharp),
@@ -73,30 +105,21 @@ class _HomePageState extends State<HomePage> {
               Icons.fitness_center_sharp,
               color: Colors.blueAccent,
             ),
-            label: 'Exercices',
+            label: 'Exercises',
+            tooltip: '',
           ),
           NavigationDestination(
             icon: Icon(Icons.settings_sharp),
-            label: 'Settings',
             selectedIcon: Icon(
               Icons.settings_sharp,
               color: Colors.blueAccent,
             ),
+            label: 'Settings',
+            tooltip: '',
           ),
         ],
       ),
     );
-  }
-
-  Widget goToTab(int index) {
-    return switch (index) {
-      0 => FeedPage(),
-      1 => HistoryPage(),
-      2 => WorkoutPage(),
-      3 => ExercicesPage(),
-      4 => SettingsPage(),
-      int() => throw UnimplementedError(),
-    };
   }
 }
 
@@ -126,8 +149,7 @@ class HomePageSingleton {
   void changeTab(TabName tabName) {
     int? index = tabMap[tabName];
     assert(index != null);
-    selectedTabIndex = index!;
-    indexSetState!();
+    indexSetState!(index);
   }
 
   BiMap<TabName, int> tabMap = BiMap<TabName, int>();

@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:tracker/pages/custom/custom_app_bar.dart';
 
 class NewSplitPage extends StatefulWidget {
   const NewSplitPage({super.key});
@@ -13,13 +14,7 @@ class _NewSplitPageState extends State<NewSplitPage> {
     return CupertinoPageScaffold(
       child: CustomScrollView(
         slivers: <Widget>[
-          CupertinoSliverNavigationBar(
-            largeTitle: SizedBox(
-              width: 0,
-              height: 0,
-            ),
-            middle: Text('New Split'),
-          ),
+          CustomAppBar(context, title: 'New Split'),
           SliverFillRemaining(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
