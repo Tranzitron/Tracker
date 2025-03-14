@@ -24,6 +24,8 @@ jobs:
         channel: stable
         flutter-version: 3.29.x # path to pubspec.yaml
     - name: Install Dependencies
+      working-directory: tracker
       run: flutter pub get
     - name: Check Code
+      working-directory: tracker
       run: flutter analyze
