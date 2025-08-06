@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:quiver/collection.dart';
+import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'pages/exercises_page.dart';
 import 'pages/feed_page.dart';
@@ -71,7 +73,7 @@ class _HomePageState extends State<HomePage> {
         selectedIndex: _currentIndex,
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: _selectTab,
-        destinations: const <Widget>[
+        destinations: <Widget>[
           NavigationDestination(
             icon: Icon(Icons.house_sharp),
             selectedIcon: Icon(
@@ -90,14 +92,16 @@ class _HomePageState extends State<HomePage> {
             label: 'History',
             tooltip: '',
           ),
-          NavigationDestination(
-            icon: Icon(Icons.add_box_sharp),
-            selectedIcon: Icon(
-              Icons.add_box_sharp,
-              color: Colors.blueAccent,
+          BlocBuilder<WorkoutCubit, WorkoutState>(
+            builder: (context, state) => NavigationDestination(
+              icon: Icon(Icons.add_box_sharp),
+              selectedIcon: Icon(
+                Icons.add_box_sharp,
+                color: Colors.blueAccent,
+              ),
+              label: 'Workout ${state.isInProgress}',
+              tooltip: '',
             ),
-            label: 'Workout',
-            tooltip: '',
           ),
           NavigationDestination(
             icon: Icon(Icons.fitness_center_sharp),

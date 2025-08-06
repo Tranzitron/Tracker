@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/workout/workout_cubit.dart';
 
-import 'new_split.dart';
+import 'new_split_page.dart';
 
 class WorkoutPage extends StatefulWidget {
   const WorkoutPage({
@@ -116,14 +118,8 @@ class BuildStartWorkoutButton extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute<Widget>(
-                  builder: (BuildContext context) {
-                    return const Text('restart if stuck here');
-                  },
-                ),
-              );
+              final workoutCubit = context.read<WorkoutCubit>();
+              workoutCubit.startWorkout();
             },
             child: const Text(
               'Start Workout',
@@ -214,19 +210,31 @@ class BuildMaterialSplit extends StatelessWidget {
             padding: EdgeInsets.zero,
             itemBuilder: (context, index) {
               final splitDay = split.splitDays[index];
-              return Column(
-                children: [
-                  Divider(
-                    height: 1.0,
-                    indent: 16.0,
-                    endIndent: 16.0,
-                  ),
-                  WorkoutListTile(
-                    isSplitDay: true,
-                    titleText: splitDay.title,
-                    exercises: splitDay.exercises,
-                  ),
-                ],
+              return InkWell(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<Widget>(
+                      builder: (BuildContext context) {
+                        return const Text('restart if stuck in fake workout');
+                      },
+                    ),
+                  );
+                },
+                child: Column(
+                  children: [
+                    Divider(
+                      height: 1.0,
+                      indent: 16.0,
+                      endIndent: 16.0,
+                    ),
+                    WorkoutListTile(
+                      isSplitDay: true,
+                      titleText: splitDay.title,
+                      exercises: splitDay.exercises,
+                    ),
+                  ],
+                ),
               );
             },
           ),

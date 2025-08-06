@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tracker/Models/exercise.dart';
 import 'package:tracker/home_page.dart';
 import 'package:tracker/models/workout_split.dart';
+import 'package:tracker/pages/workout/workout_cubit.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  HydratedBloc.storage = await HydratedStorage.build(
+    storageDirectory: HydratedStorageDirectory(
+      (await getApplicationDocumentsDirectory()).path,
+    ),
+  );
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<WorkoutCubit>(
+          create: (_) => WorkoutCubit(),
+          lazy: false,
+        ),
+      ],
+      child: const MyApp(),
+    ),
+  );
 }
 
 class DbInstance {
