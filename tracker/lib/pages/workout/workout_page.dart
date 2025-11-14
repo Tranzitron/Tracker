@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'new_split_page.dart';
@@ -119,7 +120,11 @@ class BuildStartWorkoutButton extends StatelessWidget {
             ),
             onPressed: () {
               final workoutCubit = context.read<WorkoutCubit>();
-              workoutCubit.startWorkout();
+              if (workoutCubit.state.isInProgress) {
+                workoutCubit.endWorkout();
+              } else {
+                workoutCubit.startWorkout();
+              }
             },
             child: const Text(
               'Start Workout',
@@ -143,14 +148,7 @@ class BuildNewSplitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilledButton(
       onPressed: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute<Widget>(
-            builder: (BuildContext context) {
-              return const NewSplitPage();
-            },
-          ),
-        );
+        pushTo(context, NewSplitPage());
       },
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(

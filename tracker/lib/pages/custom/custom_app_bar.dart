@@ -27,9 +27,10 @@ class CustomAppBar extends StatelessWidget {
               right: 4,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
+                Spacer(),
                 if (actionButton != null)
                   TextButton(
                     onPressed: actionButton!.onPressed,

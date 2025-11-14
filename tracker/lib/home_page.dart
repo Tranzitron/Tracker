@@ -6,7 +6,6 @@ import 'package:tracker/pages/workout/workout_cubit.dart';
 import 'pages/exercises_page.dart';
 import 'pages/feed_page.dart';
 import 'pages/history_page.dart';
-import 'pages/settings_page.dart';
 import 'pages/workout/workout_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -60,8 +59,8 @@ class _HomePageState extends State<HomePage> {
           _buildOffstageNavigator(0, const FeedPage()),
           _buildOffstageNavigator(1, const HistoryPage()),
           _buildOffstageNavigator(2, const WorkoutPage()),
-          _buildOffstageNavigator(3, const ExercisesPage()),
-          _buildOffstageNavigator(4, const SettingsPage()),
+          _buildOffstageNavigator(3, const WorkoutPage()),
+          _buildOffstageNavigator(4, const ExercisesPage()),
         ],
       ),
       bottomNavigationBar: NavigationBar(
@@ -94,31 +93,32 @@ class _HomePageState extends State<HomePage> {
           ),
           BlocBuilder<WorkoutCubit, WorkoutState>(
             builder: (context, state) => NavigationDestination(
-              icon: Icon(Icons.add_box_sharp),
+              icon: Icon(Icons.fitness_center_sharp),
               selectedIcon: Icon(
-                Icons.add_box_sharp,
-                color: Colors.blueAccent,
+                Icons.fitness_center_sharp,
+                color:
+                    state.isInProgress ? Colors.blueAccent : Colors.redAccent,
               ),
-              label: 'Workout ${state.isInProgress}',
+              label: 'Workout',
               tooltip: '',
             ),
           ),
           NavigationDestination(
-            icon: Icon(Icons.fitness_center_sharp),
+            icon: Icon(Icons.add_box_sharp),
             selectedIcon: Icon(
-              Icons.fitness_center_sharp,
+              Icons.add_box_sharp,
               color: Colors.blueAccent,
             ),
-            label: 'Exercises',
+            label: 'Editor',
             tooltip: '',
           ),
           NavigationDestination(
-            icon: Icon(Icons.settings_sharp),
+            icon: Icon(Icons.library_books_sharp),
             selectedIcon: Icon(
-              Icons.settings_sharp,
+              Icons.library_books_sharp,
               color: Colors.blueAccent,
             ),
-            label: 'Settings',
+            label: 'Exercices',
             tooltip: '',
           ),
         ],

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:tracker/home_page.dart';
+import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/settings_page.dart';
 
 import 'custom/custom_app_bar.dart';
 
@@ -15,6 +17,12 @@ class FeedPage extends StatelessWidget {
         CustomAppBar(
           context,
           title: 'Feed',
+          actionButton: (
+            title: 'Settings',
+            onPressed: () {
+              pushTo(context, SettingsPage());
+            }
+          ),
         ),
         SliverFillRemaining(
           child: Column(
