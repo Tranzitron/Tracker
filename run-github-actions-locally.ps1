@@ -1,6 +1,18 @@
-Clear-Host
+$os = "undefined"
+function DefineOS{
+	$osDescription = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
+	if($osDescription.Contains("Windows")){
+		return "windows"
+	}
+	elseif($osDescription.Contains("MacOS")){
+		return = "macos"
+	} else {
+		return = "linux"
+	}
+}
+
 function Request-AdminPrivileges {
-	if ($IsMacOS -or $IsLinux) {
+	if (($os -eq "macos") -or ($os -eq "linux")) {
 		$isRoot = (id -u) -eq 0
         
 		if (-not $isRoot) {
@@ -24,7 +36,7 @@ function Request-AdminPrivileges {
 	}
 }
 function RunAsAdmin {
-	if ($IsWindows) {
+	if ($os -eq "windows") {
 		$currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
 		$isAdmin = (New-Object Security.Principal.WindowsPrincipal $currentUser).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 	
@@ -33,7 +45,7 @@ function RunAsAdmin {
 			exit
 		}
 	}
-	elseif ($IsMacOS -or $IsLinux) {
+	elseif (($os -eq "macos") -or ($os -eq "linux")) {
 		$isRoot = (id -u) -eq 0
         
 		if (-not $isRoot) {
@@ -44,6 +56,7 @@ function RunAsAdmin {
 	}
 }
 
+$os = DefineOS
 RunAsAdmin
 
 function Test-CommandExists ($cmdname) {
@@ -53,7 +66,9 @@ function Test-CommandExists ($cmdname) {
 function Test-Network {
 	param([string]$HostName = "www.google.com")
     
-	if ($IsWindows) {
+	Write-Host $os
+	if ($os -eq "windows") {
+		Write-Host "network windows"
 		try {
 			return Test-NetConnection -ComputerName $HostName -InformationLevel Quiet
 		}
@@ -66,7 +81,6 @@ function Test-Network {
 			# Try DNS resolution first
 			[System.Net.Dns]::GetHostEntry($HostName) | Out-Null
             
-			# Try ping
 			if ($IsMacOS) {
 				ping -c 1 -t 3 $HostName 2>&1 | Out-Null
 			}
@@ -157,10 +171,12 @@ $commandName = "act"
 if (-not (Test-CommandExists -cmdname $commandName)) {
 	Write-Host "'$commandName' isn't installed."
 
-	if ($IsWindows) {
+	if ($os -eq "windows") {
+		Write-Host "windows"
 		Install-Act-Windows
 	}
-	elseif ($IsMacOS) {
+	elseif ($os -eq "macos") {
+		Write-Host "MacOS"
 		Install-Act-MacOS
 	}
 
@@ -175,10 +191,10 @@ $dockerCommand = "docker"
 if (-not (Test-CommandExists -cmdname $dockerCommand)) {
 	Write-Host "$dockerCommand isn't installed."
 
-	if ($IsWindows) {
+	if ($os -eq "windows") {
 		Install-Docker-Windows
 	}
-	elseif ($IsMacOS) {
+	elseif ($os -eq "macos") {
 		Install-Docker-MacOS
 	}
 
