@@ -1,12 +1,13 @@
 $os = "undefined"
-function DefineOS{
+function DefineOS {
 	$osDescription = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
-	if($osDescription.Contains("Windows")){
+	if ($osDescription.Contains("Windows")) {
 		return "windows"
 	}
-	elseif($osDescription.Contains("MacOS")){
+	elseif ($osDescription.Contains("MacOS")) {
 		return = "macos"
-	} else {
+	}
+ else {
 		return = "linux"
 	}
 }
@@ -68,7 +69,6 @@ function Test-Network {
     
 	Write-Host $os
 	if ($os -eq "windows") {
-		Write-Host "network windows"
 		try {
 			return Test-NetConnection -ComputerName $HostName -InformationLevel Quiet
 		}
@@ -81,7 +81,7 @@ function Test-Network {
 			# Try DNS resolution first
 			[System.Net.Dns]::GetHostEntry($HostName) | Out-Null
             
-			if ($IsMacOS) {
+			if ($os -eq "macos") {
 				ping -c 1 -t 3 $HostName 2>&1 | Out-Null
 			}
 			else {
@@ -106,7 +106,7 @@ function Install-Act-Windows {
 	$actInstalled = $false
 	if (Test-CommandExists -cmdname 'winget') {
 		winget install -e --id nektos.act --disable-interactivity --silent --accept-package-agreements --accept-source-agreements
-		if (Test-CommandExists -cmdname $commandName) {
+		if (Test-CommandExists -cmdname $actCommand) {
 			$actInstalled = $true
 		}
 	}
@@ -114,7 +114,7 @@ function Install-Act-Windows {
 	if (-not $actInstalled) {
 		if (Test-CommandExists -cmdname 'choco') {
 			choco upgrade act-cli -y
-			if (Test-CommandExists -cmdname $commandName) {
+			if (Test-CommandExists -cmdname $actCommand) {
 				$actInstalled = $true
 			}
 		}
@@ -122,7 +122,7 @@ function Install-Act-Windows {
 			Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
 			if (Test-CommandExists -cmdname 'choco') {
 				choco upgrade act-cli -y
-				if (Test-CommandExists -cmdname $commandName) {
+				if (Test-CommandExists -cmdname $actCommand) {
 					$actInstalled = $true
 				}
 			}
@@ -150,7 +150,7 @@ function Install-Act-MacOS {
 		if (Test-CommandExists -cmdname 'port') {
 			#sudo port install act
 			port install act
-			if (Test-CommandExists -cmdname $commandName) {
+			if (Test-CommandExists -cmdname $actCommand) {
 				$actInstalled = $true
 			}
 		}
@@ -159,7 +159,7 @@ function Install-Act-MacOS {
 			/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 			if (Test-CommandExists -cmdname 'brew') {
 				brew install act
-				if (Test-CommandExists -cmdname $commandName) {
+				if (Test-CommandExists -cmdname $actCommand) {
 					$actInstalled = $true
 				}
 			}
@@ -167,12 +167,11 @@ function Install-Act-MacOS {
 	}
 }
 
-$commandName = "act"
-if (-not (Test-CommandExists -cmdname $commandName)) {
-	Write-Host "'$commandName' isn't installed."
+$actCommand = "act"
+if (-not (Test-CommandExists -cmdname $actCommand)) {
+	Write-Host "'$actCommand' isn't installed."
 
 	if ($os -eq "windows") {
-		Write-Host "windows"
 		Install-Act-Windows
 	}
 	elseif ($os -eq "macos") {
@@ -180,11 +179,26 @@ if (-not (Test-CommandExists -cmdname $commandName)) {
 		Install-Act-MacOS
 	}
 
-	if (-not (Test-CommandExists -cmdname $commandName)) {
-		Write-Host "Couldn't install '$commandName'" -ForegroundColor Red
+	if (-not (Test-CommandExists -cmdname $actCommand)) {
+		Write-Host "Couldn't install '$actCommand'" -ForegroundColor Red
 		Pause
 		exit
 	}
+}
+
+function Install-Docker-Windows {
+	try {
+		# Required for both WSL and Docker
+		Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
+	}
+	catch {
+		Write-Host "Couln't Enable Windows Feature: 'VirtualMachinePlatform'" -ForegroundColor Red
+		Write-Host $_ -ForegroundColor Red
+		Pause
+		exit
+	}
+	wsl --install --no-distribution
+	choco upgrade -y docker-desktop
 }
 
 $dockerCommand = "docker"
