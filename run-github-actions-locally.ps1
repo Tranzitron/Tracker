@@ -1,4 +1,7 @@
 $os = "undefined"
+$actCommand = "act"
+$dockerCommand = "docker"
+
 function DefineOS {
 	$osDescription = [System.Runtime.InteropServices.RuntimeInformation]::OSDescription
 	if ($osDescription -like "*windows*") {
@@ -57,6 +60,7 @@ function RunAsAdmin {
 
 $os = DefineOS
 RunAsAdmin
+Write-Host $os
 
 function Test-CommandExists {
 	param([string]$cmdname)
@@ -66,20 +70,19 @@ function Test-CommandExists {
 function Test-Network {
 	param([string]$HostName = "www.google.com")
     
-	Write-Host $os
 	try {
 		if ($os -eq "windows") {
-			$connectionResult = Test-NetConnection -ComputerName $HostName -InformationLevel Quiet
+			$connectionResult = Test-NetConnection -ComputerName $HostName
 			return $connectionResult
 		}
 		else {
 			[System.Net.Dns]::GetHostEntry($HostName) | Out-Null
 				
 			if ($os -eq "macos") {
-				ping -c 1 -t 3 $HostName 2>&1 | Out-Null
+				ping -c 1 -t 5 $HostName 2>&1 | Out-Null
 			}
-			else {
-				ping -c 1 -W 3 $HostName 2>&1 | Out-Null
+			elseif ($os -eq "linux") {
+				ping -c 1 -W 5 $HostName 2>&1 | Out-Null
 			}
 				
 			return ($LASTEXITCODE -eq 0)
@@ -97,31 +100,21 @@ if (-not (Test-Network)) {
 }
 
 function Install-Act-Windows {
-	$actInstalled = $false
-
 	if (Test-CommandExists -cmdname 'winget') {
 		winget install -e --id nektos.act --disable-interactivity --silent --accept-package-agreements --accept-source-agreements
-		if (Test-CommandExists -cmdname $actCommand) {
-			$actInstalled = $true
-		}
 	}
 
-	if (-not $actInstalled) {
+	if (-not (Test-CommandExists -cmdname $actCommand)) {
 		if (Test-CommandExists -cmdname 'choco') {
 			choco upgrade act-cli -y
-			if (Test-CommandExists -cmdname $actCommand) {
-				$actInstalled = $true
-			}
 		}
 	}
 
-	if (-not $actInstalled) {
+	if (-not (Test-CommandExists -cmdname $actCommand)) {
 		Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+		#$env:PATH += ";C:\ProgramData\chocolatey\bin;"
 		if (Test-CommandExists -cmdname 'choco') {
 			choco upgrade act-cli -y
-			if (Test-CommandExists -cmdname $actCommand) {
-				$actInstalled = $true
-			}
 		}
 	}
 }
@@ -162,7 +155,12 @@ function Install-Act-MacOS {
 	}
 }
 
-$actCommand = "act"
+function Install-Act-Linux {
+	curl https://raw.githubusercontent.com/nektos/act/master/install.sh | sudo bash
+	sudo cp  ./bin/act /bin
+}
+
+
 if (-not (Test-CommandExists -cmdname $actCommand)) {
 	Write-Host "'$actCommand' isn't installed."
 
@@ -171,6 +169,9 @@ if (-not (Test-CommandExists -cmdname $actCommand)) {
 	}
 	elseif ($os -eq "macos") {
 		Install-Act-MacOS
+	}
+	elseif ($os -eq "linux") {
+		Install-Act-Linux
 	}
 
 	if (-not (Test-CommandExists -cmdname $actCommand)) {
@@ -197,27 +198,32 @@ function Install-Docker-Windows {
 
 function Install-Docker-MacOS {
 	#NOT TESTED
-    Write-Host "Installing Docker Desktop for macOS..." -ForegroundColor Yellow
+	Write-Host "Installing Docker Desktop for macOS..." -ForegroundColor Yellow
     
-    if (Test-CommandExists -cmdname 'brew') {
-        Write-Host "Installing Docker via Homebrew..." -ForegroundColor Yellow
-        brew install --cask docker
+	if (Test-CommandExists -cmdname 'brew') {
+		Write-Host "Installing Docker via Homebrew..." -ForegroundColor Yellow
+		brew install --cask docker
         
-        Write-Host "Docker Desktop installed. Please:" -ForegroundColor Yellow
-        Write-Host "1. Open Docker Desktop from Applications" -ForegroundColor Cyan
-        Write-Host "2. Follow the setup instructions" -ForegroundColor Cyan
-        Write-Host "3. Start Docker Desktop" -ForegroundColor Cyan
+		Write-Host "Docker Desktop installed. Please:" -ForegroundColor Yellow
+		Write-Host "1. Open Docker Desktop from Applications" -ForegroundColor Cyan
+		Write-Host "2. Follow the setup instructions" -ForegroundColor Cyan
+		Write-Host "3. Start Docker Desktop" -ForegroundColor Cyan
         
-        return $true
-    }
-    else {
-        Write-Host "Please install Docker Desktop manually:" -ForegroundColor Yellow
-        Write-Host "Download from: https://www.docker.com/products/docker-desktop/" -ForegroundColor Cyan
-        return $false
-    }
+		return $true
+	}
+	else {
+		Write-Host "Please install Docker Desktop manually:" -ForegroundColor Yellow
+		Write-Host "Download from: https://www.docker.com/products/docker-desktop/" -ForegroundColor Cyan
+		return $false
+	}
 }
 
-$dockerCommand = "docker"
+function Install-Docker-Linux {
+	Write-Host "Installing Docker Desktop for linux..." -ForegroundColor Yellow
+	curl -fsSL https://get.docker.com -o get-docker.sh
+	sh get-docker.sh
+}
+
 if (-not (Test-CommandExists -cmdname $dockerCommand)) {
 	Write-Host "$dockerCommand isn't installed."
 
@@ -227,6 +233,9 @@ if (-not (Test-CommandExists -cmdname $dockerCommand)) {
 	elseif ($os -eq "macos") {
 		Install-Docker-MacOS
 	}
+	elseif ($os -eq "linux") {
+		Install-Docker-Linux
+	}
 
 	if (-not (Test-CommandExists -cmdname $dockerCommand)) {
 		Write-Host "Couldnt install '$dockerCommand'" -ForegroundColor Red
@@ -235,14 +244,7 @@ if (-not (Test-CommandExists -cmdname $dockerCommand)) {
 	}
 }
 
-$serviceName = "com.docker.service"
-$service = Get-Service -Name $serviceName -ErrorAction SilentlyContinue
-
-if ($service -and ($service.Status -eq "Running")) {
-	Write-Host "Docker Daemon is already running." -ForegroundColor Green
-}
-elseif ($service) {
-	Write-Host "Starting the Docker Daemon..."
+if ($os -eq "windows") {
 	try {
 		Start-Process -FilePath "C:\Program Files\Docker\Docker\Docker Desktop.exe"
 		Start-Sleep -Seconds 10
@@ -251,20 +253,13 @@ elseif ($service) {
 		Write-Host "An error occurred: $($_.Exception.Message)" -ForegroundColor Red
 	}
 }
-else {
-	Write-Host "'DOCKER' isn't installed."
-	try {
-		# Required for both WSL and Docker
-		Enable-WindowsOptionalFeature -Online -FeatureName VirtualMachinePlatform -All
-	}
-	catch {
-		Write-Host "Couln't Enable Windows Feature: 'VirtualMachinePlatform'" -ForegroundColor Red
-		Write-Host $_ -ForegroundColor Red
-		Pause
-		exit
-	}
-	wsl --install --no-distribution
-	choco upgrade -y docker-desktop
+elseif ($os -eq "macos") {
+	Write-Host "START DOCKER: NOT IMPLEMENTED ON MACOS" -ForegroundColor Red
+	# open /Applications/Docker.app
+}
+elseif ($os -eq "linux") {
+	Write-Host "Starting docker..." -ForegroundColor Magenta
+	sudo systemctl start docker
 }
 
 Pause
