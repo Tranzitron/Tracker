@@ -1,3 +1,9 @@
+### macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
 ### Flutter template
 # Flutter/Dart/Pub related
 **/doc/api/

@@ -3,8 +3,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar/isar.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tracker/Models/exercise.dart';
 import 'package:tracker/home_page.dart';
+import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 

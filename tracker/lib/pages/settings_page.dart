@@ -67,7 +67,7 @@ class SettingsPage extends StatelessWidget {
                 title: 'Privacy & Security',
                 subtitle: 'Manage your privacy settings',
                 onTap: () => _showSnackbar(context, 'Privacy tapped'),
-              )
+              ),
             ],
           ),
         ),
