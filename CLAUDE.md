@@ -42,22 +42,19 @@ The app uses **Isar** for local persistence and **Bloc (flutter_bloc + HydratedB
 - Host-side `flutter test` needs the Isar native lib: `libisar.dylib` is copied into `tracker/` (gitignored) so tests load it.
 
 **Navigation & UI shell**
-- `lib/home_page.dart` implements a 5-tab bottom `NavigationBar` using **nested `Navigator`s** via an `Offstage` `Stack` (`_buildOffstageNavigator`) — each tab keeps its own navigation stack so state survives tab switches. Tabs map to Feed, History, Workout, Editor, Exercises. Note the tab list is volatile: tab 2 and 3 both currently build `WorkoutPage`, and a `HomePageSingleton` (with a `BiMap<TabName,int>`) bridges imperative tab changes from child pages.
+- `lib/home_page.dart` implements a 5-tab bottom `NavigationBar` using **nested `Navigator`s** via an `Offstage` `Stack` (`_buildOffstageNavigator`) — each tab keeps its own navigation stack so state survives tab switches. Tabs: Feed(0), History(1), CurrentWorkout(2), Editor/Workout(3), Exercises(4). `CurrentWorkoutPage` (`lib/pages/workout/current_workout_page.dart`) renders the live `WorkoutCubit` state; `WorkoutPage` is the splits editor. A `HomePageSingleton` (with a `BiMap<TabName,int>` + `TabName` enum) bridges imperative `changeTab` calls from child pages (e.g. the Feed button).
 - **`CustomAppBar`** (`lib/pages/custom/custom_app_bar.dart`) is the standardized pinned `SliverAppBar` used by screens. It takes a title and an optional record-typed `actionButton: ({String title, VoidCallback onPressed})?`.
 - **`pushTo`** (`lib/pages/custom/custom_route.dart`) is the app's slide-transition page push; use it instead of bare `Navigator.push` for consistency. Screens commonly use `CustomScrollView` + `SliverFillRemaining`.
 
 **Placeholder/known-incomplete code** (present in the scaffold, not implemented):
-- `lib/pages/workout/workout_page.dart`: splits are hardcoded sample data; the split-tile onTap routes to a `Text('restart if stuck in fake workout')` placeholder; there is no real workout-logging flow yet.
+- `lib/pages/workout/workout_page.dart`: splits are hardcoded sample data (loaded from `ExerciseItem` objects, not the repository yet); the split-tile onTap routes to a `Text('restart if stuck in fake workout')` placeholder; there is no real workout-logging flow yet.
 - `lib/pages/workout/new_split_page.dart`: the "New Split" screen is a stub (`Text('asdasd')` + a field).
+- `HistoryPage` / `ExercisesPage` are empty-state shells awaiting Milestones 5 / 4.
 - Hardware directories (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) are stock Flutter platform runners; `tracker/ios/Podfile.lock` and `build/` are committed and may be stale.
 
 ## README (planning notes)
 
-The README records intended refactors/features, not current behavior:
-- **Settings is moved into the Feed tab** as a child page (project goal — `SettingsPage` exists at `lib/pages/settings_page.dart` but is not currently wired into `home_page.dart`'s tab list).
-- **Add a "Current Workout" nav destination** (to-do).
-
-Intended bottom-bar layout: Home, History, CurrentWorkout, WorkoutsEditor, Exercices.
+The README records intended refactors/features, not current behavior; several are now done: **Settings is a child page of Feed** (via the Feed app-bar action → `pushTo(SettingsPage)`) and the **Current Workout** destination exists as tab 2. The intended bottom-bar layout (Home, History, CurrentWorkout, WorkoutsEditor, Exercices) is implemented.
 
 ## Running GitHub Actions locally (repo root)
 

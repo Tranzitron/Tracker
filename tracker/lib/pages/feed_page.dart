@@ -31,9 +31,9 @@ class FeedPage extends StatelessWidget {
               const Text('Drag me up', textAlign: TextAlign.center),
               FilledButton(
                 onPressed: () {
-                  HomePageSingleton().changeTab(TabName.workout);
+                  HomePageSingleton().changeTab(TabName.currentWorkout);
                 },
-                child: const Text('Go to Workout Page'),
+                child: const Text('Go to Current Workout'),
               ),
             ],
           ),

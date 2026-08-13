@@ -6,6 +6,7 @@ import 'package:tracker/pages/workout/workout_cubit.dart';
 import 'pages/exercises_page.dart';
 import 'pages/feed_page.dart';
 import 'pages/history_page.dart';
+import 'pages/workout/current_workout_page.dart';
 import 'pages/workout/workout_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -58,7 +59,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           _buildOffstageNavigator(0, const FeedPage()),
           _buildOffstageNavigator(1, const HistoryPage()),
-          _buildOffstageNavigator(2, const WorkoutPage()),
+          _buildOffstageNavigator(2, const CurrentWorkoutPage()),
           _buildOffstageNavigator(3, const WorkoutPage()),
           _buildOffstageNavigator(4, const ExercisesPage()),
         ],
@@ -99,7 +100,7 @@ class _HomePageState extends State<HomePage> {
                 color:
                     state.isInProgress ? Colors.blueAccent : Colors.redAccent,
               ),
-              label: 'Workout',
+              label: 'CurrentWorkout',
               tooltip: '',
             ),
           ),
@@ -118,7 +119,7 @@ class _HomePageState extends State<HomePage> {
               Icons.library_books_sharp,
               color: Colors.blueAccent,
             ),
-            label: 'Exercices',
+            label: 'Exercises',
             tooltip: '',
           ),
         ],
@@ -139,16 +140,14 @@ class HomePageSingleton {
       {
         TabName.feed: 0,
         TabName.history: 1,
-        TabName.workout: 2,
-        TabName.exercises: 3,
-        TabName.settings: 4,
+        TabName.currentWorkout: 2,
+        TabName.editor: 3,
+        TabName.exercises: 4,
       },
     );
   }
 
   Function? indexSetState;
-
-  int selectedTabIndex = 0;
 
   void changeTab(TabName tabName) {
     int? index = tabMap[tabName];
@@ -159,4 +158,4 @@ class HomePageSingleton {
   BiMap<TabName, int> tabMap = BiMap<TabName, int>();
 }
 
-enum TabName { feed, history, workout, exercises, settings }
+enum TabName { feed, history, currentWorkout, editor, exercises }

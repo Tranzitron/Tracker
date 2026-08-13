@@ -38,11 +38,11 @@ Currently `Exercise` and `WorkoutSplit` are Isar `@collection` models, but the D
 
 `home_page.dart` per README's plan: tabs should be **Home(Feed) · History · CurrentWorkout · WorkoutsEditor · Exercices**, with Settings as a child of Feed.
 
-- [ ] Fix `home_page.dart` tab wiring: tab 2 and 3 both currently build `WorkoutPage`; give the workout/editor tabs distinct pages and add the **Current Workout** destination (README's open todo)
-- [ ] Move **Settings** into the Feed tab as a child page (`SettingsPage` exists at `lib/pages/settings_page.dart` but is not wired into `home_page.dart`); standardize back button via `CustomAppBar`/`pushTo` (`1.5`)
-- [ ] Audit & consolidate the tab-index bookkeeping (`HomePageSingleton`/`BiMap`, `_navigatorKeys`) — remove the singleton if imperative `changeTab` calls are no longer needed
-- [ ] Apply the standard `CustomAppBar` + `pushTo` slide navigation consistently across all screens
-- [ ] **Checkpoint 2**: every top-level nav path resolves to a real (non-placeholder) screen; switching tabs preserves each tab's nav stack and state
+- [x] Fix `home_page.dart` tab wiring: tab 2 and 3 both currently build `WorkoutPage`; give the workout/editor tabs distinct pages and add the **Current Workout** destination (README's open todo)
+- [x] Move **Settings** into the Feed tab as a child page (`SettingsPage` exists at `lib/pages/settings_page.dart` but is not wired into `home_page.dart`); standardize back button via `CustomAppBar`/`pushTo` (`1.5`)
+- [x] Audit & consolidate the tab-index bookkeeping (`HomePageSingleton`/`BiMap`, `_navigatorKeys`) — remove the singleton if imperative `changeTab` calls are no longer needed
+- [x] Apply the standard `CustomAppBar` + `pushTo` slide navigation consistently across all screens
+- [x] **Checkpoint 2**: every top-level nav path resolves to a real (non-placeholder) screen; switching tabs preserves each tab's nav stack and state
 
 ---
 
