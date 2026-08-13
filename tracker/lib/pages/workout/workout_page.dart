@@ -30,13 +30,23 @@ class _WorkoutPageState extends State<WorkoutPage> {
         splitDays: [
           WorkoutSplitDay(
             title: 'Push',
-            exercises: [1, 2, 3, 4],
+            exercises: [
+              ExerciseItem(exerciseId: 1, order: 0),
+              ExerciseItem(exerciseId: 2, order: 1),
+              ExerciseItem(exerciseId: 3, order: 2),
+              ExerciseItem(exerciseId: 4, order: 3),
+            ],
             description: 'Chest, Triceps, Shoulders',
             order: 0,
           ),
           WorkoutSplitDay(
             title: 'Pull',
-            exercises: [5, 7, 1, 3],
+            exercises: [
+              ExerciseItem(exerciseId: 5, order: 0),
+              ExerciseItem(exerciseId: 7, order: 1),
+              ExerciseItem(exerciseId: 1, order: 2),
+              ExerciseItem(exerciseId: 3, order: 3),
+            ],
             description: 'Back, Biceps, Trapz',
             order: 4,
           ),
@@ -51,7 +61,12 @@ class _WorkoutPageState extends State<WorkoutPage> {
         splitDays: [
           WorkoutSplitDay(
             title: 'FB 1',
-            exercises: [5, 7, 1, 3],
+            exercises: [
+              ExerciseItem(exerciseId: 5, order: 0),
+              ExerciseItem(exerciseId: 7, order: 1),
+              ExerciseItem(exerciseId: 1, order: 2),
+              ExerciseItem(exerciseId: 3, order: 3),
+            ],
             description: 'Back, Biceps, Trapz',
             order: 4,
           ),
@@ -181,62 +196,65 @@ class BuildMaterialSplit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // A Material (not a colored Container) so the inner ListTiles paint their
+    // ink/background on a proper Material ancestor.
     return Container(
       margin: EdgeInsets.only(
         top: 16,
       ),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.transparent,
+      child: Material(
+        color: const Color.fromARGB(25, 127, 127, 127),
+        clipBehavior: Clip.antiAlias,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(10),
+          side: const BorderSide(color: Colors.transparent),
         ),
-        color: Color.fromARGB(25, 127, 127, 127),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ListBody(
-        mainAxis: Axis.vertical,
-        children: <Widget>[
-          WorkoutListTile(
-            titleText: split.title,
-            isSplitDay: false,
-            trailing: const Icon(Icons.chevron_right_sharp),
-            onTap: () => (),
-          ),
-          ListView.builder(
-            itemCount: split.splitDays.length,
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            padding: EdgeInsets.zero,
-            itemBuilder: (context, index) {
-              final splitDay = split.splitDays[index];
-              return InkWell(
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute<Widget>(
-                      builder: (BuildContext context) {
-                        return const Text('restart if stuck in fake workout');
-                      },
-                    ),
-                  );
-                },
-                child: Column(
-                  children: [
-                    Divider(
-                      height: 1.0,
-                      indent: 16.0,
-                      endIndent: 16.0,
-                    ),
-                    WorkoutListTile(
-                      isSplitDay: true,
-                      titleText: splitDay.title,
-                      exercises: splitDay.exercises,
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
-        ],
+        child: ListBody(
+          mainAxis: Axis.vertical,
+          children: <Widget>[
+            WorkoutListTile(
+              titleText: split.title,
+              isSplitDay: false,
+              trailing: const Icon(Icons.chevron_right_sharp),
+              onTap: () => (),
+            ),
+            ListView.builder(
+              itemCount: split.splitDays.length,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: EdgeInsets.zero,
+              itemBuilder: (context, index) {
+                final splitDay = split.splitDays[index];
+                return InkWell(
+                  onTap: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute<Widget>(
+                        builder: (BuildContext context) {
+                          return const Text('restart if stuck in fake workout');
+                        },
+                      ),
+                    );
+                  },
+                  child: Column(
+                    children: [
+                      Divider(
+                        height: 1.0,
+                        indent: 16.0,
+                        endIndent: 16.0,
+                      ),
+                      WorkoutListTile(
+                        isSplitDay: true,
+                        titleText: splitDay.title,
+                        exercises: splitDay.exercises,
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -254,7 +272,7 @@ class WorkoutListTile extends StatelessWidget {
 
   final String titleText;
   final bool isSplitDay;
-  final List? exercises;
+  final List<ExerciseItem>? exercises;
   final void Function()? onTap;
   final Widget? trailing;
 
@@ -273,7 +291,7 @@ class WorkoutListTile extends StatelessWidget {
       trailing: trailing,
       subtitle: exercises != null
           ? Text(
-              exercises!.join(', '),
+              exercises!.map((e) => e.exerciseId).join(', '),
               overflow: TextOverflow.ellipsis,
             )
           : SizedBox(

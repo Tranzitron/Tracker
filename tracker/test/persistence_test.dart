@@ -1,0 +1,156 @@
+// Repository/persistence tests. These open a real Isar DB in a throwaway temp
+// directory (no path_provider) and exercise CRUD through TrackerRepository.
+//
+// Checkpoint 1: every model can be created/read/updated/deleted through the
+// repository, and a workout session persists with its embedded sets.
+
+import 'dart:io';
+
+import 'package:flutter_test/flutter_test.dart';
+import 'package:isar/isar.dart';
+import 'package:tracker/data/repositories.dart';
+import 'package:tracker/data/seed.dart';
+import 'package:tracker/models/exercise.dart';
+import 'package:tracker/models/gym.dart';
+import 'package:tracker/models/muscle.dart';
+import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/models/workout_split.dart';
+
+void main() {
+  late Isar isar;
+  late TrackerRepository repo;
+
+  setUp(() async {
+    final dir = Directory.systemTemp.createTempSync('isar_test');
+    isar = await Isar.open(
+      [
+        ExerciseSchema,
+        GymSchema,
+        WorkoutSessionSchema,
+        WorkoutSplitSchema,
+      ],
+      directory: dir.path,
+    );
+    repo = TrackerRepository(isar);
+  });
+
+  tearDown(() => isar.close());
+
+  test('seed populates the exercise library once', () async {
+    expect(await repo.exercises.count(), 0);
+    await repo.exercises.putAll(seedExercises());
+    expect(await repo.exercises.count(), greaterThan(0));
+  });
+
+  test('exercise CRUD round-trips through the repository', () async {
+    final id = await repo.exercises.put(
+      Exercise(
+        title: 'Bench Press',
+        primaryMuscle: [Muscle.chest],
+        equipment: [Equipment.barbell],
+        movementPattern: MovementPattern.push,
+      ),
+    );
+
+    final fetched = await repo.exercises.getById(id);
+    expect(fetched, isNotNull);
+    expect(fetched!.title, 'Bench Press');
+    expect(fetched.primaryMuscle, [Muscle.chest]);
+    expect(fetched.equipment, [Equipment.barbell]);
+
+    fetched.title = 'Incline Bench Press';
+    await repo.exercises.put(fetched);
+    expect((await repo.exercises.getById(id))!.title, 'Incline Bench Press');
+
+    expect(await repo.exercises.delete(id), isTrue);
+    expect(await repo.exercises.getById(id), isNull);
+  });
+
+  test('gym CRUD and primary lookup', () async {
+    final gymId = await repo.gyms.put(Gym(name: 'Home', isPrimary: true));
+    await repo.gyms.put(Gym(name: 'Commercial', isPrimary: false));
+
+    final primary = await repo.gyms.getPrimary();
+    expect(primary, isNotNull);
+    expect(primary!.name, 'Home');
+
+    expect((await repo.gyms.getById(gymId))!.name, 'Home');
+    expect(await repo.gyms.getAll(), hasLength(2));
+    expect(await repo.gyms.delete(gymId), isTrue);
+    expect(await repo.gyms.getAll(), hasLength(1));
+  });
+
+  test('workout split CRUD preserves embedded days and exercise items',
+      () async {
+    final split = WorkoutSplit(
+      title: 'PPL',
+      description: 'Push / Pull / Legs',
+      order: 0,
+      splitDays: [
+        WorkoutSplitDay(
+          title: 'Push',
+          order: 0,
+          exercises: [
+            ExerciseItem(exerciseId: 1, order: 0, targetSets: 4, targetReps: 6),
+            ExerciseItem(exerciseId: 2, order: 1),
+          ],
+        ),
+      ],
+    );
+
+    final id = await repo.splits.put(split);
+    final fetched = await repo.splits.getById(id);
+
+    expect(fetched, isNotNull);
+    expect(fetched!.splitDays, hasLength(1));
+    expect(fetched.splitDays.first.exercises, hasLength(2));
+    expect(fetched.splitDays.first.exercises.first.exerciseId, 1);
+    expect(fetched.splitDays.first.exercises.first.targetSets, 4);
+
+    expect(await repo.splits.delete(id), isTrue);
+    expect(await repo.splits.getById(id), isNull);
+  });
+
+  test('workout session persists with embedded sets and warmup flags',
+      () async {
+    final gymId = await repo.gyms.put(Gym(name: 'Home', isPrimary: true));
+
+    final id = await repo.sessions.put(
+      WorkoutSession(
+        title: 'Push A',
+        startTime: DateTime(2026, 1, 1, 9),
+        endTime: DateTime(2026, 1, 1, 10),
+        gymId: gymId,
+        sets: [
+          WorkoutSet(
+            exerciseId: 1,
+            weight: 100,
+            reps: 5,
+            type: SetType.working,
+            order: 0,
+          ),
+          WorkoutSet(
+            exerciseId: 1,
+            weight: 60,
+            reps: 8,
+            type: SetType.warmup,
+            order: 1,
+          ),
+        ],
+      ),
+    );
+
+    final fetched = await repo.sessions.getById(id);
+    expect(fetched, isNotNull);
+    expect(fetched!.title, 'Push A');
+    expect(fetched.gymId, gymId);
+    expect(fetched.sets, hasLength(2));
+    expect(fetched.sets[0].weight, 100);
+    expect(fetched.sets[0].type, SetType.working);
+    expect(fetched.sets[0].isWarmup, isFalse);
+    expect(fetched.sets[1].isWarmup, isTrue);
+
+    expect(await repo.sessions.getAll(), hasLength(1));
+  });
+}

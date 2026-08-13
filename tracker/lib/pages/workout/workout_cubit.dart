@@ -1,5 +1,7 @@
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
+import '../../data/repositories.dart';
+
 class WorkoutState {
   final bool isInProgress;
   final DateTime? startTime;
@@ -45,7 +47,12 @@ class WorkoutState {
 }
 
 class WorkoutCubit extends HydratedCubit<WorkoutState> {
-  WorkoutCubit() : super(WorkoutState.initial());
+  WorkoutCubit({this.repository}) : super(WorkoutState.initial());
+
+  /// Data access for the workout flow (logs sessions/sets to Isar). Wiring the
+  /// actual save/persist logic lands with Milestone 3; kept as a reference here
+  /// so the cubit never opens its own DB connection.
+  final TrackerRepository? repository;
 
   void startWorkout() {
     emit(WorkoutState(isInProgress: true, startTime: DateTime.now()));

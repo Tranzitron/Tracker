@@ -37,3 +37,10 @@ linter:
 analyzer:
   exclude:
     - /lib/**.g.dart
+    - build/**
+    - android/**
+    - ios/**
+    - web/**
+    - windows/**
+    - macos/**
+    - linux/**

@@ -1,7 +1,9 @@
 import 'package:isar/isar.dart';
 
 part 'workout_split.g.dart';
-// dart run build_runner build
+
+// After changing @collection/@embedded/@enumerated annotations, regenerate with:
+//   cd tracker && dart run build_runner build
 
 @collection
 class WorkoutSplit {
@@ -23,7 +25,7 @@ class WorkoutSplit {
 class WorkoutSplitDay {
   String title;
   String description;
-  List<int> exercises; // TODO create ExerciseItem model
+  List<ExerciseItem> exercises;
   int order;
 
   WorkoutSplitDay({
@@ -31,5 +33,24 @@ class WorkoutSplitDay {
     this.description = "",
     this.exercises = const [],
     this.order = -1,
+  });
+}
+
+/// An exercise within a split day: links to an [Exercise] by id plus per-slot
+/// guidance. Embedded, so ordered by [order] rather than an `Id`.
+@embedded
+class ExerciseItem {
+  int exerciseId;
+  int order;
+  int? targetSets;
+  int? targetReps;
+  int? restSeconds;
+
+  ExerciseItem({
+    this.exerciseId = 0,
+    this.order = 0,
+    this.targetSets,
+    this.targetReps,
+    this.restSeconds,
   });
 }

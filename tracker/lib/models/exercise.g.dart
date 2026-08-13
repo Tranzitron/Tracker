@@ -25,22 +25,29 @@ const ExerciseSchema = CollectionSchema(
     r'equipment': PropertySchema(
       id: 1,
       name: r'equipment',
-      type: IsarType.stringList,
+      type: IsarType.byteList,
+      enumMap: _ExerciseequipmentEnumValueMap,
+    ),
+    r'movementPattern': PropertySchema(
+      id: 2,
+      name: r'movementPattern',
+      type: IsarType.byte,
+      enumMap: _ExercisemovementPatternEnumValueMap,
     ),
     r'primaryMuscle': PropertySchema(
-      id: 2,
+      id: 3,
       name: r'primaryMuscle',
       type: IsarType.byteList,
       enumMap: _ExerciseprimaryMuscleEnumValueMap,
     ),
     r'secondaryMuscle': PropertySchema(
-      id: 3,
+      id: 4,
       name: r'secondaryMuscle',
       type: IsarType.byteList,
       enumMap: _ExercisesecondaryMuscleEnumValueMap,
     ),
     r'title': PropertySchema(
-      id: 4,
+      id: 5,
       name: r'title',
       type: IsarType.string,
     )
@@ -71,13 +78,7 @@ int _exerciseEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.equipment.length * 3;
-  {
-    for (var i = 0; i < object.equipment.length; i++) {
-      final value = object.equipment[i];
-      bytesCount += value.length * 3;
-    }
-  }
+  bytesCount += 3 + object.equipment.length;
   bytesCount += 3 + object.primaryMuscle.length;
   {
     final value = object.secondaryMuscle;
@@ -96,12 +97,14 @@ void _exerciseSerialize(
   Map<Type, List<int>> allOffsets,
 ) {
   writer.writeString(offsets[0], object.description);
-  writer.writeStringList(offsets[1], object.equipment);
   writer.writeByteList(
-      offsets[2], object.primaryMuscle.map((e) => e.index).toList());
+      offsets[1], object.equipment.map((e) => e.index).toList());
+  writer.writeByte(offsets[2], object.movementPattern.index);
   writer.writeByteList(
-      offsets[3], object.secondaryMuscle?.map((e) => e.index).toList());
-  writer.writeString(offsets[4], object.title);
+      offsets[3], object.primaryMuscle.map((e) => e.index).toList());
+  writer.writeByteList(
+      offsets[4], object.secondaryMuscle?.map((e) => e.index).toList());
+  writer.writeString(offsets[5], object.title);
 }
 
 Exercise _exerciseDeserialize(
@@ -111,21 +114,30 @@ Exercise _exerciseDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Exercise(
-    equipment: reader.readStringList(offsets[1]) ?? [],
+    description: reader.readStringOrNull(offsets[0]),
+    equipment: reader
+            .readByteList(offsets[1])
+            ?.map(
+                (e) => _ExerciseequipmentValueEnumMap[e] ?? Equipment.dumbbell)
+            .toList() ??
+        [],
+    movementPattern: _ExercisemovementPatternValueEnumMap[
+            reader.readByteOrNull(offsets[2])] ??
+        MovementPattern.unspecified,
     primaryMuscle: reader
-            .readByteList(offsets[2])
+            .readByteList(offsets[3])
             ?.map((e) =>
                 _ExerciseprimaryMuscleValueEnumMap[e] ?? Muscle.abdominals)
             .toList() ??
         [],
-    title: reader.readString(offsets[4]),
+    secondaryMuscle: reader
+        .readByteList(offsets[4])
+        ?.map(
+            (e) => _ExercisesecondaryMuscleValueEnumMap[e] ?? Muscle.abdominals)
+        .toList(),
+    title: reader.readString(offsets[5]),
   );
-  object.description = reader.readStringOrNull(offsets[0]);
   object.id = id;
-  object.secondaryMuscle = reader
-      .readByteList(offsets[3])
-      ?.map((e) => _ExercisesecondaryMuscleValueEnumMap[e] ?? Muscle.abdominals)
-      .toList();
   return object;
 }
 
@@ -139,27 +151,66 @@ P _exerciseDeserializeProp<P>(
     case 0:
       return (reader.readStringOrNull(offset)) as P;
     case 1:
-      return (reader.readStringList(offset) ?? []) as P;
+      return (reader
+              .readByteList(offset)
+              ?.map((e) =>
+                  _ExerciseequipmentValueEnumMap[e] ?? Equipment.dumbbell)
+              .toList() ??
+          []) as P;
     case 2:
+      return (_ExercisemovementPatternValueEnumMap[
+              reader.readByteOrNull(offset)] ??
+          MovementPattern.unspecified) as P;
+    case 3:
       return (reader
               .readByteList(offset)
               ?.map((e) =>
                   _ExerciseprimaryMuscleValueEnumMap[e] ?? Muscle.abdominals)
               .toList() ??
           []) as P;
-    case 3:
+    case 4:
       return (reader
           .readByteList(offset)
           ?.map((e) =>
               _ExercisesecondaryMuscleValueEnumMap[e] ?? Muscle.abdominals)
           .toList()) as P;
-    case 4:
+    case 5:
       return (reader.readString(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
 
+const _ExerciseequipmentEnumValueMap = {
+  'dumbbell': 0,
+  'barbell': 1,
+  'machine': 2,
+  'bodyweight': 3,
+  'cable': 4,
+};
+const _ExerciseequipmentValueEnumMap = {
+  0: Equipment.dumbbell,
+  1: Equipment.barbell,
+  2: Equipment.machine,
+  3: Equipment.bodyweight,
+  4: Equipment.cable,
+};
+const _ExercisemovementPatternEnumValueMap = {
+  'unspecified': 0,
+  'push': 1,
+  'pull': 2,
+  'legs': 3,
+  'core': 4,
+  'fullBody': 5,
+};
+const _ExercisemovementPatternValueEnumMap = {
+  0: MovementPattern.unspecified,
+  1: MovementPattern.push,
+  2: MovementPattern.pull,
+  3: MovementPattern.legs,
+  4: MovementPattern.core,
+  5: MovementPattern.fullBody,
+};
 const _ExerciseprimaryMuscleEnumValueMap = {
   'abdominals': 0,
   'obliques': 1,
@@ -472,58 +523,49 @@ extension ExerciseQueryFilter
   }
 
   QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+      equipmentElementEqualTo(Equipment value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'equipment',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
       equipmentElementGreaterThan(
-    String value, {
+    Equipment value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'equipment',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
       equipmentElementLessThan(
-    String value, {
+    Equipment value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'equipment',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
       equipmentElementBetween(
-    String lower,
-    String upper, {
+    Equipment lower,
+    Equipment upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -532,77 +574,6 @@ extension ExerciseQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'equipment',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'equipment',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementContains(String value, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'equipment',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementMatches(String pattern, {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'equipment',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementIsEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'equipment',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
-      equipmentElementIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'equipment',
-        value: '',
       ));
     });
   }
@@ -739,6 +710,62 @@ extension ExerciseQueryFilter
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
         property: r'id',
+        lower: lower,
+        includeLower: includeLower,
+        upper: upper,
+        includeUpper: includeUpper,
+      ));
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
+      movementPatternEqualTo(MovementPattern value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.equalTo(
+        property: r'movementPattern',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
+      movementPatternGreaterThan(
+    MovementPattern value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.greaterThan(
+        include: include,
+        property: r'movementPattern',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
+      movementPatternLessThan(
+    MovementPattern value, {
+    bool include = false,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.lessThan(
+        include: include,
+        property: r'movementPattern',
+        value: value,
+      ));
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterFilterCondition>
+      movementPatternBetween(
+    MovementPattern lower,
+    MovementPattern upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(FilterCondition.between(
+        property: r'movementPattern',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1205,6 +1232,18 @@ extension ExerciseQuerySortBy on QueryBuilder<Exercise, Exercise, QSortBy> {
     });
   }
 
+  QueryBuilder<Exercise, Exercise, QAfterSortBy> sortByMovementPattern() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'movementPattern', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterSortBy> sortByMovementPatternDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'movementPattern', Sort.desc);
+    });
+  }
+
   QueryBuilder<Exercise, Exercise, QAfterSortBy> sortByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1244,6 +1283,18 @@ extension ExerciseQuerySortThenBy
     });
   }
 
+  QueryBuilder<Exercise, Exercise, QAfterSortBy> thenByMovementPattern() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'movementPattern', Sort.asc);
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QAfterSortBy> thenByMovementPatternDesc() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addSortBy(r'movementPattern', Sort.desc);
+    });
+  }
+
   QueryBuilder<Exercise, Exercise, QAfterSortBy> thenByTitle() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'title', Sort.asc);
@@ -1269,6 +1320,12 @@ extension ExerciseQueryWhereDistinct
   QueryBuilder<Exercise, Exercise, QDistinct> distinctByEquipment() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'equipment');
+    });
+  }
+
+  QueryBuilder<Exercise, Exercise, QDistinct> distinctByMovementPattern() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addDistinctBy(r'movementPattern');
     });
   }
 
@@ -1306,9 +1363,17 @@ extension ExerciseQueryProperty
     });
   }
 
-  QueryBuilder<Exercise, List<String>, QQueryOperations> equipmentProperty() {
+  QueryBuilder<Exercise, List<Equipment>, QQueryOperations>
+      equipmentProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'equipment');
+    });
+  }
+
+  QueryBuilder<Exercise, MovementPattern, QQueryOperations>
+      movementPatternProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'movementPattern');
     });
   }
 
