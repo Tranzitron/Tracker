@@ -6,6 +6,7 @@
 //     (Checkpoint 3 persistence), plus hydration round-trips.
 //  2. Widget: the CurrentWorkout page renders the plan and logs a set inline.
 
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,6 +22,16 @@ import 'package:tracker/pages/workout/current_workout_page.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 void main() {
+  setUpAll(() async {
+    await Isar.initializeIsarCore(
+      libraries: {
+        Abi.windowsX64: 'test/assets/isar_windows_x64.dll',
+        Abi.linuxX64: 'test/assets/libisar_linux_x64.so',
+        Abi.macosX64: 'test/assets/libisar_macos.dylib',
+      },
+    );
+  });
+
   setUp(() async {
     final dir = Directory.systemTemp.createTempSync('workout_flow_test');
     HydratedBloc.storage = await HydratedStorage.build(

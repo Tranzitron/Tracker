@@ -5,3 +5,8 @@
 **/CMakeLists.txt linguist-vendored
 *.cmake linguist-vendored
 **/Podfile linguist-vendored
+
+* text=auto eol=lf
+tracker/test/assets/*.dll binary
+tracker/test/assets/*.so binary
+tracker/test/assets/*.dylib binary

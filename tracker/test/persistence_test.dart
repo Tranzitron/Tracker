@@ -4,6 +4,7 @@
 // Checkpoint 1: every model can be created/read/updated/deleted through the
 // repository, and a workout session persists with its embedded sets.
 
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -20,6 +21,16 @@ import 'package:tracker/models/workout_split.dart';
 void main() {
   late Isar isar;
   late TrackerRepository repo;
+
+  setUpAll(() async {
+    await Isar.initializeIsarCore(
+      libraries: {
+        Abi.windowsX64: 'test/assets/isar_windows_x64.dll',
+        Abi.linuxX64: 'test/assets/libisar_linux_x64.so',
+        Abi.macosX64: 'test/assets/libisar_macos.dylib',
+      },
+    );
+  });
 
   setUp(() async {
     final dir = Directory.systemTemp.createTempSync('isar_test');

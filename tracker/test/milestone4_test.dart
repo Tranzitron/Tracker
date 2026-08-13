@@ -6,6 +6,7 @@
 // (ExercisesPage / WorkoutPage) stream this same repository data and are
 // covered as build smoke tests in widget_test.dart.
 
+import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
@@ -18,6 +19,16 @@ import 'package:tracker/models/workout_split.dart';
 void main() {
   late Isar isar;
   late TrackerRepository repo;
+
+  setUpAll(() async {
+    await Isar.initializeIsarCore(
+      libraries: {
+        Abi.windowsX64: 'test/assets/isar_windows_x64.dll',
+        Abi.linuxX64: 'test/assets/libisar_linux_x64.so',
+        Abi.macosX64: 'test/assets/libisar_macos.dylib',
+      },
+    );
+  });
 
   setUp(() async {
     final dir = Directory.systemTemp.createTempSync('m4_test');
