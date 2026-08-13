@@ -31,8 +31,10 @@ The only route in the tree is a default `flutter test`; the existing `test/widge
 The app uses **Isar** for local persistence and **Bloc (flutter_bloc + HydratedBloc)** for state management.
 
 **State management**
-- `WorkoutCubit` (`lib/pages/workout/workout_cubit.dart`) is the sole cubit. It is a `HydratedCubit<WorkoutState>` — state is JSON-serialized and persisted via `HydratedStorage` to the app-documents directory (set up in `main.dart`). It tracks whether a workout is in progress, its start time, and completed exercises. Consequence: workout state survives app restarts automatically.
-- `WorkoutState` is a hand-written plain class with manual `toJson`/`fromJson` (no codegen). It defaults to `isInProgress: true`.
+- `WorkoutCubit` (`lib/pages/workout/workout_cubit.dart`) is the sole cubit. It is a `HydratedCubit<WorkoutState>` — state is JSON-serialized and persisted via `HydratedStorage` to the app-documents directory (set up in `main.dart`). Consequence: the in-progress workout survives app restarts automatically.
+- `WorkoutState` is a hand-written plain class with manual `toJson`/`fromJson` (no codegen). It holds `isInProgress`, `startTime`, gym id/name (`gymId`/`gymName`), an optional plan (`planTitle` + `List<PlanExercise>`), and `List<ActiveSet> sets` (the sets logged so far). Idle is the default (`initial()`). Active-set helper types `ActiveSet` / `PlanExercise` are serializable; `ActiveSet.isWarmup` flags `SetType.warmup` (from `workout_set.dart`) for a warm-up indicator.
+- **Logging flow**: `startWorkout`/`startPlanWorkout` begin a session (optionally with a split-day plan); `logSet`/`removeSet` mutate the ordered set list; `endWorkout` (async) writes a real `WorkoutSession` to Isar (sets + gym + duration = now−start) via its `TrackerRepository` reference, then resets to idle. Hydrated state caches only the *in-progress* session; completed records live in Isar.
+- The cubit holds an optional `TrackerRepository` reference and never opens its own DB connection.
 - The cubit is provided app-wide in `main.dart` via `MultiBlocProvider` with `lazy: false`.
 
 **Persistence (Isar) & data layer**
@@ -42,14 +44,17 @@ The app uses **Isar** for local persistence and **Bloc (flutter_bloc + HydratedB
 - Host-side `flutter test` needs the Isar native lib: `libisar.dylib` is copied into `tracker/` (gitignored) so tests load it.
 
 **Navigation & UI shell**
-- `lib/home_page.dart` implements a 5-tab bottom `NavigationBar` using **nested `Navigator`s** via an `Offstage` `Stack` (`_buildOffstageNavigator`) — each tab keeps its own navigation stack so state survives tab switches. Tabs: Feed(0), History(1), CurrentWorkout(2), Editor/Workout(3), Exercises(4). `CurrentWorkoutPage` (`lib/pages/workout/current_workout_page.dart`) renders the live `WorkoutCubit` state; `WorkoutPage` is the splits editor. A `HomePageSingleton` (with a `BiMap<TabName,int>` + `TabName` enum) bridges imperative `changeTab` calls from child pages (e.g. the Feed button).
+- `lib/home_page.dart` implements a 5-tab bottom `NavigationBar` using **nested `Navigator`s** via an `Offstage` `Stack` (`_buildOffstageNavigator`) — each tab keeps its own navigation stack so state survives tab switches. Tabs: Feed(0), History(1), CurrentWorkout(2), Editor/Workout(3), Exercises(4). A `HomePageSingleton` (with a `BiMap<TabName,int>` + `TabName` enum) bridges imperative `changeTab` calls from child pages (e.g. the Feed button and `SplitDayPage` after starting a plan workout).
+- `CurrentWorkoutPage` (`lib/pages/workout/current_workout_page.dart`) drives the active session from `WorkoutCubit`: idle → Start (with `promptGym` gym selection, `lib/pages/workout/gym_picker.dart`); in progress → a session header plus one card per plan exercise with an inline weight/reps/warm-up add-set form and per-set remove, ending with a confirm dialog that calls `cubit.endWorkout` (writes the `WorkoutSession`). Sets render a `W` warm-up chip vs `S` working chip. With no plan a free-form panel offers an exercise dropdown. It reads the repository via `RepositoryScope.maybeOf` (nullable) so it degrades gracefully in tests.
+- `WorkoutPage` is the splits editor — it loads splits reactively from `repo.splits.watchAll()` and a split-day tile opens `SplitDayPage` (`lib/pages/workout/split_day_page.dart`), a real detail screen that lists the day's exercises and can start that workout as the current plan. `NewSplitPage` is still a stub (Milestone 4).
+- `HistoryPage` lists persisted `WorkoutSession` records (title, date, gym, set count, duration) via `repo.sessions.watchAll()` — the full per-session/calendar view is Milestone 5.
 - **`CustomAppBar`** (`lib/pages/custom/custom_app_bar.dart`) is the standardized pinned `SliverAppBar` used by screens. It takes a title and an optional record-typed `actionButton: ({String title, VoidCallback onPressed})?`.
 - **`pushTo`** (`lib/pages/custom/custom_route.dart`) is the app's slide-transition page push; use it instead of bare `Navigator.push` for consistency. Screens commonly use `CustomScrollView` + `SliverFillRemaining`.
 
 **Placeholder/known-incomplete code** (present in the scaffold, not implemented):
-- `lib/pages/workout/workout_page.dart`: splits are hardcoded sample data (loaded from `ExerciseItem` objects, not the repository yet); the split-tile onTap routes to a `Text('restart if stuck in fake workout')` placeholder; there is no real workout-logging flow yet.
-- `lib/pages/workout/new_split_page.dart`: the "New Split" screen is a stub (`Text('asdasd')` + a field).
-- `HistoryPage` / `ExercisesPage` are empty-state shells awaiting Milestones 5 / 4.
+- `lib/pages/workout/new_split_page.dart`: the "New Split" screen is a stub (`Text('asdasd')` + a field) awaiting Milestone 4.
+- `ExercisesPage` is an empty-state shell awaiting Milestone 4. `HistoryPage` has a working session list but its full detail + calendar views await Milestone 5.
+- `HistoryPage` per-session detail and setting pages' snackbar placeholders are still to be built (Milestones 5/7).
 - Hardware directories (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) are stock Flutter platform runners; `tracker/ios/Podfile.lock` and `build/` are committed and may be stale.
 
 ## README (planning notes)

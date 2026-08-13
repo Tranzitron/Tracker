@@ -21,6 +21,14 @@ class RepositoryScope extends InheritedWidget {
     return scope!.repository;
   }
 
+  /// Like [of], but nullable so widgets can degrade gracefully when no scope is
+  /// present (e.g. the isolate widget tests that pump [MyApp] without a repo).
+  static TrackerRepository? maybeOf(BuildContext context) {
+    return context
+        .dependOnInheritedWidgetOfExactType<RepositoryScope>()
+        ?.repository;
+  }
+
   @override
   bool updateShouldNotify(RepositoryScope oldWidget) =>
       repository != oldWidget.repository;

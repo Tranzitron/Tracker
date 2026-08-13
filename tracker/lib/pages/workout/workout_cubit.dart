@@ -1,47 +1,152 @@
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../../data/repositories.dart';
+import '../../models/gym.dart';
+import '../../models/workout_session.dart';
+import '../../models/workout_set.dart';
+
+/// A single set logged during the in-progress workout.
+///
+/// Lives in the cubit-local [WorkoutState] (serialized for hydration so an
+/// active workout survives an app restart). It mirrors the persisted
+/// [WorkoutSet] but snapshots [exerciseName] so the UI can render set rows
+/// without a DB read. [order] preserves sequence.
+class ActiveSet {
+  final int exerciseId;
+  final String exerciseName;
+  final double weight;
+  final int reps;
+  final SetType type;
+  final int order;
+
+  const ActiveSet({
+    required this.exerciseId,
+    required this.exerciseName,
+    this.weight = 0,
+    this.reps = 0,
+    this.type = SetType.working,
+    this.order = 0,
+  });
+
+  bool get isWarmup => type == SetType.warmup;
+
+  Map<String, dynamic> toJson() => {
+        'exerciseId': exerciseId,
+        'exerciseName': exerciseName,
+        'weight': weight,
+        'reps': reps,
+        'type': type.name,
+        'order': order,
+      };
+
+  factory ActiveSet.fromJson(Map<String, dynamic> json) => ActiveSet(
+        exerciseId: (json['exerciseId'] as num?)?.toInt() ?? 0,
+        exerciseName: (json['exerciseName'] as String?) ?? '',
+        weight: (json['weight'] as num?)?.toDouble() ?? 0,
+        reps: (json['reps'] as num?)?.toInt() ?? 0,
+        type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
+        order: (json['order'] as num?)?.toInt() ?? 0,
+      );
+}
+
+/// An exercise the user intends to do this session ("the split's exercises for
+/// today"). Captured at start so the active-workout screen can lay out the plan
+/// even after the underlying [WorkoutSplit] changes.
+class PlanExercise {
+  final int exerciseId;
+  final String name;
+  final int order;
+
+  const PlanExercise({
+    required this.exerciseId,
+    required this.name,
+    this.order = 0,
+  });
+
+  Map<String, dynamic> toJson() =>
+      {'exerciseId': exerciseId, 'name': name, 'order': order};
+
+  factory PlanExercise.fromJson(Map<String, dynamic> json) => PlanExercise(
+        exerciseId: (json['exerciseId'] as num?)?.toInt() ?? 0,
+        name: (json['name'] as String?) ?? '',
+        order: (json['order'] as num?)?.toInt() ?? 0,
+      );
+}
 
 class WorkoutState {
   final bool isInProgress;
   final DateTime? startTime;
-  final List<String> completedExercises;
 
-  WorkoutState({
+  /// Foreign key + display snapshot of the gym this session is logged at
+  /// (see Plan.md §2.2). Null if no gym was selected.
+  final int? gymId;
+  final String? gymName;
+
+  /// Title + ordered exercise plan if this session follows a split day.
+  final String? planTitle;
+  final List<PlanExercise> plan;
+
+  /// Sets logged so far this session, in [ActiveSet.order] sequence.
+  final List<ActiveSet> sets;
+
+  const WorkoutState({
     required this.isInProgress,
     this.startTime,
-    this.completedExercises = const [],
+    this.gymId,
+    this.gymName,
+    this.planTitle,
+    this.plan = const [],
+    this.sets = const [],
   });
 
-  factory WorkoutState.initial() => WorkoutState(
-        isInProgress: true,
-        startTime: DateTime.now(),
-        completedExercises: [],
-      );
+  /// The resting (no workout) state — the app does not boot into a session.
+  static WorkoutState initial() => const WorkoutState(isInProgress: false);
 
   Map<String, dynamic> toJson() => {
         'isInProgress': isInProgress,
         'startTime': startTime?.toIso8601String(),
-        'completedExercises': completedExercises,
+        'gymId': gymId,
+        'gymName': gymName,
+        'planTitle': planTitle,
+        'plan': plan.map((e) => e.toJson()).toList(),
+        'sets': sets.map((s) => s.toJson()).toList(),
       };
 
   factory WorkoutState.fromJson(Map<String, dynamic> json) => WorkoutState(
-        isInProgress: json['isInProgress'] as bool,
+        isInProgress: json['isInProgress'] as bool? ?? false,
         startTime: json['startTime'] != null
-            ? DateTime.parse(json['startTime'])
+            ? DateTime.tryParse(json['startTime'] as String)
             : null,
-        completedExercises: List<String>.from(json['completedExercises'] ?? []),
+        gymId: json['gymId'] as int?,
+        gymName: json['gymName'] as String?,
+        planTitle: json['planTitle'] as String?,
+        plan: (json['plan'] as List?)
+                ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        sets: (json['sets'] as List?)
+                ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
       );
 
   WorkoutState copyWith({
     bool? isInProgress,
     DateTime? startTime,
-    List<String>? completedExercises,
+    int? gymId,
+    String? gymName,
+    String? planTitle,
+    List<PlanExercise>? plan,
+    List<ActiveSet>? sets,
   }) {
     return WorkoutState(
       isInProgress: isInProgress ?? this.isInProgress,
       startTime: startTime ?? this.startTime,
-      completedExercises: completedExercises ?? this.completedExercises,
+      gymId: gymId ?? this.gymId,
+      gymName: gymName ?? this.gymName,
+      planTitle: planTitle ?? this.planTitle,
+      plan: plan ?? this.plan,
+      sets: sets ?? this.sets,
     );
   }
 }
@@ -49,28 +154,117 @@ class WorkoutState {
 class WorkoutCubit extends HydratedCubit<WorkoutState> {
   WorkoutCubit({this.repository}) : super(WorkoutState.initial());
 
-  /// Data access for the workout flow (logs sessions/sets to Isar). Wiring the
-  /// actual save/persist logic lands with Milestone 3; kept as a reference here
-  /// so the cubit never opens its own DB connection.
+  /// Reference for the workout flow; `endWorkout` persists a real
+  /// [WorkoutSession] (with sets + gym + duration) to Isar instead of doing its
+  /// own DB work. The cubit never opens a connection itself.
   final TrackerRepository? repository;
 
-  void startWorkout() {
-    emit(WorkoutState(isInProgress: true, startTime: DateTime.now()));
-  }
-
-  void completeExercise(String exerciseName) {
+  /// Begin a free-form workout (no split plan) at [startTime] now.
+  void startWorkout({Gym? gym}) {
     emit(
-      state.copyWith(
-        completedExercises: [...state.completedExercises, exerciseName],
+      WorkoutState(
+        isInProgress: true,
+        startTime: DateTime.now(),
+        gymId: gym?.id,
+        gymName: gym?.name,
       ),
     );
   }
 
-  // void endWorkout() {
-  //   emit(WorkoutState.initial());
-  // }
-  void endWorkout() {
-    emit(WorkoutState(isInProgress: false));
+  /// Begin a workout following a split day's exercise plan.
+  void startPlanWorkout({
+    required String title,
+    required List<PlanExercise> exercises,
+    Gym? gym,
+  }) {
+    emit(
+      WorkoutState(
+        isInProgress: true,
+        startTime: DateTime.now(),
+        gymId: gym?.id,
+        gymName: gym?.name,
+        planTitle: title,
+        plan: exercises,
+      ),
+    );
+  }
+
+  /// Select/change the gym for the active (or upcoming) session.
+  void setGym(Gym gym) {
+    emit(state.copyWith(gymId: gym.id, gymName: gym.name));
+  }
+
+  /// Log one performed set, appending it in sequence.
+  void logSet({
+    required int exerciseId,
+    required String exerciseName,
+    required double weight,
+    required int reps,
+    SetType type = SetType.working,
+  }) {
+    final sets = [
+      ...state.sets,
+      ActiveSet(
+        exerciseId: exerciseId,
+        exerciseName: exerciseName,
+        weight: weight,
+        reps: reps,
+        type: type,
+        order: state.sets.length,
+      ),
+    ];
+    emit(state.copyWith(sets: sets));
+  }
+
+  /// Remove the set at [order] and reindex the rest so [ActiveSet.order] stays
+  /// contiguous.
+  void removeSet(int order) {
+    var sets = state.sets.where((s) => s.order != order).toList();
+    for (var i = 0; i < sets.length; i++) {
+      sets[i] = ActiveSet(
+        exerciseId: sets[i].exerciseId,
+        exerciseName: sets[i].exerciseName,
+        weight: sets[i].weight,
+        reps: sets[i].reps,
+        type: sets[i].type,
+        order: i,
+      );
+    }
+    emit(state.copyWith(sets: sets));
+  }
+
+  /// Finish the workout: writes a [WorkoutSession] to Isar (duration = now −
+  /// start) and resets to the idle state. When no repository is wired (tests),
+  /// it only resets state.
+  Future<void> endWorkout() async {
+    final s = state;
+    if (!s.isInProgress) return;
+
+    final repo = repository;
+    if (repo != null) {
+      await repo.sessions.put(
+        WorkoutSession(
+          title: s.planTitle ??
+              (s.gymName != null ? '${s.gymName} workout' : 'Workout'),
+          startTime: s.startTime ?? DateTime.now(),
+          endTime: DateTime.now(),
+          gymId: s.gymId,
+          sets: s.sets
+              .map(
+                (a) => WorkoutSet(
+                  exerciseId: a.exerciseId,
+                  weight: a.weight,
+                  reps: a.reps,
+                  type: a.type,
+                  order: a.order,
+                ),
+              )
+              .toList(),
+        ),
+      );
+    }
+
+    emit(WorkoutState.initial());
   }
 
   @override

@@ -50,12 +50,14 @@ Currently `Exercise` and `WorkoutSplit` are Isar `@collection` models, but the D
 
 Implements the heart of the app: the active workout tracker.
 
-- [ ] Build the **active-workout screen** (`CurrentWorkout`): list the split's exercises for today, log sets with weight/reps, and display them inline
-- [ ] **Warmup support** (`2.1`): flag sets as warmup with a distinct UI indicator; exclude warmup sets from analytics/volume/1RM later
-- [ ] **Gym selection** on workout start (`2.2`): prompt to choose a gym when >1 gym profile exists; store the session's gym for history + equivalence
-- [ ] Replace the placeholder split-tile navigation (`Text('restart if stuck in fake workout')`) and hardcoded splits in `workout_page.dart` with repository-loaded data
-- [ ] Persist completed workouts as `WorkoutSession` records (not just the hydrated `WorkoutState`); evolve/retire the cubit's `startTime`/`completedExercises` bookkeeping so real sessions drive it
-- [ ] **Checkpoint 3**: start → select gym → log working + warmup sets → end workout → session appears in history with correct gym, sets, and duration
+- [x] Build the **active-workout screen** (`CurrentWorkout`): list the split's exercises for today, log sets with weight/reps, and display them inline
+- [x] **Warmup support** (`2.1`): flag sets as warmup with a distinct UI indicator; exclude warmup sets from analytics/volume/1RM later
+- [x] **Gym selection** on workout start (`2.2`): prompt to choose a gym when >1 gym profile exists; store the session's gym for history + equivalence
+- [x] Replace the placeholder split-tile navigation (`Text('restart if stuck in fake workout')`) and hardcoded splits in `workout_page.dart` with repository-loaded data
+- [x] Persist completed workouts as `WorkoutSession` records (not just the hydrated `WorkoutState`); evolve/retire the cubit's `startTime`/`completedExercises` bookkeeping so real sessions drive it
+- [x] **Checkpoint 3**: start → select gym → log working + warmup sets → end workout → session appears in history with correct gym, sets, and duration
+
+> **Note (Milestone 3)**: reconciliation is now explicit — the hydrated `WorkoutState` caches only the *in-progress* session (plan + sets, so a workout survives a restart); on `endWorkout` a real `WorkoutSession` (sets, gym, duration from start→now) is written to Isar and the hydrated state resets to idle. Warm-up sets are flagged (`SetType.warmup`) and shown with a `W` chip here; excluding them from volume/1RM/analytics is deferred to Milestone 6. `WorkoutPage` loads splits from the repository; tapping a split day opens a real `SplitDayPage` and can start that plan. `HistoryPage` gets a lightweight session list (real detail view is Milestone 5). Added `test/workout_flow_test.dart` covering the checkpoint path + inline logging UI.
 
 ---
 
@@ -120,5 +122,5 @@ The most advanced feature set — analytics that normalize across machines.
 
 
 - Codegen: after any change to `@collection`/`@embedded`/`@enumerated` annotations, run `cd tracker && dart run build_runner build`. Generated `*.g.dart` files are excluded from the analyzer and must not be hand-edited.
-- State currently survives restarts via `HydratedBloc` (JSON storage dir set up in `main.dart`). Once real `WorkoutSession` records land, reconcile what hydrated state should still cache vs. what belongs in Isar.
+- State caching is now reconciled (Milestone 3): `HydratedBloc` caches only the **in-progress** session (plan + sets) so a workout survives a restart; completed workouts are finalized as `WorkoutSession` records in Isar on `endWorkout`, and the hydrated state resets to idle.
 - The existing `test/widget_test.dart` is stale (counter smoke test). Replace it early (Milestone 0) so later tests don't build on it.
