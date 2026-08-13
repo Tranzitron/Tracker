@@ -63,11 +63,13 @@ Implements the heart of the app: the active workout tracker.
 
 ## Milestone 4 — Exercises & splits management (`1.3`, `1.4`)
 
-- [ ] **Exercises library** (`1.4`): category view browsed by muscle group/movement pattern; exercise detail view (`1.4.1.1`); custom exercise creation
-- [ ] **Split editor** (`1.3.1`): finish `NewSplitPage` stub (`Text('asdasd')`) into a real split CRUD editor
-- [ ] **Split day editor** (`1.3.1.1`): configure days within a split
-- [ ] **Split day exercises editor** (`1.3.1.1.1`): add/remove/reorder exercises for a day; introduce `ExerciseItem` ordering model (replaces the `List<int>` placeholder)
-- [ ] **Checkpoint 4**: user can create an exercise, create a split, add days, add/reorder exercises, and the workout screen reflects the edited split
+- [x] **Exercises library** (`1.4`): category view browsed by muscle group/movement pattern; exercise detail view (`1.4.1.1`); custom exercise creation
+- [x] **Split editor** (`1.3.1`): finish `NewSplitPage` stub (`Text('asdasd')`) into a real split CRUD editor
+- [x] **Split day editor** (`1.3.1.1`): configure days within a split
+- [x] **Split day exercises editor** (`1.3.1.1.1`): add/remove/reorder exercises for a day; introduce `ExerciseItem` ordering model (replaces the `List<int>` placeholder)
+- [x] **Checkpoint 4**: user can create an exercise, create a split, add days, add/reorder exercises, and the workout screen reflects the edited split
+
+> **Note (Milestone 4)**: the exercises library (`ExercisesPage`) browses seeded + custom exercises by muscle group or movement pattern (segmented toggle), with a custom-exercise form (`NewExercisePage`) and a detail view (`ExerciseDetailPage`, §1.4.1.1) showing the profile — historical stats/graphs are deferred to Milestone 6 (analytics). Split editing is a real CRUD editor (`SplitEditorPage` in `new_split_page.dart`, create *and* edit), with a day editor (`SplitDayEditorPage`) that adds/removes/reorders exercises via `ReorderableListView`, fed by an `ExercisePickerPage`. `WorkoutPage`/`SplitDayPage` already stream the same repository data, so edited splits flow into the workout screen. `pushTo` now returns its `Future<T?>` so editors await popped results. Tests: `test/milestone4_test.dart` covers the create/reorder round-trip. Note: DB-driven widget tests are unreliable under `testWidgets` FakeAsync (real Isar futures don't resolve); repository-level tests + the 5-tab build smoke test cover this instead.
 
 ---
 

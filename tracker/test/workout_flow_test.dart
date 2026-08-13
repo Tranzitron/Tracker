@@ -113,7 +113,11 @@ void main() {
       expect(cubit.state.plan.first.name, 'Bench Press');
 
       cubit.logSet(
-          exerciseId: 1, exerciseName: 'Bench Press', weight: 80, reps: 6);
+        exerciseId: 1,
+        exerciseName: 'Bench Press',
+        weight: 80,
+        reps: 6,
+      );
       await cubit.endWorkout();
 
       final session = (await repo.sessions.getAll()).single;

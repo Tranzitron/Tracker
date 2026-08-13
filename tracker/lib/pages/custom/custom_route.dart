@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 
-void pushTo(BuildContext context, Widget destination) {
+/// Pushes [destination] with the app's slide transition and returns the
+/// `Navigator.push` future so callers can await a value popped back by the
+/// destination (e.g. an editor returning its edited draft).
+Future<T?> pushTo<T>(BuildContext context, Widget destination) {
   final Color backgroundColor = Theme.of(context).colorScheme.surface;
-  Navigator.of(context).push(_createRoute(backgroundColor, destination));
+  return Navigator.of(context)
+      .push<T>(_createRoute(backgroundColor, destination));
 }
 
-Route<void> _createRoute(Color backgroundColor, Widget destination) {
-  return PageRouteBuilder(
-    transitionDuration: Duration(milliseconds: 250),
+Route<T> _createRoute<T>(Color backgroundColor, Widget destination) {
+  return PageRouteBuilder<T>(
+    transitionDuration: const Duration(milliseconds: 250),
     barrierColor: backgroundColor,
     pageBuilder: (context, animation, secondaryAnimation) => destination,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {

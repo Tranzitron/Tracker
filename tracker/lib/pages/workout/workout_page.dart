@@ -92,7 +92,7 @@ class BuildNewSplitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FilledButton(
       onPressed: () {
-        pushTo(context, NewSplitPage());
+        pushTo(context, const SplitEditorPage());
       },
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
@@ -136,8 +136,10 @@ class BuildMaterialSplit extends StatelessWidget {
             WorkoutListTile(
               titleText: split.title,
               isSplitDay: false,
-              trailing: const Icon(Icons.chevron_right_sharp),
-              onTap: () => (),
+              trailing: const Icon(Icons.edit_outlined, size: 20),
+              onTap: () {
+                pushTo(context, SplitEditorPage(split: split));
+              },
             ),
             for (final splitDay in split.splitDays)
               InkWell(
