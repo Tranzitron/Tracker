@@ -98,8 +98,10 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Home workout'), findsOneWidget); // app bar title
-      expect(find.text('Home · 1h 0m'),
-          findsOneWidget); // gym + duration in header
+      expect(
+        find.text('Home · 1h 0m'),
+        findsOneWidget,
+      ); // gym + duration in header
       expect(find.text('80 kg × 5'), findsOneWidget);
       expect(find.text('60 kg × 8'), findsOneWidget);
       expect(find.text('W'), findsOneWidget); // warmup marker

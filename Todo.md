@@ -87,11 +87,13 @@ Implements the heart of the app: the active workout tracker.
 
 The most advanced feature set — analytics that normalize across machines.
 
-- [ ] **Per-exercise historical stats & graphs** (`1.4.1.1`): weight/reps over time, performance logs
-- [ ] **Machine weight equivalence & multipliers** (`2.3`): define a primary home-gym machine as baseline (multiplier 1.0); estimate trendlines to auto-calc equivalence multipliers for secondary machines; allow manual override
-- [ ] **Normalized progression analytics** (`2.4`): normalize performance across machines/equipment to a standard effort scale; aggregate identical movements across brands onto unified charts
-- [ ] **General progression graphing** (`2.4`): plot overall strength, volume trends, and trajectory over time; compute 1RM estimates and peak volume respecting warmup exclusions (`2.1`)
-- [ ] **Checkpoint 6**: logging the same movement on two machines with different multipliers yields a unified, normalized chart; 1RM/progression figures exclude warmup sets
+- [x] **Per-exercise historical stats & graphs** (`1.4.1.1`): weight/reps over time, performance logs
+- [x] **Machine weight equivalence & multipliers** (`2.3`): define a primary home-gym machine as baseline (multiplier 1.0); estimate trendlines to auto-calc equivalence multipliers for secondary machines; allow manual override
+- [x] **Normalized progression analytics** (`2.4`): normalize performance across machines/equipment to a standard effort scale; aggregate identical movements across brands onto unified charts
+- [x] **General progression graphing** (`2.4`): plot overall strength, volume trends, and trajectory over time; compute 1RM estimates and peak volume respecting warmup exclusions (`2.1`)
+- [x] **Checkpoint 6**: logging the same movement on two machines with different multipliers yields a unified, normalized chart; 1RM/progression figures exclude warmup sets
+
+> **Note (Milestone 6)**: analytics is a pure layer in `lib/analytics/analytics.dart` — `normalizedWeight`, `epley1rm`, `exerciseBest1rm`/`exercisePeakWeight`/`volumeTrend`/`exerciseSummary`, and `estimateGymMultiplier` — all operating on `List<WorkoutSession>` + a `gymId → multiplier` map and excluding warm-up sets (§2.1), so they unit-test without a DB. A dependency-free `CustomPainter` `LineChart` (`lib/pages/custom/line_chart.dart`) renders the series. `ExerciseDetailPage` now shows a **Performance history** section (best normalized 1RM over time + stats). A new **Progression page** (`lib/pages/analytics/progression_page.dart`, reached from the Feed tab) plots overall strength + volume trends. **Gym management** (`lib/pages/settings/gyms_page.dart`, reached from Settings) creates/edits gyms, marks the primary baseline (multiplier locked to 1.0), and lets users set or **auto-estimate** each gym's multiplier (median-of-ratio across exercises shared with the primary gym — a pragmatic stand-in for full trendline regression, which is out of scope). `Gym.multiplier` already existed in the schema, so no codegen was needed. Tests: `test/milestone6_test.dart` (Epley, normalization, warmup exclusion, the §2.3 cross-gym checkpoint, multiplier estimation, DB-free chart/detail widget builds).
 
 ---
 

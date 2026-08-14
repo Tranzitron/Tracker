@@ -66,8 +66,9 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
                   children: <Widget>[
                     _Stat(label: 'Sets', value: '${session.sets.length}'),
                     _Stat(
-                        label: 'Working volume',
-                        value: '${_fmt(workingVolume)} kg'),
+                      label: 'Working volume',
+                      value: '${_fmt(workingVolume)} kg',
+                    ),
                   ],
                 ),
                 const SizedBox(height: 16),

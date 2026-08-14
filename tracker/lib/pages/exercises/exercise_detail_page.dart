@@ -1,20 +1,56 @@
 import 'package:flutter/material.dart';
+import 'package:tracker/analytics/analytics.dart';
+import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
+import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/line_chart.dart';
 
-/// Individual exercise view (Plan.md §1.4.1.1).
-///
-/// Shows the exercise's profile (target muscles, equipment, movement pattern,
-/// description). Historical stats/graphs are part of Milestone 6 (analytics);
-/// this screen is the base that Milestone 6 will grow graphs into.
-class ExerciseDetailPage extends StatelessWidget {
+/// Individual exercise view (Plan.md §1.4.1.1): profile rows plus a
+/// performance-history section (Milestone 6) charting the best normalized
+/// working-set 1RM per session over time, with warm-ups excluded (§2.1).
+class ExerciseDetailPage extends StatefulWidget {
   const ExerciseDetailPage({super.key, required this.exercise});
 
   final Exercise exercise;
 
   @override
+  State<ExerciseDetailPage> createState() => _ExerciseDetailPageState();
+}
+
+class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
+  List<WorkoutSession> _sessions = const [];
+  Map<int, double> _multipliers = const {};
+  bool _didLoad = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // RepositoryScope is an inherited widget, so read it after initState.
+    if (!_didLoad) {
+      _didLoad = true;
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final repo = RepositoryScope.maybeOf(context);
+    final sessions = await repo?.sessions.getAll() ?? const <WorkoutSession>[];
+    final gyms = await repo?.gyms.getAll() ?? const [];
+    if (!mounted) return;
+    setState(() {
+      _sessions = sessions;
+      _multipliers = {for (final g in gyms) g.id: g.multiplier};
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final exercise = widget.exercise;
+    final series = exerciseBest1rm(_sessions, _multipliers, exercise.id);
+    final summary = exerciseSummary(_sessions, _multipliers, exercise.id);
+
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(context, title: exercise.title),
@@ -52,18 +88,70 @@ class ExerciseDetailPage extends StatelessWidget {
                       exercise.equipment.map((e) => e.displayName).join(', '),
                 ),
                 const Divider(height: 32),
-                Text('Performance history', style: theme.textTheme.titleMedium),
-                const SizedBox(height: 8),
                 Text(
-                  'Progression charts and set logs arrive with analytics '
-                  '(Milestone 6).',
-                  style: theme.textTheme.bodySmall,
+                  'Performance history',
+                  style: theme.textTheme.titleMedium,
                 ),
+                const SizedBox(height: 8),
+                Row(
+                  children: <Widget>[
+                    _Stat(
+                      label: 'Best 1RM',
+                      value: _fmt(summary.best1rm),
+                    ),
+                    _Stat(
+                      label: 'Peak volume',
+                      value: _fmt(summary.peakVolume),
+                    ),
+                    _Stat(label: 'Sessions', value: '${summary.sessionCount}'),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  'Best working-set 1RM over time',
+                  style: theme.textTheme.bodyMedium,
+                ),
+                const SizedBox(height: 8),
+                LineChart(points: series, unit: 'kg'),
               ],
             ),
           ),
         ),
       ],
+    );
+  }
+
+  String _fmt(double v) =>
+      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
+}
+
+class _Stat extends StatelessWidget {
+  const _Stat({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Expanded(
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: <Widget>[
+              Text(value, style: theme.textTheme.titleMedium),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: theme.textTheme.bodySmall
+                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import 'custom/custom_app_bar.dart';
+import 'custom/custom_route.dart';
+import 'settings/gyms_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({
@@ -46,6 +48,13 @@ class SettingsPage extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: <Widget>[
+              _buildSettingsCard(
+                icon: Icons.fitness_center,
+                title: 'Gyms',
+                subtitle: 'Add gyms, set the primary baseline and weight '
+                    'multipliers',
+                onTap: () => pushTo(context, const GymsPage()),
+              ),
               _buildSettingsCard(
                 icon: Icons.person,
                 title: 'Profile Settings',

@@ -47,6 +47,9 @@ class GymRepository {
 
   Future<int> put(Gym gym) => _isar.writeTxn(() => _isar.gyms.put(gym));
 
+  Future<void> putAll(List<Gym> gyms) =>
+      _isar.writeTxn(() => _isar.gyms.putAll(gyms));
+
   Future<bool> delete(int id) => _isar.writeTxn(() => _isar.gyms.delete(id));
 
   Stream<List<Gym>> watchAll() =>
