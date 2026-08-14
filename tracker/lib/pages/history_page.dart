@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/history/history_calendar.dart';
+import 'package:tracker/pages/history/session_detail_page.dart';
 
-/// Lists past [WorkoutSession]s with date, gym, set count and duration.
+enum _HistoryMode { list, calendar }
+
+/// History overview (Plan.md §1.2) + calendar (Plan.md §2.5).
 ///
-/// Milestone 3 wires the list so completed workouts surface after a session is
-/// ended (Checkpoint 3). Milestone 5 expands this into the full history overview
-/// (§1.2) + calendar (§2.5) with per-session detail.
+/// Toggles between a chronological session list and an interactive month
+/// calendar; either way a session resolves to its full [SessionDetailPage]
+/// (Checkpoint 5).
 class HistoryPage extends StatefulWidget {
   const HistoryPage({super.key});
 
@@ -18,12 +23,12 @@ class HistoryPage extends StatefulWidget {
 class _HistoryPageState extends State<HistoryPage> {
   Map<int, String> _gymNames = const {};
   bool _didLoad = false;
+  _HistoryMode _mode = _HistoryMode.list;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // RepositoryScope is an inherited widget, so read it here (after initState)
-    // rather than in initState.
+    // RepositoryScope is an inherited widget, so read it here (after initState).
     if (!_didLoad) {
       _didLoad = true;
       _loadGyms();
@@ -46,30 +51,58 @@ class _HistoryPageState extends State<HistoryPage> {
       slivers: <Widget>[
         CustomAppBar(context, title: 'History'),
         SliverToBoxAdapter(
-          child: StreamBuilder<List<WorkoutSession>>(
-            stream: stream,
-            initialData: const <WorkoutSession>[],
-            builder: (context, snapshot) {
-              final sessions = snapshot.data ?? const <WorkoutSession>[];
-              if (sessions.isEmpty) {
-                return const _EmptyHistory();
-              }
-              return Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final session in sessions)
-                      _SessionTile(
-                        session: session,
-                        gymName: session.gymId == null
-                            ? null
-                            : _gymNames[session.gymId],
-                      ),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                SegmentedButton<_HistoryMode>(
+                  segments: const [
+                    ButtonSegment(
+                      value: _HistoryMode.list,
+                      label: Text('List'),
+                      icon: Icon(Icons.list_sharp),
+                    ),
+                    ButtonSegment(
+                      value: _HistoryMode.calendar,
+                      label: Text('Calendar'),
+                      icon: Icon(Icons.calendar_month_sharp),
+                    ),
                   ],
+                  selected: {_mode},
+                  onSelectionChanged: (s) => setState(() => _mode = s.first),
                 ),
-              );
-            },
+                const SizedBox(height: 16),
+                StreamBuilder<List<WorkoutSession>>(
+                  stream: stream,
+                  initialData: const <WorkoutSession>[],
+                  builder: (context, snapshot) {
+                    final sessions = snapshot.data ?? const <WorkoutSession>[];
+                    if (sessions.isEmpty) {
+                      return const _EmptyHistory();
+                    }
+                    if (_mode == _HistoryMode.calendar) {
+                      return HistoryCalendar(
+                        sessions: sessions,
+                        gymNames: _gymNames,
+                      );
+                    }
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        for (final session in sessions)
+                          _SessionTile(
+                            session: session,
+                            gymName: session.gymId == null
+                                ? null
+                                : _gymNames[session.gymId],
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ],
@@ -117,6 +150,11 @@ class _SessionTile extends StatelessWidget {
           '\n${session.sets.length} set(s) · ${_dur(duration)}',
         ),
         isThreeLine: true,
+        trailing: const Icon(Icons.chevron_right_sharp),
+        onTap: () => pushTo(
+          context,
+          SessionDetailPage(session: session, gymName: gymName),
+        ),
       ),
     );
   }

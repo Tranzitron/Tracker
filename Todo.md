@@ -75,9 +75,11 @@ Implements the heart of the app: the active workout tracker.
 
 ## Milestone 5 — History & calendar (`1.2`, `2.5`)
 
-- [ ] **History overview** (`1.2`): list past logged workouts with dates and historical performance; view a session's full sets from history
-- [ ] **Calendar view** (`2.5`): interactive calendar of workout days with frequency/consistency metrics and quick links to past session logs
-- [ ] **Checkpoint 5**: any completed workout is reachable from both history and the calendar; calendar marks workout days and shows consistency
+- [x] **History overview** (`1.2`): list past logged workouts with dates and historical performance; view a session's full sets from history
+- [x] **Calendar view** (`2.5`): interactive calendar of workout days with frequency/consistency metrics and quick links to past session logs
+- [x] **Checkpoint 5**: any completed workout is reachable from both history and the calendar; calendar marks workout days and shows consistency
+
+> **Note (Milestone 5)**: `HistoryPage` now toggles between a chronological **list** and an **interactive month calendar** (segmented control). The list tiles and the calendar's per-day session list both open a real `SessionDetailPage` (`lib/pages/history/`), which shows header stats (date, gym, duration), working volume (excluding warm-up sets per §2.1), and every logged set with its W/S warm-up marker. The calendar (`HistoryCalendar`) marks each workout day with a dot, offers prev/next month navigation, and shows frequency/consistency metrics (workout days this month, current streak). Calendar math + the streak function live in `calendar_grid.dart` as pure, DB-free helpers so they're unit-testable. Added `test/milestone5_test.dart` (calendar-grid layout, streak, and a DB-free `SessionDetailPage` widget test).
 
 ---
 
