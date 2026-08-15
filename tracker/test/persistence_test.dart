@@ -163,5 +163,29 @@ void main() {
     expect(fetched.sets[1].isWarmup, isTrue);
 
     expect(await repo.sessions.getAll(), hasLength(1));
+    expect((await repo.sessions.getRecent()).single.id, fetched.id);
+    expect(await repo.sessions.getRecent(limit: 1), hasLength(1));
+    expect(
+      (await repo.sessions.getForDate(DateTime(2026, 1, 1))).single.id,
+      fetched.id,
+    );
+    expect(
+      (await repo.sessions.getBetween(
+        DateTime(2026, 1, 1, 9),
+        DateTime(2026, 1, 1, 10),
+      )).single.id,
+      fetched.id,
+    );
+    expect(
+      () => repo.sessions.getRecent(limit: 0),
+      throwsArgumentError,
+    );
+    expect(
+      () => repo.sessions.getBetween(
+        DateTime(2026, 1, 2),
+        DateTime(2026, 1, 1),
+      ),
+      throwsArgumentError,
+    );
   });
 }
