@@ -11,11 +11,6 @@ import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
 enum _BrowseMode { muscle, movement }
 
-/// The master exercise library (Plan.md §1.4).
-///
-/// Browse the seeded + custom exercises by target muscle group or movement
-/// pattern, tap through to each exercise's detail view, and create custom
-/// exercises. Historical graphs land with analytics (Milestone 6).
 class ExercisesPage extends StatefulWidget {
   const ExercisesPage({super.key});
 
@@ -47,7 +42,6 @@ class _ExercisesPageState extends State<ExercisesPage> {
   void _subscribe() {
     final repo = RepositoryScope.maybeOf(context);
     if (repo == null) return;
-    // Load immediately (avoids a blank flash) and keep listening for changes.
     repo.exercises.getAll().then((list) {
       if (mounted) setState(() => _exercises = list);
     });
@@ -55,15 +49,17 @@ class _ExercisesPageState extends State<ExercisesPage> {
       (list) {
         if (mounted) setState(() => _exercises = list);
       },
-      onError: (Object e, StackTrace st) {
-        // Surface async Isar stream errors instead of leaving them unhandled.
-        debugPrint('exercises watch error: $e');
+      onError: (Object error, StackTrace stack) {
+        debugPrint('exercises watch error: $error');
       },
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final groups = _mode == _BrowseMode.muscle
+        ? _groupsByMuscle(_exercises)
+        : _groupsByMovement(_exercises);
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(
@@ -74,82 +70,108 @@ class _ExercisesPageState extends State<ExercisesPage> {
             onPressed: () => pushTo(context, const NewExercisePage()),
           ),
         ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                SegmentedButton<_BrowseMode>(
-                  segments: const [
-                    ButtonSegment(
-                      value: _BrowseMode.muscle,
-                      label: Text('Muscle group'),
-                      icon: Icon(Icons.accessibility_new_sharp),
-                    ),
-                    ButtonSegment(
-                      value: _BrowseMode.movement,
-                      label: Text('Movement'),
-                      icon: Icon(Icons.swap_vert_sharp),
-                    ),
-                  ],
-                  selected: {_mode},
-                  onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ),
-                const SizedBox(height: 16),
-                if (_exercises.isEmpty)
-                  const Text('No exercises in the library yet.')
-                else if (_mode == _BrowseMode.muscle)
-                  _buildByMuscle()
-                else
-                  _buildByMovement(),
-              ],
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          sliver: SliverToBoxAdapter(child: _buildModeSelector()),
+        ),
+        if (_exercises.isEmpty)
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
+            sliver: SliverToBoxAdapter(
+              child: Text('No exercises in the library yet.'),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            sliver: SliverList.builder(
+              itemCount: groups.length,
+              itemBuilder: (context, index) {
+                final group = groups[index];
+                return _GroupSection(
+                  key: ValueKey<String>('exercise-group-${group.id}'),
+                  title: group.title,
+                  exercises: group.exercises,
+                );
+              },
             ),
           ),
+      ],
+    );
+  }
+
+  Widget _buildModeSelector() {
+    return SegmentedButton<_BrowseMode>(
+      segments: const [
+        ButtonSegment(
+          value: _BrowseMode.muscle,
+          label: Text('Muscle group'),
+          icon: Icon(Icons.accessibility_new_sharp),
+        ),
+        ButtonSegment(
+          value: _BrowseMode.movement,
+          label: Text('Movement'),
+          icon: Icon(Icons.swap_vert_sharp),
         ),
       ],
+      selected: {_mode},
+      onSelectionChanged: (s) => setState(() => _mode = s.first),
     );
   }
 
-  Widget _buildByMuscle() {
-    final byGroup = <MuscleGroup, List<Exercise>>{};
-    for (final e in _exercises) {
-      for (final muscle in e.primaryMuscle) {
-        byGroup.putIfAbsent(Muscle.muscleToGroup[muscle]!, () => []).add(e);
+  List<_ExerciseGroup> _groupsByMuscle(List<Exercise> exercises) {
+    final grouped = <MuscleGroup, List<Exercise>>{};
+    for (final exercise in exercises) {
+      for (final muscle in exercise.primaryMuscle) {
+        grouped
+            .putIfAbsent(Muscle.muscleToGroup[muscle]!, () => [])
+            .add(exercise);
       }
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final entry in byGroup.entries)
-          _GroupSection(
-            title: MuscleGroupLabel.label(entry.key),
-            exercises: entry.value,
-          ),
-      ],
-    );
+    return [
+      for (final entry in grouped.entries)
+        _ExerciseGroup(
+          id: 'muscle-${entry.key.name}',
+          title: MuscleGroupLabel.label(entry.key),
+          exercises: entry.value,
+        ),
+    ];
   }
 
-  Widget _buildByMovement() {
-    final byMovement = <MovementPattern, List<Exercise>>{};
-    for (final e in _exercises) {
-      byMovement.putIfAbsent(e.movementPattern, () => []).add(e);
+  List<_ExerciseGroup> _groupsByMovement(List<Exercise> exercises) {
+    final grouped = <MovementPattern, List<Exercise>>{};
+    for (final exercise in exercises) {
+      grouped.putIfAbsent(exercise.movementPattern, () => []).add(exercise);
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (final entry in byMovement.entries)
-          _GroupSection(
-            title: MovementPatternLabel.label(entry.key),
-            exercises: entry.value,
-          ),
-      ],
-    );
+    return [
+      for (final entry in grouped.entries)
+        _ExerciseGroup(
+          id: 'movement-${entry.key.name}',
+          title: MovementPatternLabel.label(entry.key),
+          exercises: entry.value,
+        ),
+    ];
   }
 }
 
+class _ExerciseGroup {
+  const _ExerciseGroup({
+    required this.id,
+    required this.title,
+    required this.exercises,
+  });
+
+  final String id;
+  final String title;
+  final List<Exercise> exercises;
+}
+
 class _GroupSection extends StatelessWidget {
-  const _GroupSection({required this.title, required this.exercises});
+  const _GroupSection({
+    super.key,
+    required this.title,
+    required this.exercises,
+  });
 
   final String title;
   final List<Exercise> exercises;
@@ -161,15 +183,17 @@ class _GroupSection extends StatelessWidget {
       child: ExpansionTile(
         title: Text('$title (${exercises.length})'),
         children: [
-          for (final e in exercises)
+          for (final exercise in exercises)
             ListTile(
-              title: Text(e.title),
+              key: ValueKey<String>('exercise-${exercise.id}'),
+              title: Text(exercise.title),
               subtitle: Text(
-                e.equipment.map((eq) => eq.displayName).join(', '),
+                exercise.equipment.map((eq) => eq.displayName).join(', '),
                 overflow: TextOverflow.ellipsis,
               ),
               trailing: const Icon(Icons.chevron_right_sharp),
-              onTap: () => pushTo(context, ExerciseDetailPage(exercise: e)),
+              onTap: () =>
+                  pushTo(context, ExerciseDetailPage(exercise: exercise)),
             ),
         ],
       ),
@@ -177,14 +201,24 @@ class _GroupSection extends StatelessWidget {
   }
 }
 
-/// Shared muscle-group display names used by the category browser.
 class MuscleGroupLabel {
   static String label(MuscleGroup g) => switch (g) {
-        MuscleGroup.abdominals => 'Abdominals',
-        MuscleGroup.arms => 'Arms',
-        MuscleGroup.shoulders => 'Shoulders',
-        MuscleGroup.back => 'Back',
-        MuscleGroup.legs => 'Legs',
-        MuscleGroup.chest => 'Chest',
-      };
+    MuscleGroup.abdominals => 'Abdominals',
+    MuscleGroup.arms => 'Arms',
+    MuscleGroup.shoulders => 'Shoulders',
+    MuscleGroup.back => 'Back',
+    MuscleGroup.legs => 'Legs',
+    MuscleGroup.chest => 'Chest',
+  };
+}
+
+class MovementPatternLabel {
+  static String label(MovementPattern pattern) => switch (pattern) {
+    MovementPattern.unspecified => 'Other',
+    MovementPattern.push => 'Push',
+    MovementPattern.pull => 'Pull',
+    MovementPattern.legs => 'Legs',
+    MovementPattern.core => 'Core',
+    MovementPattern.fullBody => 'Full body',
+  };
 }
