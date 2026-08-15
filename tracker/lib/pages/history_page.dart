@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:tracker/data/repository_scope.dart';
+import 'package:tracker/home_page.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
@@ -76,7 +77,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<List<WorkoutSession>>(
-                  stream: _stream,
+                  stream: TabVisibilityScope.isActiveOf(context) ? _stream : null,
                   initialData: const <WorkoutSession>[],
                   builder: (context, snapshot) {
                     final sessions = snapshot.data ?? const <WorkoutSession>[];

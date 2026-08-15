@@ -91,7 +91,7 @@ class _FeedPageState extends State<FeedPage> {
   }
 
   Widget _buildActivity() {
-    final stream = _stream;
+    final stream = TabVisibilityScope.isActiveOf(context) ? _stream : null;
     if (stream == null) return const _FeedEmpty();
     return StreamBuilder<List<WorkoutSession>>(
       stream: stream,

@@ -28,13 +28,24 @@ class _ExercisesPageState extends State<ExercisesPage> {
   List<Exercise> _exercises = const [];
   StreamSubscription<List<Exercise>>? _sub;
   bool _loaded = false;
+  bool _isActive = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final isActive = TabVisibilityScope.isActiveOf(context);
     if (!_loaded) {
       _loaded = true;
-      _subscribe();
+      _isActive = isActive;
+      if (isActive) _subscribe();
+    } else if (isActive != _isActive) {
+      _isActive = isActive;
+      if (isActive) {
+        _subscribe();
+      } else {
+        _sub?.cancel();
+        _sub = null;
+      }
     }
   }
 
@@ -44,16 +55,24 @@ class _ExercisesPageState extends State<ExercisesPage> {
     super.dispose();
   }
 
+  @override
+  void deactivate() {
+    // Keep the explicit tab contract separate from Flutter deactivation: the
+    // nested navigator remains mounted while its tab is inactive.
+    super.deactivate();
+  }
+
   void _subscribe() {
+    if (_sub != null) return;
     final repo = RepositoryScope.maybeOf(context);
     if (repo == null) return;
     // Load immediately (avoids a blank flash) and keep listening for changes.
     repo.exercises.getAll().then((list) {
-      if (mounted) setState(() => _exercises = list);
+      if (mounted && _isActive) setState(() => _exercises = list);
     });
     _sub = repo.exercises.watchAll().listen(
       (list) {
-        if (mounted) setState(() => _exercises = list);
+        if (mounted && _isActive) setState(() => _exercises = list);
       },
       onError: (Object e, StackTrace st) {
         // Surface async Isar stream errors instead of leaving them unhandled.

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
+import 'package:tracker/home_page.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -42,7 +43,7 @@ class _WorkoutPageState extends State<WorkoutPage> {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: StreamBuilder<List<WorkoutSplit>>(
-              stream: _stream,
+              stream: TabVisibilityScope.isActiveOf(context) ? _stream : null,
               initialData: const <WorkoutSplit>[],
               builder: (context, snapshot) {
                 final splits = snapshot.data ?? const <WorkoutSplit>[];
