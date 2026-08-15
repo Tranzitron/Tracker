@@ -22,6 +22,15 @@ class _ProgressionPageState extends State<ProgressionPage> {
   bool _didLoad = false;
   bool _loading = false;
   Object? _loadError;
+  final AnalyticsService _analytics = AnalyticsService();
+  AnalyticsSnapshot _snapshot = AnalyticsSnapshot(
+    best1rm: const [],
+    peakWeight: const [],
+    volume: const [],
+    summary: const ExerciseSummary(best1rm: 0, peakVolume: 0, sessionCount: 0),
+    exerciseId: null,
+    revision: null,
+  );
 
   @override
   void didChangeDependencies() {
@@ -53,6 +62,12 @@ class _ProgressionPageState extends State<ProgressionPage> {
       setState(() {
         _sessions = sessions;
         _multipliers = {for (final gym in gyms) gym.id: gym.multiplier};
+        _snapshot = _analytics.snapshot(
+          sessions: sessions,
+          multipliers: _multipliers,
+          exerciseId: null,
+          revision: sessions.length,
+        );
         _loading = false;
       });
     } catch (error) {
@@ -88,16 +103,16 @@ class _ProgressionPageState extends State<ProgressionPage> {
     }
 
     final theme = Theme.of(context);
-    final summary = exerciseSummary(_sessions, _multipliers, null);
+    final summary = _snapshot.summary;
     final volume = displayProgressionPoints(
       context,
-      volumeTrend(_sessions, _multipliers),
+      _snapshot.volume,
     );
     final totalVolume =
         volume.fold<double>(0, (sum, point) => sum + point.value);
     final best1rm = displayProgressionPoints(
       context,
-      exerciseBest1rm(_sessions, _multipliers, null),
+      _snapshot.best1rm,
     );
 
     return Column(

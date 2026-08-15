@@ -20,9 +20,21 @@ class ExerciseDetailPage extends StatefulWidget {
 }
 
 class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
-  List<WorkoutSession> _sessions = const [];
   Map<int, double> _multipliers = const {};
   bool _didLoad = false;
+  final AnalyticsService _analytics = AnalyticsService();
+  AnalyticsSnapshot _snapshot = AnalyticsSnapshot(
+    best1rm: const [],
+    peakWeight: const [],
+    volume: const [],
+    summary: const ExerciseSummary(best1rm: 0, peakVolume: 0, sessionCount: 0),
+    exerciseId: null,
+    revision: null,
+  );
+
+
+
+
 
   @override
   void didChangeDependencies() {
@@ -40,8 +52,13 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     final gyms = await repo?.gyms.getAll() ?? const [];
     if (!mounted) return;
     setState(() {
-      _sessions = sessions;
       _multipliers = {for (final g in gyms) g.id: g.multiplier};
+      _snapshot = _analytics.snapshot(
+        sessions: sessions,
+        multipliers: _multipliers,
+        exerciseId: widget.exercise.id,
+        revision: sessions.length,
+      );
     });
   }
 
@@ -49,11 +66,8 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final exercise = widget.exercise;
-    final series = displayProgressionPoints(
-      context,
-      exerciseBest1rm(_sessions, _multipliers, exercise.id),
-    );
-    final summary = exerciseSummary(_sessions, _multipliers, exercise.id);
+    final series = displayProgressionPoints(context, _snapshot.best1rm);
+    final summary = _snapshot.summary;
 
     return CustomScrollView(
       slivers: <Widget>[
