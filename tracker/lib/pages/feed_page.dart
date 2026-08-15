@@ -28,7 +28,6 @@ class _FeedPageState extends State<FeedPage> {
     if (!_didLoad) {
       _didLoad = true;
       final repo = RepositoryScope.maybeOf(context);
-<<<<<<< HEAD
       _stream = repo?.sessions.watchRecent(limit: 5);
       _loadGyms();
     }
