@@ -99,11 +99,13 @@ The most advanced feature set - analytics that normalize across machines.
 
 ## Milestone 7 - Feed, settings & app polish (`1.1`, `1.5`)
 
-- [ ] **Feed** (`1.1`): activity stream of recent accomplishments and personal updates (replaces the bare `FeedPage` shell)
-- [ ] **Settings** (`1.5`): user profile, units (kg/lbs) with consistent formatting everywhere, gym configuration, general app settings; make the `SettingsPage` snackbar placeholders real
-- [ ] Units & formatting: ensure kg/lbs and weight/plate math are used consistently across all screens
-- [ ] Empty/loading/error states, theme polish (Material 3 light/dark already wired in `main.dart`), and animation consistency via `CustomAppBar`/`pushTo`
-- [ ] **Checkpoint 7**: full app walk-through on a supported desktop platform with no placeholder UI remaining
+- [x] **Feed** (`1.1`): activity stream of recent accomplishments and personal updates (replaces the bare `FeedPage` shell)
+- [x] **Settings** (`1.5`): user profile, units (kg/lbs) with consistent formatting everywhere, gym configuration, general app settings; make the `SettingsPage` snackbar placeholders real
+- [x] Units & formatting: ensure kg/lbs and weight/plate math are used consistently across all screens
+- [x] Empty/loading/error states, theme polish (Material 3 light/dark already wired in `main.dart`), and animation consistency via `CustomAppBar`/`pushTo`
+- [x] **Checkpoint 7**: full app walk-through on a supported desktop platform with no placeholder UI remaining
+
+> **Note (Milestone 7)**: `FeedPage` now streams recent completed workouts with loading, empty, and retryable error states, while preserving progression and current-workout entry points. `SettingsPage` now exposes persisted profile, unit, notification, and analytics/privacy controls through `SettingsCubit`/`HydratedCubit`. Weight values remain canonical kilograms in persistence and convert at display/input boundaries through `WeightUnit`; current workout, history, feed, progression, and exercise performance surfaces use the selected unit. `test/milestone7_test.dart` covers conversion, preference serialization, and primary empty/settings UI states.
 
 ---
 

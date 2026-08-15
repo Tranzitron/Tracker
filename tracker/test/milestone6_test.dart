@@ -9,6 +9,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 
@@ -203,6 +204,16 @@ void main() {
       expect(find.text('Bench Press'), findsOneWidget);
       expect(find.text('Best 1RM'), findsOneWidget);
       expect(find.text('No data yet'), findsOneWidget);
+    });
+
+    testWidgets('ProgressionPage opens without a repository', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: ProgressionPage()),
+      );
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('Working volume over time'), findsOneWidget);
+      expect(find.text('No data yet'), findsNWidgets(2));
     });
   });
 }

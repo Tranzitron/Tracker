@@ -5,6 +5,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'gym_picker.dart';
@@ -184,7 +185,7 @@ class _WorkoutHeader extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${state.sets.length} set(s) · '
-              '${working.toStringAsFixed(0)} kg working volume',
+              '${formatWeight(context, working)} working volume',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -337,7 +338,7 @@ class _SetTile extends StatelessWidget {
       dense: true,
       contentPadding: EdgeInsets.zero,
       leading: _WarmupBadge(isWarmup: set.isWarmup),
-      title: Text('${_fmt(set.weight)} kg × ${set.reps}'),
+      title: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
       subtitle: set.isWarmup
           ? Text('Warm-up', style: theme.textTheme.bodySmall)
           : null,
@@ -435,9 +436,9 @@ class _AddSetFormState extends State<_AddSetForm> {
                 controller: _weight,
                 keyboardType:
                     const TextInputType.numberWithOptions(decimal: true),
-                decoration: const InputDecoration(
-                  labelText: 'Weight (kg)',
-                  border: OutlineInputBorder(),
+                decoration: InputDecoration(
+                  labelText: 'Weight (${weightUnitOf(context).symbol})',
+                  border: const OutlineInputBorder(),
                 ),
               ),
             ),
@@ -509,7 +510,8 @@ class _AddSetFormState extends State<_AddSetForm> {
         }
       }
     }
-    final weight = double.tryParse(_weight.text) ?? 0.0;
+    final displayedWeight = double.tryParse(_weight.text) ?? 0.0;
+    final weight = kilogramsFromDisplay(context, displayedWeight);
     context.read<WorkoutCubit>().logSet(
           exerciseId: id,
           exerciseName: name,
@@ -520,9 +522,4 @@ class _AddSetFormState extends State<_AddSetForm> {
     _weight.clear();
     setState(() {});
   }
-}
-
-String _fmt(double v) {
-  if (v == v.roundToDouble()) return v.toInt().toString();
-  return v.toStringAsFixed(1);
 }

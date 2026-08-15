@@ -3,6 +3,7 @@ import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 
 /// Full view of a single past [WorkoutSession] (Plan.md §1.2): header stats
 /// plus every logged set with its warm-up/working indicator and working volume.
@@ -67,7 +68,7 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
                     _Stat(label: 'Sets', value: '${session.sets.length}'),
                     _Stat(
                       label: 'Working volume',
-                      value: '${_fmt(workingVolume)} kg',
+                      value: formatWeight(context, workingVolume),
                     ),
                   ],
                 ),
@@ -91,8 +92,6 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
     );
   }
 
-  String _fmt(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 }
 
 class _HeaderCard extends StatelessWidget {
@@ -182,13 +181,11 @@ class _SetRow extends StatelessWidget {
       child: ListTile(
         leading: _WarmupChip(isWarmup: isWarmup),
         title: Text(name),
-        subtitle: Text('${_fmt(set.weight)} kg × ${set.reps}'),
+        subtitle: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
       ),
     );
   }
 
-  String _fmt(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 }
 
 /// W / S chip mirroring the current-workout screen's indicator (see the cubit's

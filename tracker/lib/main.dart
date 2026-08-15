@@ -7,6 +7,7 @@ import 'package:tracker/data/repositories.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/data/seed.dart';
 import 'package:tracker/home_page.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 Future<void> main() async {
@@ -32,6 +33,10 @@ Future<void> main() async {
         providers: [
           BlocProvider<WorkoutCubit>(
             create: (_) => WorkoutCubit(repository: repository),
+            lazy: false,
+          ),
+          BlocProvider<SettingsCubit>(
+            create: (_) => SettingsCubit(),
             lazy: false,
           ),
         ],

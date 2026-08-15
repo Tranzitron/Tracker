@@ -5,6 +5,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 
 /// Individual exercise view (Plan.md §1.4.1.1): profile rows plus a
 /// performance-history section (Milestone 6) charting the best normalized
@@ -48,7 +49,10 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final exercise = widget.exercise;
-    final series = exerciseBest1rm(_sessions, _multipliers, exercise.id);
+    final series = displayProgressionPoints(
+      context,
+      exerciseBest1rm(_sessions, _multipliers, exercise.id),
+    );
     final summary = exerciseSummary(_sessions, _multipliers, exercise.id);
 
     return CustomScrollView(
@@ -97,11 +101,11 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                   children: <Widget>[
                     _Stat(
                       label: 'Best 1RM',
-                      value: _fmt(summary.best1rm),
+                      value: formatWeight(context, summary.best1rm),
                     ),
                     _Stat(
                       label: 'Peak volume',
-                      value: _fmt(summary.peakVolume),
+                      value: formatWeight(context, summary.peakVolume),
                     ),
                     _Stat(label: 'Sessions', value: '${summary.sessionCount}'),
                   ],
@@ -112,7 +116,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                   style: theme.textTheme.bodyMedium,
                 ),
                 const SizedBox(height: 8),
-                LineChart(points: series, unit: 'kg'),
+                LineChart(points: series, unit: weightUnitOf(context).symbol),
               ],
             ),
           ),
@@ -120,9 +124,6 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
       ],
     );
   }
-
-  String _fmt(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toStringAsFixed(1);
 }
 
 class _Stat extends StatelessWidget {
