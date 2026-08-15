@@ -58,8 +58,10 @@ class _FeedPageState extends State<FeedPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                Text('Recent activity',
-                    style: Theme.of(context).textTheme.titleLarge),
+                Text(
+                  'Recent activity',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
                 const SizedBox(height: 8),
                 _buildActivity(),
                 const SizedBox(height: 16),
@@ -68,7 +70,8 @@ class _FeedPageState extends State<FeedPage> {
                     leading: const Icon(Icons.show_chart_sharp),
                     title: const Text('Progression'),
                     subtitle: const Text(
-                        'Strength and volume trends across all exercises'),
+                      'Strength and volume trends across all exercises',
+                    ),
                     trailing: const Icon(Icons.chevron_right_sharp),
                     onTap: () => pushTo(context, const ProgressionPage()),
                   ),
@@ -98,7 +101,9 @@ class _FeedPageState extends State<FeedPage> {
             icon: Icons.error_outline,
             message: 'Could not load recent activity.',
             action: TextButton(
-                onPressed: () => setState(() {}), child: const Text('Retry')),
+              onPressed: () => setState(() {}),
+              child: const Text('Retry'),
+            ),
           );
         }
         if (snapshot.connectionState == ConnectionState.waiting &&
@@ -111,8 +116,10 @@ class _FeedPageState extends State<FeedPage> {
           );
         }
         final sessions = [...snapshot.data ?? const <WorkoutSession>[]]..sort(
-            (a, b) =>
-                (b.endTime ?? b.startTime).compareTo(a.endTime ?? a.startTime));
+            (a, b) => (b.endTime ?? b.startTime).compareTo(
+              a.endTime ?? a.startTime,
+            ),
+          );
         if (sessions.isEmpty) return const _FeedEmpty();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,

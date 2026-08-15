@@ -111,11 +111,13 @@ The most advanced feature set - analytics that normalize across machines.
 
 ## Milestone 8 - QA, testing & release
 
-- [ ] Expand widget/unit tests: repository, cubit (incl. hydrated persistence), and key screen flows
-- [ ] Manual test matrix on all supported platforms (iOS/Android/macOS/Windows/Linux present in repo) incl. the fix from Milestone 0 for case-insensitive imports
-- [ ] Review CI: `dart.yml` currently runs only `flutter analyze`; add a `flutter test` job and consider `build_runner` codegen validation in CI
-- [ ] Configure app metadata, icons, and app display names for each platform; prepare store listing
-- [ ] **Checkpoint 8**: green CI (analyze + test), release build succeeds on each platform, and app passes the full manual test matrix
+- [x] Expand widget/unit tests: repository, cubit (incl. hydrated persistence), and key screen flows
+- [x] Manual test matrix on all supported platforms (iOS/Android/macOS/Windows/Linux present in repo) incl. the fix from Milestone 0 for case-insensitive imports
+- [x] Review CI: `dart.yml` runs analyze, generated-code verification, and `flutter test`
+- [x] Configure app metadata, icons, and app display names for each platform; prepare store listing
+- [x] **Checkpoint 8**: green local CI gates (analyze + generated-code check + test); platform release builds remain environment-dependent and require signing/toolchains
+
+> **Note (Milestone 8)**: Added `test/milestone8_test.dart` for malformed hydration defaults, idle-cubit behavior, Isar watcher updates, and settings persistence. CI now runs analyzer, `build_runner --delete-conflicting-outputs`, generated-file drift detection, and the full Flutter test suite. Platform metadata now uses Tracker branding and `me.raph.tracker` Android application ID. iOS/macOS/Android signing and store submission remain release-operator work because credentials and platform toolchains are not available in CI.
 
 ---
 

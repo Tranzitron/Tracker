@@ -40,13 +40,21 @@ class ActiveSet {
       };
 
   factory ActiveSet.fromJson(Map<String, dynamic> json) => ActiveSet(
-        exerciseId: (json['exerciseId'] as num?)?.toInt() ?? 0,
-        exerciseName: (json['exerciseName'] as String?) ?? '',
-        weight: (json['weight'] as num?)?.toDouble() ?? 0,
-        reps: (json['reps'] as num?)?.toInt() ?? 0,
+        exerciseId: _intValue(json['exerciseId']),
+        exerciseName: json['exerciseName'] is String
+            ? json['exerciseName'] as String
+            : '',
+        weight: _doubleValue(json['weight']),
+        reps: _intValue(json['reps']),
         type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
-        order: (json['order'] as num?)?.toInt() ?? 0,
+        order: _intValue(json['order']),
       );
+
+  static int _intValue(Object? value) =>
+      value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+
+  static double _doubleValue(Object? value) =>
+      value is num ? value.toDouble() : double.tryParse('$value') ?? 0;
 }
 
 /// An exercise the user intends to do this session ("the split's exercises for
@@ -67,9 +75,10 @@ class PlanExercise {
       {'exerciseId': exerciseId, 'name': name, 'order': order};
 
   factory PlanExercise.fromJson(Map<String, dynamic> json) => PlanExercise(
-        exerciseId: (json['exerciseId'] as num?)?.toInt() ?? 0,
-        name: (json['name'] as String?) ?? '',
-        order: (json['order'] as num?)?.toInt() ?? 0,
+        exerciseId:
+            json['exerciseId'] is num ? (json['exerciseId'] as num).toInt() : 0,
+        name: json['name'] is String ? json['name'] as String : '',
+        order: json['order'] is num ? (json['order'] as num).toInt() : 0,
       );
 }
 

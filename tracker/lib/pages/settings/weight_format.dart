@@ -30,6 +30,8 @@ List<ProgressionPoint> displayProgressionPoints(
   return [
     for (final point in points)
       ProgressionPoint(
-          date: point.date, value: unit.fromKilograms(point.value)),
+        date: point.date,
+        value: unit.fromKilograms(point.value),
+      ),
   ];
 }

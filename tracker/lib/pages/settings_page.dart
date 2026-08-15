@@ -97,17 +97,20 @@ class SettingsPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             TextField(
-                controller: name,
-                decoration: const InputDecoration(labelText: 'Name')),
+              controller: name,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
             TextField(
-                controller: email,
-                decoration: const InputDecoration(labelText: 'Email')),
+              controller: email,
+              decoration: const InputDecoration(labelText: 'Email'),
+            ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           FilledButton(
             onPressed: () => Navigator.pop(context, (name.text, email.text)),
             child: const Text('Save'),
@@ -143,32 +146,39 @@ class SettingsPage extends StatelessWidget {
         ],
       ),
     );
-    if (selected != null && context.mounted)
+    if (selected != null && context.mounted) {
       context.read<SettingsCubit>().setUnit(selected);
+    }
   }
 
   Future<void> _toggleNotifications(
-      BuildContext context, SettingsState state) async {
+    BuildContext context,
+    SettingsState state,
+  ) async {
     final value = await _confirmToggle(
       context,
       title: 'Notifications',
       message: 'Allow workout reminders and progress notifications?',
       value: state.notificationsEnabled,
     );
-    if (value != null && context.mounted)
+    if (value != null && context.mounted) {
       context.read<SettingsCubit>().setNotificationsEnabled(value);
+    }
   }
 
   Future<void> _toggleAnalytics(
-      BuildContext context, SettingsState state) async {
+    BuildContext context,
+    SettingsState state,
+  ) async {
     final value = await _confirmToggle(
       context,
       title: 'Privacy & Security',
       message: 'Allow anonymous analytics to improve the app?',
       value: state.analyticsEnabled,
     );
-    if (value != null && context.mounted)
+    if (value != null && context.mounted) {
       context.read<SettingsCubit>().setAnalyticsEnabled(value);
+    }
   }
 
   Future<bool?> _confirmToggle(
@@ -185,13 +195,17 @@ class SettingsPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(message),
-            Switch(value: value, onChanged: (v) => Navigator.pop(context, v))
+            Switch(
+              value: value,
+              onChanged: (v) => Navigator.pop(context, v),
+            ),
           ],
         ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
         ],
       ),
     );

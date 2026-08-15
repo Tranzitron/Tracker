@@ -95,12 +95,12 @@ BEGIN
 BEGIN
         VALUE
 "CompanyName", "me.raph" "\0"
-VALUE "FileDescription", "tracker" "\0"
+VALUE "FileDescription", "Tracker" "\0"
 VALUE "FileVersion", VERSION_AS_STRING "\0"
-VALUE "InternalName", "tracker" "\0"
+VALUE "InternalName", "Tracker" "\0"
 VALUE "LegalCopyright", "Copyright (C) 2024 me.raph. All rights reserved." "\0"
 VALUE "OriginalFilename", "tracker.exe" "\0"
-VALUE "ProductName", "tracker" "\0"
+VALUE "ProductName", "Tracker" "\0"
 VALUE "ProductVersion", VERSION_AS_STRING "\0"
 END
         END
