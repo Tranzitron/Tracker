@@ -11,12 +11,30 @@ import 'gym_picker.dart';
 import 'new_split_page.dart';
 import 'split_day_page.dart';
 
-class WorkoutPage extends StatelessWidget {
+class WorkoutPage extends StatefulWidget {
   const WorkoutPage({super.key});
 
   @override
+  State<WorkoutPage> createState() => _WorkoutPageState();
+}
+
+class _WorkoutPageState extends State<WorkoutPage> {
+  Stream<List<WorkoutSplit>>? _stream;
+  bool _didLoad = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // RepositoryScope is an inherited widget, so read it here (after initState).
+    // Cache the watch stream once so rebuilds don't resubscribe the query.
+    if (!_didLoad) {
+      _didLoad = true;
+      _stream = RepositoryScope.maybeOf(context)?.splits.watchAll();
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final stream = RepositoryScope.maybeOf(context)?.splits.watchAll();
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(context, title: 'Workout'),
@@ -24,7 +42,7 @@ class WorkoutPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(16.0),
             child: StreamBuilder<List<WorkoutSplit>>(
-              stream: stream,
+              stream: _stream,
               initialData: const <WorkoutSplit>[],
               builder: (context, snapshot) {
                 final splits = snapshot.data ?? const <WorkoutSplit>[];

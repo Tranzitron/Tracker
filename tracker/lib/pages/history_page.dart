@@ -22,6 +22,7 @@ class HistoryPage extends StatefulWidget {
 
 class _HistoryPageState extends State<HistoryPage> {
   Map<int, String> _gymNames = const {};
+  Stream<List<WorkoutSession>>? _stream;
   bool _didLoad = false;
   _HistoryMode _mode = _HistoryMode.list;
 
@@ -29,8 +30,10 @@ class _HistoryPageState extends State<HistoryPage> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // RepositoryScope is an inherited widget, so read it here (after initState).
+    // Cache the watch stream once so rebuilds don't resubscribe the query.
     if (!_didLoad) {
       _didLoad = true;
+      _stream = RepositoryScope.maybeOf(context)?.sessions.watchAll();
       _loadGyms();
     }
   }
@@ -46,7 +49,6 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    final stream = RepositoryScope.maybeOf(context)?.sessions.watchAll();
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(context, title: 'History'),
@@ -74,7 +76,7 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<List<WorkoutSession>>(
-                  stream: stream,
+                  stream: _stream,
                   initialData: const <WorkoutSession>[],
                   builder: (context, snapshot) {
                     final sessions = snapshot.data ?? const <WorkoutSession>[];

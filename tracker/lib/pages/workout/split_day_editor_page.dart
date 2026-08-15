@@ -22,6 +22,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
   final _description = TextEditingController();
   List<ExerciseItem> _items = [];
   Map<int, String> _names = const {};
+  bool _didLoad = false;
 
   @override
   void initState() {
@@ -41,7 +42,12 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _loadNames();
+    // RepositoryScope is an inherited widget, so read it here (after initState).
+    // Guard so a dependency change doesn't re-run the async load.
+    if (!_didLoad) {
+      _didLoad = true;
+      _loadNames();
+    }
   }
 
   Future<void> _loadNames() async {

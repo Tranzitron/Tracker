@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
@@ -24,6 +26,7 @@ class ExercisesPage extends StatefulWidget {
 class _ExercisesPageState extends State<ExercisesPage> {
   _BrowseMode _mode = _BrowseMode.muscle;
   List<Exercise> _exercises = const [];
+  StreamSubscription<List<Exercise>>? _sub;
   bool _loaded = false;
 
   @override
@@ -35,6 +38,12 @@ class _ExercisesPageState extends State<ExercisesPage> {
     }
   }
 
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
+  }
+
   void _subscribe() {
     final repo = RepositoryScope.maybeOf(context);
     if (repo == null) return;
@@ -42,9 +51,15 @@ class _ExercisesPageState extends State<ExercisesPage> {
     repo.exercises.getAll().then((list) {
       if (mounted) setState(() => _exercises = list);
     });
-    repo.exercises.watchAll().listen((list) {
-      if (mounted) setState(() => _exercises = list);
-    });
+    _sub = repo.exercises.watchAll().listen(
+      (list) {
+        if (mounted) setState(() => _exercises = list);
+      },
+      onError: (Object e, StackTrace st) {
+        // Surface async Isar stream errors instead of leaving them unhandled.
+        debugPrint('exercises watch error: $e');
+      },
+    );
   }
 
   @override

@@ -63,7 +63,9 @@ class _ProgressionPageState extends State<ProgressionPage> {
                     _Stat(label: 'Workouts', value: '${summary.sessionCount}'),
                     _Stat(label: 'Best 1RM', value: _fmt(summary.best1rm)),
                     _Stat(
-                        label: 'Peak volume', value: _fmt(summary.peakVolume)),
+                      label: 'Peak volume',
+                      value: _fmt(summary.peakVolume),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),

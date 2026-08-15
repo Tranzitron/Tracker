@@ -102,8 +102,11 @@ class _LineChartPainter extends CustomPainter {
       ..color = lineColor.withValues(alpha: 0.12)
       ..strokeWidth = 1;
     final midY = yFor((minY + maxY) / 2);
-    canvas.drawLine(Offset(_leftPad, midY),
-        Offset(size.width - _rightPad, midY), gridPaint);
+    canvas.drawLine(
+      Offset(_leftPad, midY),
+      Offset(size.width - _rightPad, midY),
+      gridPaint,
+    );
 
     // Polyline.
     final path = Path()..moveTo(xFor(0), yFor(points[0].value));

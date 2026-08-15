@@ -17,14 +17,17 @@ class GymsPage extends StatefulWidget {
 
 class _GymsPageState extends State<GymsPage> {
   List<WorkoutSession> _sessions = const [];
+  Stream<List<Gym>>? _stream;
   bool _didLoad = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     // RepositoryScope is an inherited widget, so read it after initState.
+    // Cache the watch stream once so rebuilds don't resubscribe the query.
     if (!_didLoad) {
       _didLoad = true;
+      _stream = RepositoryScope.maybeOf(context)?.gyms.watchAll();
       _loadSessions();
     }
   }
@@ -132,7 +135,6 @@ class _GymsPageState extends State<GymsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final stream = RepositoryScope.maybeOf(context)?.gyms.watchAll();
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(
@@ -161,7 +163,7 @@ class _GymsPageState extends State<GymsPage> {
                 ),
                 const SizedBox(height: 12),
                 StreamBuilder<List<Gym>>(
-                  stream: stream,
+                  stream: _stream,
                   initialData: const <Gym>[],
                   builder: (context, snapshot) {
                     final gyms = snapshot.data ?? const <Gym>[];

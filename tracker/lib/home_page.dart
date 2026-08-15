@@ -21,12 +21,23 @@ class _HomePageState extends State<HomePage> {
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List.generate(5, (index) => GlobalKey<NavigatorState>());
 
+  // Tabs built so far. Unvisited tabs stay unmounted so they don't subscribe to
+  // DB watchers or rebuild on every write until first opened.
+  final Set<int> _visited = {0};
+
   void _selectTab(int index) {
     if (index != _currentIndex) {
-      setState(() => _currentIndex = index);
+      _setCurrentIndex(index);
     } else {
       _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
     }
+  }
+
+  void _setCurrentIndex(int index) {
+    setState(() {
+      _currentIndex = index;
+      _visited.add(index);
+    });
   }
 
   Widget _buildOffstageNavigator(int index, Widget child) {
@@ -47,21 +58,28 @@ class _HomePageState extends State<HomePage> {
   }
 
   void indexSetState(int index) {
-    setState(() {
-      _currentIndex = index;
-    });
+    _setCurrentIndex(index);
+  }
+
+  Widget _pageFor(int index) {
+    return switch (index) {
+      0 => const FeedPage(),
+      1 => const HistoryPage(),
+      2 => const CurrentWorkoutPage(),
+      3 => const WorkoutPage(),
+      4 => const ExercisesPage(),
+      _ => const SizedBox.shrink(),
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final visited = _visited.toList()..sort();
     return Scaffold(
       body: Stack(
         children: [
-          _buildOffstageNavigator(0, const FeedPage()),
-          _buildOffstageNavigator(1, const HistoryPage()),
-          _buildOffstageNavigator(2, const CurrentWorkoutPage()),
-          _buildOffstageNavigator(3, const WorkoutPage()),
-          _buildOffstageNavigator(4, const ExercisesPage()),
+          for (final index in visited)
+            _buildOffstageNavigator(index, _pageFor(index)),
         ],
       ),
       bottomNavigationBar: NavigationBar(

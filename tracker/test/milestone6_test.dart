@@ -22,7 +22,9 @@ void main() {
   group('1RM estimate (Epley)', () {
     test('multiplies by (1 + reps/30) for reps > 1', () {
       expect(
-          epley1rm(weight: 100, reps: 5), closeTo(100 * (1 + 5 / 30), 0.001));
+        epley1rm(weight: 100, reps: 5),
+        closeTo(100 * (1 + 5 / 30), 0.001),
+      );
     });
 
     test('returns weight unchanged for 1 or 0 reps', () {
