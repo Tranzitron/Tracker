@@ -49,67 +49,119 @@ class _HistoryPageState extends State<HistoryPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        CustomAppBar(context, title: 'History'),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                SegmentedButton<_HistoryMode>(
-                  segments: const [
-                    ButtonSegment(
-                      value: _HistoryMode.list,
-                      label: Text('List'),
-                      icon: Icon(Icons.list_sharp),
-                    ),
-                    ButtonSegment(
-                      value: _HistoryMode.calendar,
-                      label: Text('Calendar'),
-                      icon: Icon(Icons.calendar_month_sharp),
-                    ),
-                  ],
-                  selected: {_mode},
-                  onSelectionChanged: (s) => setState(() => _mode = s.first),
-                ),
-                const SizedBox(height: 16),
-                StreamBuilder<List<WorkoutSession>>(
-                  stream: _stream,
-                  initialData: const <WorkoutSession>[],
-                  builder: (context, snapshot) {
-                    final sessions = snapshot.data ?? const <WorkoutSession>[];
-                    if (sessions.isEmpty) {
-                      return const _EmptyHistory();
-                    }
-                    if (_mode == _HistoryMode.calendar) {
-                      return HistoryCalendar(
-                        sessions: sessions,
-                        gymNames: _gymNames,
-                      );
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final session in sessions)
-                          _SessionTile(
-                            session: session,
-                            gymName: session.gymId == null
-                                ? null
-                                : _gymNames[session.gymId],
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
+    return StreamBuilder<List<WorkoutSession>>(
+      stream: _stream,
+      builder: (context, snapshot) {
+        return CustomScrollView(slivers: _buildSlivers(context, snapshot));
+      },
     );
   }
+
+  List<Widget> _buildSlivers(
+    BuildContext context,
+    AsyncSnapshot<List<WorkoutSession>> snapshot,
+  ) {
+    final slivers = <Widget>[CustomAppBar(context, title: 'History')];
+    slivers.add(
+      SliverToBoxAdapter(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: SegmentedButton<_HistoryMode>(
+            segments: const [
+              ButtonSegment(
+                value: _HistoryMode.list,
+                label: Text('List'),
+                icon: Icon(Icons.list_sharp),
+              ),
+              ButtonSegment(
+                value: _HistoryMode.calendar,
+                label: Text('Calendar'),
+                icon: Icon(Icons.calendar_month_sharp),
+              ),
+            ],
+            selected: {_mode},
+            onSelectionChanged: (s) => setState(() => _mode = s.first),
+          ),
+        ),
+      ),
+    );
+
+    if (snapshot.hasError) {
+      slivers.add(
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: _HistoryMessage(message: 'Could not load workout history.'),
+        ),
+      );
+    } else if (snapshot.connectionState == ConnectionState.waiting &&
+        !snapshot.hasData) {
+      slivers.add(
+        const SliverFillRemaining(
+          hasScrollBody: false,
+          child: Center(child: CircularProgressIndicator()),
+        ),
+      );
+    } else {
+      final sessions = snapshot.data ?? const <WorkoutSession>[];
+      if (sessions.isEmpty) {
+        slivers.add(
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: _EmptyHistory(),
+          ),
+        );
+      } else if (_mode == _HistoryMode.calendar) {
+        slivers.add(
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            sliver: SliverToBoxAdapter(
+              child: HistoryCalendar(sessions: sessions, gymNames: _gymNames),
+            ),
+          ),
+        );
+      } else {
+        slivers.add(
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+            sliver: SliverList.builder(
+              itemCount: sessions.length,
+              itemBuilder: (context, index) {
+                final session = sessions[index];
+                return _SessionTile(
+                  session: session,
+                  gymName: session.gymId == null
+                      ? null
+                      : _gymNames[session.gymId],
+                );
+              },
+            ),
+          ),
+        );
+      }
+    }
+    return slivers;
+  }
+}
+
+class _HistoryMessage extends StatelessWidget {
+  const _HistoryMessage({required this.message});
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) => Card(
+    margin: const EdgeInsets.all(16),
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          const Icon(Icons.error_outline),
+          const SizedBox(width: 12),
+          Expanded(child: Text(message)),
+        ],
+      ),
+    ),
+  );
 }
 
 class _EmptyHistory extends StatelessWidget {
