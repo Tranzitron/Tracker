@@ -39,6 +39,36 @@ void main() {
     });
   });
 
+  group('WorkoutDateIndex', () {
+    test('normalizes sessions, groups days, and computes month metrics', () {
+      final index = WorkoutDateIndex.fromSessions([
+        WorkoutSession(startTime: DateTime(2026, 3, 4, 9)),
+        WorkoutSession(startTime: DateTime(2026, 3, 4, 18)),
+        WorkoutSession(startTime: DateTime(2026, 4, 1, 9)),
+      ]);
+
+      expect(index.sessionsOn(DateTime(2026, 3, 4)), hasLength(2));
+      expect(index.monthWorkoutDays(2026, 3), 1);
+      expect(index.monthWorkoutDays(2026, 4), 1);
+      expect(index.workoutDays, contains(DateTime(2026, 3, 4)));
+    });
+
+    test('exposes immutable cached collections', () {
+      final index = WorkoutDateIndex.fromSessions([
+        WorkoutSession(startTime: DateTime(2026, 3, 4)),
+      ]);
+
+      expect(
+        () => index.workoutDays.add(DateTime(2026, 3, 5)),
+        throwsUnsupportedError,
+      );
+      expect(
+        () => index.sessionsOn(DateTime(2026, 3, 4)).clear(),
+        throwsUnsupportedError,
+      );
+    });
+  });
+
   group('currentStreak', () {
     test('counts consecutive workout days ending today', () {
       final today = DateUtils.dateOnly(DateTime.now());
@@ -65,8 +95,9 @@ void main() {
   });
 
   group('SessionDetailPage UI', () {
-    testWidgets('renders header, stats and every set with warmup marker',
-        (tester) async {
+    testWidgets('renders header, stats and every set with warmup marker', (
+      tester,
+    ) async {
       final session = WorkoutSession(
         title: 'Home workout',
         startTime: DateTime(2026, 1, 1, 9),
@@ -108,8 +139,9 @@ void main() {
       expect(find.text('S'), findsOneWidget); // working marker
     });
 
-    testWidgets('shows a working volume that excludes warmup sets',
-        (tester) async {
+    testWidgets('shows a working volume that excludes warmup sets', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: SessionDetailPage(

@@ -30,6 +30,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   late int _year;
   late int _month;
   DateTime? _selectedDay;
+  late WorkoutDateIndex _dateIndex;
 
   @override
   void initState() {
@@ -38,19 +39,20 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     _year = now.year;
     _month = now.month;
     _selectedDay = _day(now);
+    _dateIndex = WorkoutDateIndex.fromSessions(widget.sessions);
   }
 
-  Map<DateTime, List<WorkoutSession>> get _byDay {
-    final map = <DateTime, List<WorkoutSession>>{};
-    for (final s in widget.sessions) {
-      map.putIfAbsent(_day(s.startTime), () => []).add(s);
+  @override
+  void didUpdateWidget(covariant HistoryCalendar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(oldWidget.sessions, widget.sessions)) {
+      _dateIndex = WorkoutDateIndex.fromSessions(widget.sessions);
     }
-    return map;
   }
 
   static DateTime _day(DateTime t) => DateTime(t.year, t.month, t.day);
 
-  List<WorkoutSession> _sessionsOn(DateTime day) => _byDay[day] ?? const [];
+  List<WorkoutSession> _sessionsOn(DateTime day) => _dateIndex.sessionsOn(day);
 
   void _goMonth(int delta) {
     setState(() {
@@ -65,11 +67,8 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final grid = CalendarGrid(_year, _month);
-    final byDay = _byDay;
-
-    final monthWorkoutDays =
-        byDay.keys.where((d) => d.year == _year && d.month == _month).length;
-    final streak = currentStreak(byDay.keys.toSet());
+    final monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
+    final streak = _dateIndex.currentStreak();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -88,8 +87,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                 child: Center(
                   child: Text(
                     label,
-                    style: theme.textTheme.bodySmall
-                        ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
                   ),
                 ),
               ),
@@ -131,8 +131,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     final selected =
         _selectedDay != null && _selectedDay!.isAtSameMomentAs(date);
 
-    final foreground =
-        selected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+    final foreground = selected
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
     final dot = selected
         ? theme.colorScheme.onPrimary
         : (hasWorkout ? theme.colorScheme.primary : Colors.transparent);
@@ -273,16 +274,10 @@ class _MetricsStrip extends StatelessWidget {
     return Row(
       children: <Widget>[
         Expanded(
-          child: _Metric(
-            label: 'Workout days',
-            value: '$monthWorkoutDays',
-          ),
+          child: _Metric(label: 'Workout days', value: '$monthWorkoutDays'),
         ),
         Expanded(
-          child: _Metric(
-            label: 'day streak',
-            value: '$streak',
-          ),
+          child: _Metric(label: 'day streak', value: '$streak'),
         ),
       ],
     );
@@ -308,8 +303,9 @@ class _Metric extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: theme.textTheme.bodySmall
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
