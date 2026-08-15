@@ -1,9 +1,22 @@
 import '../models/exercise.dart';
 import '../models/muscle.dart';
+import 'repositories.dart';
+
+/// Inserts the built-in exercise library when the collection is empty.
+///
+/// The check and insert share one Isar write transaction so concurrent startup
+/// attempts cannot duplicate the seed. An empty collection remains retryable if
+/// the transaction fails.
+Future<void> seedExercisesIfNeeded(TrackerRepository repository) async {
+  await repository.isar.writeTxn(() async {
+    if (await repository.isar.exercises.count() != 0) return;
+    await repository.isar.exercises.putAll(seedExercises());
+  });
+}
 
 /// The seed is the initial cast of the exercise library. `dart run build_runner
 /// build` has already generated `*Schema`; these records are inserted on first
-/// run (see [TrackerRepository] seeding in `main.dart`).
+/// run (see [seedExercisesIfNeeded]).
 ///
 /// Keep it curated, not exhaustive: enough to make splits, logging and the
 /// exercises tab meaningful without opinionating the whole library.

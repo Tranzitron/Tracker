@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -18,13 +20,11 @@ Future<void> main() async {
     ),
   );
 
-  // Open the single Isar instance, wrap it in typed repositories, and seed the
-  // exercise library on first run.
+  // Open the single Isar instance and make the shell available immediately.
+  // First-run seeding runs after the first frame, so a slow write cannot delay
+  // the initial UI or prevent startup when seeding fails.
   final isar = await DbInstance.getIsar();
   final repository = TrackerRepository(isar);
-  if (await repository.exercises.count() == 0) {
-    await repository.exercises.putAll(seedExercises());
-  }
 
   runApp(
     RepositoryScope(
@@ -44,6 +44,36 @@ Future<void> main() async {
       ),
     ),
   );
+
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(_seedExercises(repository));
+  });
+}
+
+Future<void> _seedExercises(
+  TrackerRepository repository, {
+  int attempt = 0,
+}) async {
+  try {
+    await seedExercisesIfNeeded(repository);
+  } catch (error, stackTrace) {
+    // Keep startup alive and make the failure observable. If the collection is
+    // still empty, retry once after transient startup/IO failures.
+    FlutterError.reportError(
+      FlutterErrorDetails(
+        exception: error,
+        stack: stackTrace,
+        library: 'tracker startup',
+        context: ErrorDescription(
+          'seeding the exercise library (attempt ${attempt + 1})',
+        ),
+      ),
+    );
+    if (attempt == 0) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      await _seedExercises(repository, attempt: 1);
+    }
+  }
 }
 
 class MyApp extends StatelessWidget {
