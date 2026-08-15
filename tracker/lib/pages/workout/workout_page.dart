@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
@@ -19,18 +21,33 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
-  Stream<List<WorkoutSplit>>? _stream;
-  bool _didLoad = false;
+  List<WorkoutSplit> _splits = const <WorkoutSplit>[];
+  StreamSubscription<List<WorkoutSplit>>? _sub;
+  bool _loaded = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // RepositoryScope is an inherited widget, so read it here (after initState).
-    // Cache the watch stream once so rebuilds don't resubscribe the query.
-    if (!_didLoad) {
-      _didLoad = true;
-      _stream = RepositoryScope.maybeOf(context)?.splits.watchAll();
+    if (!_loaded) {
+      _loaded = true;
+      final repo = RepositoryScope.maybeOf(context);
+      if (repo != null) {
+        _sub = repo.splits.watchAll().listen(
+          (splits) {
+            if (mounted) setState(() => _splits = splits);
+          },
+          onError: (Object error, StackTrace stack) {
+            debugPrint('workout splits watch error: $error');
+          },
+        );
+      }
     }
+  }
+
+  @override
+  void dispose() {
+    _sub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -38,32 +55,34 @@ class _WorkoutPageState extends State<WorkoutPage> {
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(context, title: 'Workout'),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: StreamBuilder<List<WorkoutSplit>>(
-              stream: _stream,
-              initialData: const <WorkoutSplit>[],
-              builder: (context, snapshot) {
-                final splits = snapshot.data ?? const <WorkoutSplit>[];
-                return Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    const BuildStartWorkoutButton(),
-                    if (splits.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text('No splits yet. Create one below.'),
-                      )
-                    else
-                      for (final split in splits) BuildMaterialSplit(split),
-                    const BuildNewSplitButton(),
-                  ],
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
+          sliver: SliverToBoxAdapter(child: BuildStartWorkoutButton()),
+        ),
+        if (_splits.isEmpty)
+          const SliverPadding(
+            padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
+            sliver: SliverToBoxAdapter(
+              child: Text('No splits yet. Create one below.'),
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            sliver: SliverList.builder(
+              itemCount: _splits.length,
+              itemBuilder: (context, index) {
+                final split = _splits[index];
+                return BuildMaterialSplit(
+                  key: ValueKey<String>('split-${split.id}'),
+                  split,
                 );
               },
             ),
           ),
+        const SliverPadding(
+          padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
+          sliver: SliverToBoxAdapter(child: BuildNewSplitButton()),
         ),
       ],
     );
@@ -77,9 +96,7 @@ class BuildStartWorkoutButton extends StatelessWidget {
     final cubit = context.read<WorkoutCubit>();
     final repo = RepositoryScope.maybeOf(context);
     final gyms = (await repo?.gyms.getAll()) ?? const <Gym>[];
-    if (!context.mounted) {
-      return;
-    }
+    if (!context.mounted) return;
     final gym = await promptGym(context, gyms);
     cubit.startWorkout(gym: gym);
   }
@@ -89,12 +106,10 @@ class BuildStartWorkoutButton extends StatelessWidget {
     return FilledButton(
       style: ButtonStyle(
         padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-          EdgeInsets.symmetric(vertical: 16),
+          const EdgeInsets.symmetric(vertical: 16),
         ),
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
       onPressed: () => _start(context),
@@ -109,14 +124,10 @@ class BuildNewSplitButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FilledButton(
-      onPressed: () {
-        pushTo(context, const SplitEditorPage());
-      },
+      onPressed: () => pushTo(context, const SplitEditorPage()),
       style: ButtonStyle(
         shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         ),
       ),
       child: const Row(
@@ -137,8 +148,6 @@ class BuildMaterialSplit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // A Material (not a colored Container) so the inner ListTiles paint their
-    // ink/background on a proper Material ancestor.
     return Container(
       margin: const EdgeInsets.only(top: 16),
       child: Material(
@@ -149,31 +158,31 @@ class BuildMaterialSplit extends StatelessWidget {
           side: const BorderSide(color: Colors.transparent),
         ),
         child: ListBody(
-          mainAxis: Axis.vertical,
           children: <Widget>[
             WorkoutListTile(
+              key: ValueKey<String>('split-header-${split.id}'),
               titleText: split.title,
               isSplitDay: false,
               trailing: const Icon(Icons.edit_outlined, size: 20),
-              onTap: () {
-                pushTo(context, SplitEditorPage(split: split));
-              },
+              onTap: () => pushTo(context, SplitEditorPage(split: split)),
             ),
-            for (final splitDay in split.splitDays)
+            for (var index = 0; index < split.splitDays.length; index++)
               InkWell(
-                onTap: () {
-                  pushTo(
-                    context,
-                    SplitDayPage(splitTitle: split.title, day: splitDay),
-                  );
-                },
+                key: ValueKey<String>('split-day-${split.id}-$index'),
+                onTap: () => pushTo(
+                  context,
+                  SplitDayPage(
+                    splitTitle: split.title,
+                    day: split.splitDays[index],
+                  ),
+                ),
                 child: Column(
                   children: <Widget>[
-                    const Divider(height: 1.0, indent: 16.0, endIndent: 16.0),
+                    const Divider(height: 1, indent: 16, endIndent: 16),
                     WorkoutListTile(
                       isSplitDay: true,
-                      titleText: splitDay.title,
-                      exercises: splitDay.exercises,
+                      titleText: split.splitDays[index].title,
+                      exercises: split.splitDays[index].exercises,
                     ),
                   ],
                 ),
@@ -204,13 +213,11 @@ class WorkoutListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      minTileHeight: 40.0,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 0),
+      minTileHeight: 40,
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
       title: Text(
         titleText,
-        style: TextStyle(
-          color: isSplitDay ? Colors.blueAccent : Colors.white,
-        ),
+        style: TextStyle(color: isSplitDay ? Colors.blueAccent : Colors.white),
         overflow: TextOverflow.ellipsis,
       ),
       trailing: trailing,
