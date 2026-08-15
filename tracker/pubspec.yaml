@@ -5,6 +5,7 @@ version: 1.0.0+1
 
 environment:
   sdk: '>=3.4.3 <4.0.0'
+  flutter: 3.47.0
 
 dependencies:
   flutter:
@@ -30,7 +31,6 @@ dev_dependencies:
 # 2.2.x line (MethodChannel-based) to keep the broken packages out of the build.
 dependency_overrides:
   path_provider_android: ">=2.2.0 <2.3.0"
-
 
 flutter:
   uses-material-design: true

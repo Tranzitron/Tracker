@@ -1,4 +1,4 @@
-# TODO — Fitness Tracker (product completion)
+# TODO - Fitness Tracker (product completion)
 
 Breakdown of tasks and checkpoints to ship a complete product. Tasks are grouped into **milestones**; each milestone ends with verifiable **checkpoints**. Items reference the product spec in [`Plan.md`](Plan.md) (section numbers like `2.1`) and the current codebase state.
 
@@ -7,7 +7,7 @@ Legend:
 
 ---
 
-## Milestone 0 — Foundation cleanup (pre-requisite)
+## Milestone 0 - Foundation cleanup (pre-requisite)
 
 Fix the scaffold so the rest builds on solid ground. No new features.
 
@@ -19,34 +19,34 @@ Fix the scaffold so the rest builds on solid ground. No new features.
 
 ---
 
-## Milestone 1 — Data layer (Isar domain model + repository)
+## Milestone 1 - Data layer (Isar domain model + repository)
 
 Currently `Exercise` and `WorkoutSplit` are Isar `@collection` models, but the DB (`DbInstance.getIsar`) is **not wired into any page** and splits shown are hardcoded sample data. Build the full persistence foundation.
 
-- [x] Design the complete Isar schema for the full domain: extend `Exercise` (add `ExerciseItem`/variation model — replaces the `List<int>` placeholder in `WorkoutSplitDay` per the `TODO create ExerciseItem model` comment), add `WorkoutSession` + `Set` (weight, reps, `@enumerated` warmup flag — see `2.1`), `Gym` profile (`2.2`), muscle groups & movement patterns (`1.4.1`), units
+- [x] Design the complete Isar schema for the full domain: extend `Exercise` (add `ExerciseItem`/variation model - replaces the `List<int>` placeholder in `WorkoutSplitDay` per the `TODO create ExerciseItem model` comment), add `WorkoutSession` + `Set` (weight, reps, `@enumerated` warmup flag - see `2.1`), `Gym` profile (`2.2`), muscle groups & movement patterns (`1.4.1`), units
 - [x] Add a **repository/service layer** that owns all Isar queries so pages never touch `Isar` directly; the `WorkoutCubit` should hold a reference instead of reading the DB itself
 - [x] Wire the Isar DB into app startup and dependency-inject it (extend the `MultiBlocProvider`/`DbInstance` setup in `main.dart`)
 - [x] Add an **exercise seed library** (a curated set of exercises with muscle/equipment defaults) and a `muscle.dart`-driven categorization model (`1.4`)
-- [x] Add comment block + positional note for `dart run build_runner build` (document the codegen workflow near the models; `.g.dart` files are generated — never edit by hand)
+- [x] Add comment block + positional note for `dart run build_runner build` (document the codegen workflow near the models; `.g.dart` files are generated - never edit by hand)
 - [x] **Checkpoint 1**: create/read/update/delete of every new model works via the repository; a widget test persists a session and reads it back; `build_runner` regenerates cleanly
 
-> **Note (Milestone 1)**: the full `flutter build macos --debug` fails to compile due to a **third-party** dependency incompatibility — `jni`/`jni_util` (pulled transitively by `path_provider_android` → Isar) at their latest published versions (1.0.3/1.0.0) don't compile on the local Flutter 3.41 / Dart 3.11 SDK. None of the Milestone 1 source is involved (`flutter analyze` clean, all `flutter test` green, `build_runner` clean). CI pins Flutter 3.29.x where this tree resolves; to rebuild the app locally, align to the pinned Flutter or add a `dependency_overrides`/upgrade path for `jni`. Also note a host-side Isar test artifact `libisar.dylib` was copied to `tracker/` (gitignored) so `flutter test` can load the native lib.
+> **Note (Milestone 1)**: the full `flutter build macos --debug` fails to compile due to a **third-party** dependency incompatibility - `jni`/`jni_util` (pulled transitively by `path_provider_android` - Isar) at their latest published versions (1.0.3/1.0.0) don't compile on the local Flutter 3.41 / Dart 3.11 SDK. None of the Milestone 1 source is involved (`flutter analyze` clean, all `flutter test` green, `build_runner` clean). CI pins Flutter 3.29.x where this tree resolves; to rebuild the app locally, align to the pinned Flutter or add a `dependency_overrides`/upgrade path for `jni`. Also note a host-side Isar test artifact `libisar.dylib` was copied to `tracker/` (gitignored) so `flutter test` can load the native lib.
 
 ---
 
-## Milestone 2 — Navigation & app shell finalization
+## Milestone 2 - Navigation & app shell finalization
 
 `home_page.dart` per README's plan: tabs should be **Home(Feed) · History · CurrentWorkout · WorkoutsEditor · Exercices**, with Settings as a child of Feed.
 
 - [x] Fix `home_page.dart` tab wiring: tab 2 and 3 both currently build `WorkoutPage`; give the workout/editor tabs distinct pages and add the **Current Workout** destination (README's open todo)
 - [x] Move **Settings** into the Feed tab as a child page (`SettingsPage` exists at `lib/pages/settings_page.dart` but is not wired into `home_page.dart`); standardize back button via `CustomAppBar`/`pushTo` (`1.5`)
-- [x] Audit & consolidate the tab-index bookkeeping (`HomePageSingleton`/`BiMap`, `_navigatorKeys`) — remove the singleton if imperative `changeTab` calls are no longer needed
+- [x] Audit & consolidate the tab-index bookkeeping (`HomePageSingleton`/`BiMap`, `_navigatorKeys`) - remove the singleton if imperative `changeTab` calls are no longer needed
 - [x] Apply the standard `CustomAppBar` + `pushTo` slide navigation consistently across all screens
 - [x] **Checkpoint 2**: every top-level nav path resolves to a real (non-placeholder) screen; switching tabs preserves each tab's nav stack and state
 
 ---
 
-## Milestone 3 — Core workout logging (active session)
+## Milestone 3 - Core workout logging (active session)
 
 Implements the heart of the app: the active workout tracker.
 
@@ -57,11 +57,11 @@ Implements the heart of the app: the active workout tracker.
 - [x] Persist completed workouts as `WorkoutSession` records (not just the hydrated `WorkoutState`); evolve/retire the cubit's `startTime`/`completedExercises` bookkeeping so real sessions drive it
 - [x] **Checkpoint 3**: start → select gym → log working + warmup sets → end workout → session appears in history with correct gym, sets, and duration
 
-> **Note (Milestone 3)**: reconciliation is now explicit — the hydrated `WorkoutState` caches only the *in-progress* session (plan + sets, so a workout survives a restart); on `endWorkout` a real `WorkoutSession` (sets, gym, duration from start→now) is written to Isar and the hydrated state resets to idle. Warm-up sets are flagged (`SetType.warmup`) and shown with a `W` chip here; excluding them from volume/1RM/analytics is deferred to Milestone 6. `WorkoutPage` loads splits from the repository; tapping a split day opens a real `SplitDayPage` and can start that plan. `HistoryPage` gets a lightweight session list (real detail view is Milestone 5). Added `test/workout_flow_test.dart` covering the checkpoint path + inline logging UI.
+> **Note (Milestone 3)**: reconciliation is now explicit - the hydrated `WorkoutState` caches only the *in-progress* session (plan + sets, so a workout survives a restart); on `endWorkout` a real `WorkoutSession` (sets, gym, duration from start→now) is written to Isar and the hydrated state resets to idle. Warm-up sets are flagged (`SetType.warmup`) and shown with a `W` chip here; excluding them from volume/1RM/analytics is deferred to Milestone 6. `WorkoutPage` loads splits from the repository; tapping a split day opens a real `SplitDayPage` and can start that plan. `HistoryPage` gets a lightweight session list (real detail view is Milestone 5). Added `test/workout_flow_test.dart` covering the checkpoint path + inline logging UI.
 
 ---
 
-## Milestone 4 — Exercises & splits management (`1.3`, `1.4`)
+## Milestone 4 - Exercises & splits management (`1.3`, `1.4`)
 
 - [x] **Exercises library** (`1.4`): category view browsed by muscle group/movement pattern; exercise detail view (`1.4.1.1`); custom exercise creation
 - [x] **Split editor** (`1.3.1`): finish `NewSplitPage` stub (`Text('asdasd')`) into a real split CRUD editor
@@ -69,11 +69,11 @@ Implements the heart of the app: the active workout tracker.
 - [x] **Split day exercises editor** (`1.3.1.1.1`): add/remove/reorder exercises for a day; introduce `ExerciseItem` ordering model (replaces the `List<int>` placeholder)
 - [x] **Checkpoint 4**: user can create an exercise, create a split, add days, add/reorder exercises, and the workout screen reflects the edited split
 
-> **Note (Milestone 4)**: the exercises library (`ExercisesPage`) browses seeded + custom exercises by muscle group or movement pattern (segmented toggle), with a custom-exercise form (`NewExercisePage`) and a detail view (`ExerciseDetailPage`, §1.4.1.1) showing the profile — historical stats/graphs are deferred to Milestone 6 (analytics). Split editing is a real CRUD editor (`SplitEditorPage` in `new_split_page.dart`, create *and* edit), with a day editor (`SplitDayEditorPage`) that adds/removes/reorders exercises via `ReorderableListView`, fed by an `ExercisePickerPage`. `WorkoutPage`/`SplitDayPage` already stream the same repository data, so edited splits flow into the workout screen. `pushTo` now returns its `Future<T?>` so editors await popped results. Tests: `test/milestone4_test.dart` covers the create/reorder round-trip. Note: DB-driven widget tests are unreliable under `testWidgets` FakeAsync (real Isar futures don't resolve); repository-level tests + the 5-tab build smoke test cover this instead.
+> **Note (Milestone 4)**: the exercises library (`ExercisesPage`) browses seeded + custom exercises by muscle group or movement pattern (segmented toggle), with a custom-exercise form (`NewExercisePage`) and a detail view (`ExerciseDetailPage`, §1.4.1.1) showing the profile - historical stats/graphs are deferred to Milestone 6 (analytics). Split editing is a real CRUD editor (`SplitEditorPage` in `new_split_page.dart`, create *and* edit), with a day editor (`SplitDayEditorPage`) that adds/removes/reorders exercises via `ReorderableListView`, fed by an `ExercisePickerPage`. `WorkoutPage`/`SplitDayPage` already stream the same repository data, so edited splits flow into the workout screen. `pushTo` now returns its `Future<T?>` so editors await popped results. Tests: `test/milestone4_test.dart` covers the create/reorder round-trip. Note: DB-driven widget tests are unreliable under `testWidgets` FakeAsync (real Isar futures don't resolve); repository-level tests + the 5-tab build smoke test cover this instead.
 
 ---
 
-## Milestone 5 — History & calendar (`1.2`, `2.5`)
+## Milestone 5 - History & calendar (`1.2`, `2.5`)
 
 - [x] **History overview** (`1.2`): list past logged workouts with dates and historical performance; view a session's full sets from history
 - [x] **Calendar view** (`2.5`): interactive calendar of workout days with frequency/consistency metrics and quick links to past session logs
@@ -83,9 +83,9 @@ Implements the heart of the app: the active workout tracker.
 
 ---
 
-## Milestone 6 — Analytics, multipliers & progression (`2.3`, `2.4`)
+## Milestone 6 - Analytics, multipliers & progression (`2.3`, `2.4`)
 
-The most advanced feature set — analytics that normalize across machines.
+The most advanced feature set - analytics that normalize across machines.
 
 - [x] **Per-exercise historical stats & graphs** (`1.4.1.1`): weight/reps over time, performance logs
 - [x] **Machine weight equivalence & multipliers** (`2.3`): define a primary home-gym machine as baseline (multiplier 1.0); estimate trendlines to auto-calc equivalence multipliers for secondary machines; allow manual override
@@ -97,7 +97,7 @@ The most advanced feature set — analytics that normalize across machines.
 
 ---
 
-## Milestone 7 — Feed, settings & app polish (`1.1`, `1.5`)
+## Milestone 7 - Feed, settings & app polish (`1.1`, `1.5`)
 
 - [ ] **Feed** (`1.1`): activity stream of recent accomplishments and personal updates (replaces the bare `FeedPage` shell)
 - [ ] **Settings** (`1.5`): user profile, units (kg/lbs) with consistent formatting everywhere, gym configuration, general app settings; make the `SettingsPage` snackbar placeholders real
@@ -107,7 +107,7 @@ The most advanced feature set — analytics that normalize across machines.
 
 ---
 
-## Milestone 8 — QA, testing & release
+## Milestone 8 - QA, testing & release
 
 - [ ] Expand widget/unit tests: repository, cubit (incl. hydrated persistence), and key screen flows
 - [ ] Manual test matrix on all supported platforms (iOS/Android/macOS/Windows/Linux present in repo) incl. the fix from Milestone 0 for case-insensitive imports
@@ -120,10 +120,10 @@ The most advanced feature set — analytics that normalize across machines.
 ## Cross-cutting / ephemeral notes
 
 ### Commit hygiene (decided in Milestone 0)
-- `tracker/ios/Podfile.lock` is **kept committed** — CocoaPods app best practice keeps the lockfile for reproducible iOS builds.
+- `tracker/ios/Podfile.lock` is **kept committed** - CocoaPods app best practice keeps the lockfile for reproducible iOS builds.
 - `tracker/build/` is gitignored (root `build/` pattern + `tracker/.gitignore` `/build/`); never commit build artifacts.
 - `.DS_Store` / macOS junk added to root `.gitignore` (already present in `tracker/.gitignore`).
-- `linux/` + `windows/` `generated_plugin_registrant.*` and `generated_plugins.cmake` are regenerated on `flutter pub get` and **are meant to be committed** — expect them to show as modified after dependency changes.
+- `linux/` + `windows/` `generated_plugin_registrant.*` and `generated_plugins.cmake` are regenerated on `flutter pub get` and **are meant to be committed** - expect them to show as modified after dependency changes.
 
 
 
