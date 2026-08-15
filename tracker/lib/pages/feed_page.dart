@@ -28,7 +28,7 @@ class _FeedPageState extends State<FeedPage> {
     if (!_didLoad) {
       _didLoad = true;
       final repo = RepositoryScope.maybeOf(context);
-      _stream = repo?.sessions.watchAll();
+      _stream = repo?.sessions.watchRecent(limit: 5);
       _loadGyms();
     }
   }
@@ -42,99 +42,110 @@ class _FeedPageState extends State<FeedPage> {
 
   @override
   Widget build(BuildContext context) {
-    return CustomScrollView(
-      slivers: <Widget>[
-        CustomAppBar(
-          context,
-          title: 'Feed',
-          actionButton: (
-            title: 'Settings',
-            onPressed: () => pushTo(context, const SettingsPage()),
+    return StreamBuilder<List<WorkoutSession>>(
+      stream: _stream,
+      builder: (context, snapshot) {
+        final slivers = <Widget>[
+          CustomAppBar(
+            context,
+            title: 'Feed',
+            actionButton: (
+              title: 'Settings',
+              onPressed: () => pushTo(context, const SettingsPage()),
+            ),
           ),
-        ),
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  'Recent activity',
-                  style: Theme.of(context).textTheme.titleLarge,
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+              child: Text(
+                'Recent activity',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ),
+          ),
+        ];
+        if (_stream == null) {
+          slivers.add(const SliverToBoxAdapter(child: _FeedEmpty()));
+        } else if (snapshot.hasError) {
+          slivers.add(
+            SliverToBoxAdapter(
+              child: _FeedMessage(
+                icon: Icons.error_outline,
+                message: 'Could not load recent activity.',
+                action: TextButton(
+                  onPressed: () => setState(() {}),
+                  child: const Text('Retry'),
                 ),
-                const SizedBox(height: 8),
-                _buildActivity(),
-                const SizedBox(height: 16),
-                Card(
-                  child: ListTile(
-                    leading: const Icon(Icons.show_chart_sharp),
-                    title: const Text('Progression'),
-                    subtitle: const Text(
-                      'Strength and volume trends across all exercises',
-                    ),
-                    trailing: const Icon(Icons.chevron_right_sharp),
-                    onTap: () => pushTo(context, const ProgressionPage()),
+              ),
+            ),
+          );
+        } else if (snapshot.connectionState == ConnectionState.waiting &&
+            !snapshot.hasData) {
+          slivers.add(
+            const SliverFillRemaining(
+              hasScrollBody: false,
+              child: Center(child: CircularProgressIndicator()),
+            ),
+          );
+        } else {
+          final sessions = [...snapshot.data ?? const <WorkoutSession>[]]
+            ..sort(
+              (a, b) => (b.endTime ?? b.startTime).compareTo(
+                a.endTime ?? a.startTime,
+              ),
+            );
+          if (sessions.isEmpty) {
+            slivers.add(const SliverToBoxAdapter(child: _FeedEmpty()));
+          } else {
+            slivers.add(
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                sliver: SliverList.builder(
+                  itemCount: sessions.length,
+                  itemBuilder: (context, index) => _ActivityCard(
+                    session: sessions[index],
+                    gymName: sessions[index].gymId == null
+                        ? null
+                        : _gymNames[sessions[index].gymId],
                   ),
                 ),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: () =>
-                      HomePageSingleton().changeTab(TabName.currentWorkout),
-                  child: const Text('Go to Current Workout'),
-                ),
-              ],
+              ),
+            );
+          }
+        }
+        slivers.add(
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              child: Column(
+                children: [
+                  Card(
+                    child: ListTile(
+                      leading: const Icon(Icons.show_chart_sharp),
+                      title: const Text('Progression'),
+                      subtitle: const Text(
+                        'Strength and volume trends across all exercises',
+                      ),
+                      trailing: const Icon(Icons.chevron_right_sharp),
+                      onTap: () => pushTo(context, const ProgressionPage()),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  FilledButton(
+                    onPressed: () =>
+                        HomePageSingleton().changeTab(TabName.currentWorkout),
+                    child: const Text('Go to Current Workout'),
+                  ),
+                ],
+              ),
             ),
           ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActivity() {
-    final stream = _stream;
-    if (stream == null) return const _FeedEmpty();
-    return StreamBuilder<List<WorkoutSession>>(
-      stream: stream,
-      builder: (context, snapshot) {
-        if (snapshot.hasError) {
-          return _FeedMessage(
-            icon: Icons.error_outline,
-            message: 'Could not load recent activity.',
-            action: TextButton(
-              onPressed: () => setState(() {}),
-              child: const Text('Retry'),
-            ),
-          );
-        }
-        if (snapshot.connectionState == ConnectionState.waiting &&
-            !snapshot.hasData) {
-          return const Center(
-            child: Padding(
-              padding: EdgeInsets.all(24),
-              child: CircularProgressIndicator(),
-            ),
-          );
-        }
-        final sessions = [...snapshot.data ?? const <WorkoutSession>[]]..sort(
-            (a, b) => (b.endTime ?? b.startTime).compareTo(
-              a.endTime ?? a.startTime,
-            ),
-          );
-        if (sessions.isEmpty) return const _FeedEmpty();
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            for (final session in sessions.take(5))
-              _ActivityCard(
-                session: session,
-                gymName:
-                    session.gymId == null ? null : _gymNames[session.gymId],
-              ),
-          ],
         );
+        return CustomScrollView(slivers: slivers);
       },
     );
   }
+
 }
 
 class _FeedEmpty extends StatelessWidget {
@@ -142,19 +153,19 @@ class _FeedEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(Icons.fitness_center, size: 40),
-              SizedBox(height: 8),
-              Text('No workouts logged yet.'),
-              SizedBox(height: 4),
-              Text('Complete a workout to see activity here.'),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(Icons.fitness_center, size: 40),
+          SizedBox(height: 8),
+          Text('No workouts logged yet.'),
+          SizedBox(height: 4),
+          Text('Complete a workout to see activity here.'),
+        ],
+      ),
+    ),
+  );
 }
 
 class _FeedMessage extends StatelessWidget {
@@ -166,18 +177,18 @@ class _FeedMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(icon),
-              const SizedBox(width: 12),
-              Expanded(child: Text(message)),
-              if (action != null) action!,
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: 12),
+          Expanded(child: Text(message)),
+          if (action != null) action!,
+        ],
+      ),
+    ),
+  );
 }
 
 class _ActivityCard extends StatelessWidget {
@@ -189,8 +200,10 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final working = session.sets.where((set) => !set.isWarmup);
-    final volume =
-        working.fold<double>(0, (sum, set) => sum + set.weight * set.reps);
+    final volume = working.fold<double>(
+      0,
+      (sum, set) => sum + set.weight * set.reps,
+    );
     final duration = session.endTime == null
         ? Duration.zero
         : session.endTime!.difference(session.startTime);
