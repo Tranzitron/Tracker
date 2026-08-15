@@ -24,11 +24,12 @@ class CurrentWorkoutPage extends StatelessWidget {
       slivers: <Widget>[
         CustomAppBar(context, title: 'Current Workout'),
         SliverToBoxAdapter(
-          child: BlocBuilder<WorkoutCubit, WorkoutState>(
-            builder: (context, state) {
+          child: BlocSelector<WorkoutCubit, WorkoutState, bool>(
+            selector: (state) => state.isInProgress,
+            builder: (context, isInProgress) {
               final cubit = context.read<WorkoutCubit>();
-              return state.isInProgress
-                  ? _InProgressView(state: state, onEnd: cubit.endWorkout)
+              return isInProgress
+                  ? _InProgressView(onEnd: cubit.endWorkout)
                   : _IdleView(onStart: () => _startWorkout(context));
             },
           ),
@@ -76,56 +77,54 @@ class _IdleView extends StatelessWidget {
 }
 
 class _InProgressView extends StatelessWidget {
-  const _InProgressView({required this.state, required this.onEnd});
+  const _InProgressView({required this.onEnd});
 
-  final WorkoutState state;
   final Future<void> Function() onEnd;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          _WorkoutHeader(state: state),
-          const SizedBox(height: 16),
-          if (state.plan.isEmpty)
-            const _FreeFormPanel()
-          else
-            for (final exercise in state.plan)
-              _PlanExerciseCard(
-                key: ValueKey('plan-${exercise.order}'),
-                exercise: exercise,
-                sets: state.sets
-                    .where((s) => s.exerciseId == exercise.exerciseId)
-                    .toList(),
-                order: exercise.order,
+    return BlocSelector<WorkoutCubit, WorkoutState, _WorkoutPresentation>(
+      selector: _WorkoutPresentation.fromState,
+      builder: (context, presentation) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            _WorkoutHeader(presentation: presentation.header),
+            const SizedBox(height: 16),
+            if (presentation.plan.isEmpty)
+              const _FreeFormPanel()
+            else
+              for (final exercise in presentation.plan)
+                _PlanExerciseCard(
+                  key: ValueKey('plan-${exercise.exercise.order}'),
+                  exercise: exercise.exercise,
+                  sets: exercise.sets,
+                  order: exercise.exercise.order,
+                ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: () => _confirmEnd(context, presentation.setCount),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+                padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-          const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: () => _confirmEnd(context),
-            style: FilledButton.styleFrom(
-              backgroundColor: Theme.of(context).colorScheme.error,
-              foregroundColor: Theme.of(context).colorScheme.onError,
-              padding: const EdgeInsets.symmetric(vertical: 16),
+              icon: const Icon(Icons.stop),
+              label: const Text('End Workout'),
             ),
-            icon: const Icon(Icons.stop),
-            label: const Text('End Workout'),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  Future<void> _confirmEnd(BuildContext context) async {
+  Future<void> _confirmEnd(BuildContext context, int setCount) async {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('End workout?'),
-        content: Text(
-          'Log ${state.sets.length} set(s) and save this workout to history.',
-        ),
+        content: Text('Log $setCount set(s) and save this workout to history.'),
         actions: <Widget>[
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
@@ -144,17 +143,63 @@ class _InProgressView extends StatelessWidget {
   }
 }
 
-/// Session summary: title, gym, start time, and live set/volume totals.
-class _WorkoutHeader extends StatelessWidget {
-  const _WorkoutHeader({required this.state});
+class _WorkoutPresentation {
+  const _WorkoutPresentation({
+    required this.header,
+    required this.plan,
+    required this.setCount,
+  });
 
-  final WorkoutState state;
+  final _WorkoutHeaderData header;
+  final List<({PlanExercise exercise, List<ActiveSet> sets})> plan;
+  final int setCount;
+
+  static _WorkoutPresentation fromState(WorkoutState state) {
+    return _WorkoutPresentation(
+      header: _WorkoutHeaderData.fromState(state),
+      plan: [
+        for (final exercise in state.plan)
+          (
+            exercise: exercise,
+            sets: state.setsByExercise[exercise.exerciseId] ?? const [],
+          ),
+      ],
+      setCount: state.sets.length,
+    );
+  }
+}
+
+class _WorkoutHeaderData {
+  const _WorkoutHeaderData({
+    this.planTitle,
+    this.gymName,
+    this.startTime,
+    required this.setCount,
+    required this.workingVolume,
+  });
+  final String? planTitle;
+  final String? gymName;
+  final DateTime? startTime;
+  final int setCount;
+  final double workingVolume;
+  static _WorkoutHeaderData fromState(WorkoutState state) => _WorkoutHeaderData(
+    planTitle: state.planTitle,
+    gymName: state.gymName,
+    startTime: state.startTime,
+    setCount: state.sets.length,
+    workingVolume: state.workingVolume,
+  );
+}
+
+class _WorkoutHeader extends StatelessWidget {
+  const _WorkoutHeader({required this.presentation});
+
+  final _WorkoutHeaderData presentation;
 
   @override
   Widget build(BuildContext context) {
-    final started = state.startTime;
-    final working =
-        state.sets.where((s) => !s.isWarmup).fold<double>(0, _volumeTotal);
+    final started = presentation.startTime;
+    final working = presentation.workingVolume;
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -170,7 +215,7 @@ class _WorkoutHeader extends StatelessWidget {
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
-                    state.planTitle ?? 'Free workout',
+                    presentation.planTitle ?? 'Free workout',
                     style: Theme.of(context).textTheme.titleLarge,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -178,14 +223,13 @@ class _WorkoutHeader extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 8),
-            if (state.gymName != null)
-              Text('${state.gymName} · ${_fmtTime(started)}')
+            if (presentation.gymName != null)
+              Text('${presentation.gymName} · ${_fmtTime(started)}')
             else
               Text(_fmtTime(started)),
             const SizedBox(height: 8),
             Text(
-              '${state.sets.length} set(s) · '
-              '${formatWeight(context, working)} working volume',
+              '${presentation.setCount} set(s) · ${formatWeight(context, working)} working volume',
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
@@ -193,8 +237,6 @@ class _WorkoutHeader extends StatelessWidget {
       ),
     );
   }
-
-  double _volumeTotal(double acc, ActiveSet s) => acc + s.weight * s.reps;
 
   String _fmtTime(DateTime? dt) {
     if (dt == null) return '';
@@ -243,10 +285,7 @@ class _PlanExerciseCard extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             if (sets.isEmpty)
-              Text(
-                'No sets yet',
-                style: Theme.of(context).textTheme.bodySmall,
-              )
+              Text('No sets yet', style: Theme.of(context).textTheme.bodySmall)
             else
               for (final set in sets) _SetTile(set: set),
             const Divider(height: 16),
@@ -312,9 +351,7 @@ class _FreeFormPanelState extends State<_FreeFormPanel> {
                 }
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    for (final set in sets) _SetTile(set: set),
-                  ],
+                  children: [for (final set in sets) _SetTile(set: set)],
                 );
               },
             ),
@@ -434,8 +471,9 @@ class _AddSetFormState extends State<_AddSetForm> {
             Expanded(
               child: TextField(
                 controller: _weight,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: 'Weight (${weightUnitOf(context).symbol})',
                   border: const OutlineInputBorder(),
@@ -464,10 +502,7 @@ class _AddSetFormState extends State<_AddSetForm> {
               onSelected: (v) => setState(() => _warmup = v),
             ),
             const Spacer(),
-            FilledButton(
-              onPressed: _add,
-              child: const Text('Add set'),
-            ),
+            FilledButton(onPressed: _add, child: const Text('Add set')),
           ],
         ),
       ],
@@ -513,12 +548,12 @@ class _AddSetFormState extends State<_AddSetForm> {
     final displayedWeight = double.tryParse(_weight.text) ?? 0.0;
     final weight = kilogramsFromDisplay(context, displayedWeight);
     context.read<WorkoutCubit>().logSet(
-          exerciseId: id,
-          exerciseName: name,
-          weight: weight,
-          reps: reps,
-          type: _warmup ? SetType.warmup : SetType.working,
-        );
+      exerciseId: id,
+      exerciseName: name,
+      weight: weight,
+      reps: reps,
+      type: _warmup ? SetType.warmup : SetType.working,
+    );
     _weight.clear();
     setState(() {});
   }
