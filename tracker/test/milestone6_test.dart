@@ -126,23 +126,58 @@ void main() {
 
   group('AnalyticsService snapshots', () {
     test('memoizes equivalent inputs and keeps snapshot immutable', () {
-      final sessions = [_session(DateTime(2026, 1, 1), 1, [
-        _set(7, 100, 5, SetType.working),
-      ])];
+      final sessions = [
+        _session(DateTime(2026, 1, 1), 1, [
+          _set(7, 100, 5, SetType.working),
+        ]),
+      ];
       final service = AnalyticsService();
-      final first = service.snapshot(sessions: sessions, multipliers: const {1: 1.0}, exerciseId: 7, revision: 3);
-      final second = service.snapshot(sessions: sessions, multipliers: const {1: 1.0}, exerciseId: 7, revision: 3);
+      final first = service.snapshot(
+          sessions: sessions,
+          multipliers: const {1: 1.0},
+          exerciseId: 7,
+          revision: 3);
+      final second = service.snapshot(
+          sessions: sessions,
+          multipliers: const {1: 1.0},
+          exerciseId: 7,
+          revision: 3);
       expect(identical(first, second), isTrue);
       expect(() => first.best1rm.clear(), throwsA(anything));
     });
 
     test('recomputes when revision, filter, or multiplier changes', () {
-      final sessions = [_session(DateTime(2026, 1, 1), 1, [_set(7, 100, 5, SetType.working)])];
+      final sessions = [
+        _session(DateTime(2026, 1, 1), 1, [_set(7, 100, 5, SetType.working)])
+      ];
       final service = AnalyticsService();
-      final first = service.compute(sessions: sessions, multipliers: const {1: 1.0}, revision: 1);
-      expect(identical(first, service.compute(sessions: sessions, multipliers: const {1: 1.0}, revision: 2)), isFalse);
-      expect(identical(first, service.compute(sessions: sessions, multipliers: const {1: 0.9}, revision: 1)), isFalse);
-      expect(identical(first, service.compute(sessions: sessions, multipliers: const {1: 1.0}, exerciseId: 7, revision: 1)), isFalse);
+      final first = service.compute(
+          sessions: sessions, multipliers: const {1: 1.0}, revision: 1);
+      expect(
+          identical(
+              first,
+              service.compute(
+                  sessions: sessions,
+                  multipliers: const {1: 1.0},
+                  revision: 2)),
+          isFalse);
+      expect(
+          identical(
+              first,
+              service.compute(
+                  sessions: sessions,
+                  multipliers: const {1: 0.9},
+                  revision: 1)),
+          isFalse);
+      expect(
+          identical(
+              first,
+              service.compute(
+                  sessions: sessions,
+                  multipliers: const {1: 1.0},
+                  exerciseId: 7,
+                  revision: 1)),
+          isFalse);
     });
   });
 
