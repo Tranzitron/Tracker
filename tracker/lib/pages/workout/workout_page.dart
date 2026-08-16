@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
@@ -21,33 +19,16 @@ class WorkoutPage extends StatefulWidget {
 }
 
 class _WorkoutPageState extends State<WorkoutPage> {
-  List<WorkoutSplit> _splits = const <WorkoutSplit>[];
-  StreamSubscription<List<WorkoutSplit>>? _sub;
-  bool _loaded = false;
+  Stream<List<WorkoutSplit>>? _stream;
+  bool _didLoad = false;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    if (!_loaded) {
-      _loaded = true;
-      final repo = RepositoryScope.maybeOf(context);
-      if (repo != null) {
-        _sub = repo.splits.watchAll().listen(
-          (splits) {
-            if (mounted) setState(() => _splits = splits);
-          },
-          onError: (Object error, StackTrace stack) {
-            debugPrint('workout splits watch error: $error');
-          },
-        );
-      }
+    if (!_didLoad) {
+      _didLoad = true;
+      _stream = RepositoryScope.maybeOf(context)?.splits.watchAll();
     }
-  }
-
-  @override
-  void dispose() {
-    _sub?.cancel();
-    super.dispose();
   }
 
   @override
@@ -55,34 +36,31 @@ class _WorkoutPageState extends State<WorkoutPage> {
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(context, title: 'Workout'),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 0),
-          sliver: SliverToBoxAdapter(child: BuildStartWorkoutButton()),
-        ),
-        if (_splits.isEmpty)
-          const SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 24, 16, 0),
-            sliver: SliverToBoxAdapter(
-              child: Text('No splits yet. Create one below.'),
-            ),
-          )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            sliver: SliverList.builder(
-              itemCount: _splits.length,
-              itemBuilder: (context, index) {
-                final split = _splits[index];
-                return BuildMaterialSplit(
-                  key: ValueKey<String>('split-${split.id}'),
-                  split,
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: StreamBuilder<List<WorkoutSplit>>(
+              stream: _stream,
+              initialData: const <WorkoutSplit>[],
+              builder: (context, snapshot) {
+                final splits = snapshot.data ?? const <WorkoutSplit>[];
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    const BuildStartWorkoutButton(),
+                    if (splits.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 24),
+                        child: Text('No splits yet. Create one below.'),
+                      )
+                    else
+                      for (final split in splits) BuildMaterialSplit(split),
+                    const BuildNewSplitButton(),
+                  ],
                 );
               },
             ),
           ),
-        const SliverPadding(
-          padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
-          sliver: SliverToBoxAdapter(child: BuildNewSplitButton()),
         ),
       ],
     );

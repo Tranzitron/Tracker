@@ -9,6 +9,8 @@ import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
+import '../home_page.dart';
+
 enum _BrowseMode { muscle, movement }
 
 class ExercisesPage extends StatefulWidget {
@@ -23,13 +25,24 @@ class _ExercisesPageState extends State<ExercisesPage> {
   List<Exercise> _exercises = const [];
   StreamSubscription<List<Exercise>>? _sub;
   bool _loaded = false;
+  bool _isActive = true;
 
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    final isActive = TabVisibilityScope.isActiveOf(context);
     if (!_loaded) {
       _loaded = true;
-      _subscribe();
+      _isActive = isActive;
+      if (isActive) _subscribe();
+    } else if (isActive != _isActive) {
+      _isActive = isActive;
+      if (isActive) {
+        _subscribe();
+      } else {
+        _sub?.cancel();
+        _sub = null;
+      }
     }
   }
 
@@ -39,15 +52,23 @@ class _ExercisesPageState extends State<ExercisesPage> {
     super.dispose();
   }
 
+  @override
+  void deactivate() {
+    // Keep the explicit tab contract separate from Flutter deactivation: the
+    // nested navigator remains mounted while its tab is inactive.
+    super.deactivate();
+  }
+
   void _subscribe() {
+    if (_sub != null) return;
     final repo = RepositoryScope.maybeOf(context);
     if (repo == null) return;
     repo.exercises.getAll().then((list) {
-      if (mounted) setState(() => _exercises = list);
+      if (mounted && _isActive) setState(() => _exercises = list);
     });
     _sub = repo.exercises.watchAll().listen(
       (list) {
-        if (mounted) setState(() => _exercises = list);
+        if (mounted && _isActive) setState(() => _exercises = list);
       },
       onError: (Object error, StackTrace stack) {
         debugPrint('exercises watch error: $error');

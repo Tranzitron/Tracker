@@ -194,8 +194,10 @@ class _ActivityCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final working = session.sets.where((set) => !set.isWarmup);
-    final volume =
-        working.fold<double>(0, (sum, set) => sum + set.weight * set.reps);
+    final volume = working.fold<double>(
+      0,
+      (sum, set) => sum + set.weight * set.reps,
+    );
     final duration = session.endTime == null
         ? Duration.zero
         : session.endTime!.difference(session.startTime);

@@ -20,9 +20,6 @@ class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
   final List<GlobalKey<NavigatorState>> _navigatorKeys =
       List.generate(5, (index) => GlobalKey<NavigatorState>());
-
-  // Tabs built so far. Unvisited tabs stay unmounted so they don't subscribe to
-  // DB watchers or rebuild on every write until first opened.
   final Set<int> _visited = {0};
 
   void _selectTab(int index) {
@@ -34,6 +31,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _setCurrentIndex(int index) {
+    if (index < 0 || index >= _navigatorKeys.length) return;
     setState(() {
       _currentIndex = index;
       _visited.add(index);
@@ -41,12 +39,17 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildOffstageNavigator(int index, Widget child) {
+    final isActive = _currentIndex == index;
     return Offstage(
-      offstage: _currentIndex != index,
-      child: Navigator(
-        key: _navigatorKeys[index],
-        onGenerateRoute: (settings) =>
-            MaterialPageRoute(builder: (context) => child),
+      offstage: !isActive,
+      child: TabVisibilityScope(
+        index: index,
+        isActive: isActive,
+        child: Navigator(
+          key: _navigatorKeys[index],
+          onGenerateRoute: (settings) =>
+              MaterialPageRoute(builder: (context) => child),
+        ),
       ),
     );
   }
@@ -57,20 +60,27 @@ class _HomePageState extends State<HomePage> {
     HomePageSingleton().indexSetState = indexSetState;
   }
 
+  @override
+  void dispose() {
+    if (HomePageSingleton().indexSetState == indexSetState) {
+      HomePageSingleton().indexSetState = null;
+    }
+    super.dispose();
+  }
+
   void indexSetState(int index) {
+    if (!mounted || index < 0 || index >= _navigatorKeys.length) return;
     _setCurrentIndex(index);
   }
 
-  Widget _pageFor(int index) {
-    return switch (index) {
-      0 => const FeedPage(),
-      1 => const HistoryPage(),
-      2 => const CurrentWorkoutPage(),
-      3 => const WorkoutPage(),
-      4 => const ExercisesPage(),
-      _ => const SizedBox.shrink(),
-    };
-  }
+  Widget _pageFor(int index) => switch (index) {
+        0 => const FeedPage(),
+        1 => const HistoryPage(),
+        2 => const CurrentWorkoutPage(),
+        3 => const WorkoutPage(),
+        4 => const ExercisesPage(),
+        _ => const SizedBox.shrink(),
+      };
 
   @override
   Widget build(BuildContext context) {
@@ -92,16 +102,13 @@ class _HomePageState extends State<HomePage> {
         labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
         onDestinationSelected: _selectTab,
         destinations: <Widget>[
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.house_sharp),
-            selectedIcon: Icon(
-              Icons.house_sharp,
-              color: Colors.blueAccent,
-            ),
+            selectedIcon: Icon(Icons.house_sharp, color: Colors.blueAccent),
             label: 'Feed',
             tooltip: '',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.access_time_filled_sharp),
             selectedIcon: Icon(
               Icons.access_time_filled_sharp,
@@ -112,7 +119,7 @@ class _HomePageState extends State<HomePage> {
           ),
           BlocBuilder<WorkoutCubit, WorkoutState>(
             builder: (context, state) => NavigationDestination(
-              icon: Icon(Icons.fitness_center_sharp),
+              icon: const Icon(Icons.fitness_center_sharp),
               selectedIcon: Icon(
                 Icons.fitness_center_sharp,
                 color:
@@ -122,7 +129,7 @@ class _HomePageState extends State<HomePage> {
               tooltip: '',
             ),
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.add_box_sharp),
             selectedIcon: Icon(
               Icons.add_box_sharp,
@@ -131,7 +138,7 @@ class _HomePageState extends State<HomePage> {
             label: 'Editor',
             tooltip: '',
           ),
-          NavigationDestination(
+          const NavigationDestination(
             icon: Icon(Icons.library_books_sharp),
             selectedIcon: Icon(
               Icons.library_books_sharp,
@@ -146,31 +153,51 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+/// Visibility contract for pages hosted by the persistent tab navigators.
+/// Inactive pages stay mounted to preserve their nested route stack, but should
+/// pause live subscriptions and resume them when [isActive] becomes true.
+class TabVisibilityScope extends InheritedWidget {
+  const TabVisibilityScope({
+    required this.index,
+    required this.isActive,
+    required super.child,
+    super.key,
+  });
+
+  final int index;
+  final bool isActive;
+
+  static bool isActiveOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<TabVisibilityScope>()
+          ?.isActive ??
+      true;
+
+  @override
+  bool updateShouldNotify(TabVisibilityScope oldWidget) =>
+      isActive != oldWidget.isActive || index != oldWidget.index;
+}
+
 class HomePageSingleton {
   static final HomePageSingleton _singleton = HomePageSingleton._internal();
 
-  factory HomePageSingleton() {
-    return _singleton;
-  }
+  factory HomePageSingleton() => _singleton;
 
   HomePageSingleton._internal() {
-    tabMap.addAll(
-      {
-        TabName.feed: 0,
-        TabName.history: 1,
-        TabName.currentWorkout: 2,
-        TabName.editor: 3,
-        TabName.exercises: 4,
-      },
-    );
+    tabMap.addAll({
+      TabName.feed: 0,
+      TabName.history: 1,
+      TabName.currentWorkout: 2,
+      TabName.editor: 3,
+      TabName.exercises: 4,
+    });
   }
 
   Function? indexSetState;
 
   void changeTab(TabName tabName) {
-    int? index = tabMap[tabName];
-    assert(index != null);
-    indexSetState!(index);
+    final index = tabMap[tabName];
+    if (index != null) indexSetState?.call(index);
   }
 
   BiMap<TabName, int> tabMap = BiMap<TabName, int>();
