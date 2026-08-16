@@ -173,7 +173,9 @@ void main() {
       (await repo.sessions.getBetween(
         DateTime(2026, 1, 1, 9),
         DateTime(2026, 1, 1, 10),
-      )).single.id,
+      ))
+          .single
+          .id,
       fetched.id,
     );
     expect(

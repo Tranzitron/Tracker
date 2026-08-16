@@ -32,10 +32,6 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     revision: null,
   );
 
-
-
-
-
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();

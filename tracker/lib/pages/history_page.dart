@@ -129,9 +129,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 final session = sessions[index];
                 return _SessionTile(
                   session: session,
-                  gymName: session.gymId == null
-                      ? null
-                      : _gymNames[session.gymId],
+                  gymName:
+                      session.gymId == null ? null : _gymNames[session.gymId],
                 );
               },
             ),
@@ -150,18 +149,18 @@ class _HistoryMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.all(16),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline),
-          const SizedBox(width: 12),
-          Expanded(child: Text(message)),
-        ],
-      ),
-    ),
-  );
+        margin: const EdgeInsets.all(16),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              const Icon(Icons.error_outline),
+              const SizedBox(width: 12),
+              Expanded(child: Text(message)),
+            ],
+          ),
+        ),
+      );
 }
 
 class _EmptyHistory extends StatelessWidget {

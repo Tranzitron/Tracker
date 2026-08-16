@@ -31,24 +31,24 @@ class ActiveSet {
   bool get isWarmup => type == SetType.warmup;
 
   Map<String, dynamic> toJson() => {
-    'exerciseId': exerciseId,
-    'exerciseName': exerciseName,
-    'weight': weight,
-    'reps': reps,
-    'type': type.name,
-    'order': order,
-  };
+        'exerciseId': exerciseId,
+        'exerciseName': exerciseName,
+        'weight': weight,
+        'reps': reps,
+        'type': type.name,
+        'order': order,
+      };
 
   factory ActiveSet.fromJson(Map<String, dynamic> json) => ActiveSet(
-    exerciseId: _intValue(json['exerciseId']),
-    exerciseName: json['exerciseName'] is String
-        ? json['exerciseName'] as String
-        : '',
-    weight: _doubleValue(json['weight']),
-    reps: _intValue(json['reps']),
-    type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
-    order: _intValue(json['order']),
-  );
+        exerciseId: _intValue(json['exerciseId']),
+        exerciseName: json['exerciseName'] is String
+            ? json['exerciseName'] as String
+            : '',
+        weight: _doubleValue(json['weight']),
+        reps: _intValue(json['reps']),
+        type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
+        order: _intValue(json['order']),
+      );
 
   static int _intValue(Object? value) =>
       value is num ? value.toInt() : int.tryParse('$value') ?? 0;
@@ -72,18 +72,17 @@ class PlanExercise {
   });
 
   Map<String, dynamic> toJson() => {
-    'exerciseId': exerciseId,
-    'name': name,
-    'order': order,
-  };
+        'exerciseId': exerciseId,
+        'name': name,
+        'order': order,
+      };
 
   factory PlanExercise.fromJson(Map<String, dynamic> json) => PlanExercise(
-    exerciseId: json['exerciseId'] is num
-        ? (json['exerciseId'] as num).toInt()
-        : 0,
-    name: json['name'] is String ? json['name'] as String : '',
-    order: json['order'] is num ? (json['order'] as num).toInt() : 0,
-  );
+        exerciseId:
+            json['exerciseId'] is num ? (json['exerciseId'] as num).toInt() : 0,
+        name: json['name'] is String ? json['name'] as String : '',
+        order: json['order'] is num ? (json['order'] as num).toInt() : 0,
+      );
 }
 
 Map<int, List<ActiveSet>> _groupSets(List<ActiveSet> sets) {
@@ -140,34 +139,32 @@ class WorkoutState {
   static WorkoutState initial() => const WorkoutState(isInProgress: false);
 
   Map<String, dynamic> toJson() => {
-    'isInProgress': isInProgress,
-    'startTime': startTime?.toIso8601String(),
-    'gymId': gymId,
-    'gymName': gymName,
-    'planTitle': planTitle,
-    'plan': plan.map((e) => e.toJson()).toList(),
-    'sets': sets.map((s) => s.toJson()).toList(),
-  };
+        'isInProgress': isInProgress,
+        'startTime': startTime?.toIso8601String(),
+        'gymId': gymId,
+        'gymName': gymName,
+        'planTitle': planTitle,
+        'plan': plan.map((e) => e.toJson()).toList(),
+        'sets': sets.map((s) => s.toJson()).toList(),
+      };
 
   factory WorkoutState.fromJson(Map<String, dynamic> json) => WorkoutState(
-    isInProgress: json['isInProgress'] as bool? ?? false,
-    startTime: json['startTime'] != null
-        ? DateTime.tryParse(json['startTime'] as String)
-        : null,
-    gymId: json['gymId'] as int?,
-    gymName: json['gymName'] as String?,
-    planTitle: json['planTitle'] as String?,
-    plan:
-        (json['plan'] as List?)
-            ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-    sets:
-        (json['sets'] as List?)
-            ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-  );
+        isInProgress: json['isInProgress'] as bool? ?? false,
+        startTime: json['startTime'] != null
+            ? DateTime.tryParse(json['startTime'] as String)
+            : null,
+        gymId: json['gymId'] as int?,
+        gymName: json['gymName'] as String?,
+        planTitle: json['planTitle'] as String?,
+        plan: (json['plan'] as List?)
+                ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+        sets: (json['sets'] as List?)
+                ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
+                .toList() ??
+            const [],
+      );
 
   WorkoutState copyWith({
     bool? isInProgress,
@@ -283,8 +280,7 @@ class WorkoutCubit extends HydratedCubit<WorkoutState> {
     if (repo != null) {
       await repo.sessions.put(
         WorkoutSession(
-          title:
-              s.planTitle ??
+          title: s.planTitle ??
               (s.gymName != null ? '${s.gymName} workout' : 'Workout'),
           startTime: s.startTime ?? DateTime.now(),
           endTime: DateTime.now(),

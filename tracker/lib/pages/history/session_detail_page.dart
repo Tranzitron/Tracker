@@ -91,7 +91,6 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
       ],
     );
   }
-
 }
 
 class _HeaderCard extends StatelessWidget {
@@ -185,7 +184,6 @@ class _SetRow extends StatelessWidget {
       ),
     );
   }
-
 }
 
 /// W / S chip mirroring the current-workout screen's indicator (see the cubit's
