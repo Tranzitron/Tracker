@@ -145,26 +145,16 @@ class WorkoutSessionRepository {
 
   Stream<List<WorkoutSession>> watchAll() =>
       _isar.workoutSessions.where().watch(fireImmediately: true);
-
-  /// Emits only the newest completed sessions, keeping feed queries bounded.
-  Stream<List<WorkoutSession>> watchRecent({int limit = 5}) {
-    final boundedLimit = limit < 1 ? 1 : limit;
-    return _isar.workoutSessions
-        .where()
-        .sortByEndTimeDesc()
-        .limit(boundedLimit)
-        .watch(fireImmediately: true);
-  }
 }
 
 /// Facade bundling every repository for easy construction and injection.
 class TrackerRepository {
   TrackerRepository(Isar isar)
-    : isar = isar,
-      exercises = ExerciseRepository(isar),
-      gyms = GymRepository(isar),
-      splits = WorkoutSplitRepository(isar),
-      sessions = WorkoutSessionRepository(isar);
+      : isar = isar,
+        exercises = ExerciseRepository(isar),
+        gyms = GymRepository(isar),
+        splits = WorkoutSplitRepository(isar),
+        sessions = WorkoutSessionRepository(isar);
 
   /// Raw [Isar] kept for seeding and one-off queries; business code should
   /// prefer the typed repositories above.
