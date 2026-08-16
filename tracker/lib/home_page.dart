@@ -11,13 +11,15 @@ import 'pages/workout/workout_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
   @override
   State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(5, (index) => GlobalKey<NavigatorState>());
+  final List<GlobalKey<NavigatorState>> _navigatorKeys =
+      List.generate(5, (index) => GlobalKey<NavigatorState>());
   final Set<int> _visited = {0};
 
   void _selectTab(int index) {
@@ -30,7 +32,10 @@ class _HomePageState extends State<HomePage> {
 
   void _setCurrentIndex(int index) {
     if (index < 0 || index >= _navigatorKeys.length) return;
-    setState(() { _currentIndex = index; _visited.add(index); });
+    setState(() {
+      _currentIndex = index;
+      _visited.add(index);
+    });
   }
 
   Widget _buildOffstageNavigator(int index, Widget child) {
@@ -42,7 +47,8 @@ class _HomePageState extends State<HomePage> {
         isActive: isActive,
         child: Navigator(
           key: _navigatorKeys[index],
-          onGenerateRoute: (settings) => MaterialPageRoute(builder: (context) => child),
+          onGenerateRoute: (settings) =>
+              MaterialPageRoute(builder: (context) => child),
         ),
       ),
     );
@@ -56,7 +62,8 @@ class _HomePageState extends State<HomePage> {
 
   @override
   void dispose() {
-    if (HomePageSingleton().indexSetState == indexSetState) HomePageSingleton().indexSetState = null;
+    if (HomePageSingleton().indexSetState == indexSetState)
+      HomePageSingleton().indexSetState = null;
     super.dispose();
   }
 
@@ -66,25 +73,63 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _pageFor(int index) => switch (index) {
-    0 => const FeedPage(), 1 => const HistoryPage(), 2 => const CurrentWorkoutPage(),
-    3 => const WorkoutPage(), 4 => const ExercisesPage(), _ => const SizedBox.shrink(),
-  };
+        0 => const FeedPage(),
+        1 => const HistoryPage(),
+        2 => const CurrentWorkoutPage(),
+        3 => const WorkoutPage(),
+        4 => const ExercisesPage(),
+        _ => const SizedBox.shrink(),
+      };
 
   @override
   Widget build(BuildContext context) {
     final visited = _visited.toList()..sort();
     return Scaffold(
-      body: Stack(children: [for (final index in visited) _buildOffstageNavigator(index, _pageFor(index))]),
+      body: Stack(children: [
+        for (final index in visited)
+          _buildOffstageNavigator(index, _pageFor(index))
+      ]),
       bottomNavigationBar: NavigationBar(
-        animationDuration: Duration.zero, indicatorColor: Colors.transparent, shadowColor: Colors.transparent,
-        backgroundColor: Colors.transparent, surfaceTintColor: Colors.transparent, selectedIndex: _currentIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow, onDestinationSelected: _selectTab,
+        animationDuration: Duration.zero,
+        indicatorColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
+        selectedIndex: _currentIndex,
+        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
+        onDestinationSelected: _selectTab,
         destinations: <Widget>[
-          const NavigationDestination(icon: Icon(Icons.house_sharp), selectedIcon: Icon(Icons.house_sharp, color: Colors.blueAccent), label: 'Feed', tooltip: ''),
-          const NavigationDestination(icon: Icon(Icons.access_time_filled_sharp), selectedIcon: Icon(Icons.access_time_filled_sharp, color: Colors.blueAccent), label: 'History', tooltip: ''),
-          BlocBuilder<WorkoutCubit, WorkoutState>(builder: (context, state) => NavigationDestination(icon: const Icon(Icons.fitness_center_sharp), selectedIcon: Icon(Icons.fitness_center_sharp, color: state.isInProgress ? Colors.blueAccent : Colors.redAccent), label: 'CurrentWorkout', tooltip: '')),
-          const NavigationDestination(icon: Icon(Icons.add_box_sharp), selectedIcon: Icon(Icons.add_box_sharp, color: Colors.blueAccent), label: 'Editor', tooltip: ''),
-          const NavigationDestination(icon: Icon(Icons.library_books_sharp), selectedIcon: Icon(Icons.library_books_sharp, color: Colors.blueAccent), label: 'Exercises', tooltip: ''),
+          const NavigationDestination(
+              icon: Icon(Icons.house_sharp),
+              selectedIcon: Icon(Icons.house_sharp, color: Colors.blueAccent),
+              label: 'Feed',
+              tooltip: ''),
+          const NavigationDestination(
+              icon: Icon(Icons.access_time_filled_sharp),
+              selectedIcon: Icon(Icons.access_time_filled_sharp,
+                  color: Colors.blueAccent),
+              label: 'History',
+              tooltip: ''),
+          BlocBuilder<WorkoutCubit, WorkoutState>(
+              builder: (context, state) => NavigationDestination(
+                  icon: const Icon(Icons.fitness_center_sharp),
+                  selectedIcon: Icon(Icons.fitness_center_sharp,
+                      color: state.isInProgress
+                          ? Colors.blueAccent
+                          : Colors.redAccent),
+                  label: 'CurrentWorkout',
+                  tooltip: '')),
+          const NavigationDestination(
+              icon: Icon(Icons.add_box_sharp),
+              selectedIcon: Icon(Icons.add_box_sharp, color: Colors.blueAccent),
+              label: 'Editor',
+              tooltip: ''),
+          const NavigationDestination(
+              icon: Icon(Icons.library_books_sharp),
+              selectedIcon:
+                  Icon(Icons.library_books_sharp, color: Colors.blueAccent),
+              label: 'Exercises',
+              tooltip: ''),
         ],
       ),
     );
@@ -95,20 +140,48 @@ class _HomePageState extends State<HomePage> {
 /// Inactive pages stay mounted to preserve their nested route stack, but should
 /// pause live subscriptions and resume them when [isActive] becomes true.
 class TabVisibilityScope extends InheritedWidget {
-  const TabVisibilityScope({required this.index, required this.isActive, required super.child, super.key});
+  const TabVisibilityScope(
+      {required this.index,
+      required this.isActive,
+      required super.child,
+      super.key});
+
   final int index;
   final bool isActive;
-  static bool isActiveOf(BuildContext context) => context.dependOnInheritedWidgetOfExactType<TabVisibilityScope>()?.isActive ?? true;
+
+  static bool isActiveOf(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<TabVisibilityScope>()
+          ?.isActive ??
+      true;
+
   @override
-  bool updateShouldNotify(TabVisibilityScope oldWidget) => isActive != oldWidget.isActive || index != oldWidget.index;
+  bool updateShouldNotify(TabVisibilityScope oldWidget) =>
+      isActive != oldWidget.isActive || index != oldWidget.index;
 }
 
 class HomePageSingleton {
   static final HomePageSingleton _singleton = HomePageSingleton._internal();
+
   factory HomePageSingleton() => _singleton;
-  HomePageSingleton._internal() { tabMap.addAll({TabName.feed: 0, TabName.history: 1, TabName.currentWorkout: 2, TabName.editor: 3, TabName.exercises: 4}); }
+
+  HomePageSingleton._internal() {
+    tabMap.addAll({
+      TabName.feed: 0,
+      TabName.history: 1,
+      TabName.currentWorkout: 2,
+      TabName.editor: 3,
+      TabName.exercises: 4
+    });
+  }
+
   Function? indexSetState;
-  void changeTab(TabName tabName) { final index = tabMap[tabName]; if (index != null) indexSetState?.call(index); }
+
+  void changeTab(TabName tabName) {
+    final index = tabMap[tabName];
+    if (index != null) indexSetState?.call(index);
+  }
+
   BiMap<TabName, int> tabMap = BiMap<TabName, int>();
 }
 

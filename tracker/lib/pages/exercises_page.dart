@@ -9,6 +9,8 @@ import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
+import '../home_page.dart';
+
 enum _BrowseMode { muscle, movement }
 
 /// The master exercise library (Plan.md §1.4).

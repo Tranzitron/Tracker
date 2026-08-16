@@ -77,7 +77,8 @@ class _HistoryPageState extends State<HistoryPage> {
                 ),
                 const SizedBox(height: 16),
                 StreamBuilder<List<WorkoutSession>>(
-                  stream: TabVisibilityScope.isActiveOf(context) ? _stream : null,
+                  stream:
+                      TabVisibilityScope.isActiveOf(context) ? _stream : null,
                   initialData: const <WorkoutSession>[],
                   builder: (context, snapshot) {
                     final sessions = snapshot.data ?? const <WorkoutSession>[];
