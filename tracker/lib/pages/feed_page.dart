@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tracker/data/repository_scope.dart';
-import 'package:tracker/home_page.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -124,12 +123,6 @@ class _FeedPageState extends State<FeedPage> {
                       trailing: const Icon(Icons.chevron_right_sharp),
                       onTap: () => pushTo(context, const ProgressionPage()),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  FilledButton(
-                    onPressed: () =>
-                        HomePageSingleton().changeTab(TabName.currentWorkout),
-                    child: const Text('Go to Current Workout'),
                   ),
                 ],
               ),

@@ -119,29 +119,35 @@ class _HomePageState extends State<HomePage> {
           ),
           BlocBuilder<WorkoutCubit, WorkoutState>(
             builder: (context, state) => NavigationDestination(
-              icon: const Icon(Icons.fitness_center_sharp),
-              selectedIcon: Icon(
-                Icons.fitness_center_sharp,
-                color:
-                    state.isInProgress ? Colors.blueAccent : Colors.redAccent,
+              icon: Transform.translate(
+                offset: const Offset(0, -6),
+                child: const Icon(Icons.fitness_center_sharp),
               ),
-              label: 'CurrentWorkout',
+              selectedIcon: Transform.translate(
+                offset: const Offset(0, -6),
+                child: Icon(
+                  Icons.fitness_center_sharp,
+                  color:
+                      state.isInProgress ? Colors.blueAccent : Colors.redAccent,
+                ),
+              ),
+              label: 'Workout',
               tooltip: '',
             ),
           ),
           const NavigationDestination(
-            icon: Icon(Icons.add_box_sharp),
+            icon: Icon(Icons.assignment_sharp),
             selectedIcon: Icon(
-              Icons.add_box_sharp,
+              Icons.assignment_sharp,
               color: Colors.blueAccent,
             ),
             label: 'Editor',
             tooltip: '',
           ),
           const NavigationDestination(
-            icon: Icon(Icons.library_books_sharp),
+            icon: Icon(Icons.sports_gymnastics_sharp),
             selectedIcon: Icon(
-              Icons.library_books_sharp,
+              Icons.sports_gymnastics_sharp,
               color: Colors.blueAccent,
             ),
             label: 'Exercises',

@@ -76,6 +76,10 @@ Future<void> _seedExercises(
   }
 }
 
+const NavigationBarThemeData _navigationBarTheme = NavigationBarThemeData(
+  overlayColor: WidgetStatePropertyAll(Colors.transparent),
+);
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -83,9 +87,13 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: const HomePage(),
-      theme: ThemeData.light(useMaterial3: true),
+      theme: ThemeData.light(
+        useMaterial3: true,
+      ).copyWith(navigationBarTheme: _navigationBarTheme),
       themeMode: ThemeMode.system,
-      darkTheme: ThemeData.dark(useMaterial3: true),
+      darkTheme: ThemeData.dark(
+        useMaterial3: true,
+      ).copyWith(navigationBarTheme: _navigationBarTheme),
       debugShowCheckedModeBanner: false,
     );
   }
