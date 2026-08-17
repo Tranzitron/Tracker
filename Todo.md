@@ -3,6 +3,7 @@
 Breakdown of tasks and checkpoints to ship a complete product. Tasks are grouped into **milestones**; each milestone ends with verifiable **checkpoints**. Items reference the product spec in [`Plan.md`](Plan.md) (section numbers like `2.1`) and the current codebase state.
 
 Legend:
+
 - `STATUS`: `[ ]` not started · `[ ] (in progress)` actively being worked · `[x]` done
 
 ---
@@ -124,12 +125,11 @@ The most advanced feature set - analytics that normalize across machines.
 ## Cross-cutting / ephemeral notes
 
 ### Commit hygiene (decided in Milestone 0)
+
 - `tracker/ios/Podfile.lock` is **kept committed** - CocoaPods app best practice keeps the lockfile for reproducible iOS builds.
 - `tracker/build/` is gitignored (root `build/` pattern + `tracker/.gitignore` `/build/`); never commit build artifacts.
 - `.DS_Store` / macOS junk added to root `.gitignore` (already present in `tracker/.gitignore`).
 - `linux/` + `windows/` `generated_plugin_registrant.*` and `generated_plugins.cmake` are regenerated on `flutter pub get` and **are meant to be committed** - expect them to show as modified after dependency changes.
-
-
 
 - Codegen: after any change to `@collection`/`@embedded`/`@enumerated` annotations, run `cd tracker && dart run build_runner build`. Generated `*.g.dart` files are excluded from the analyzer and must not be hand-edited.
 - State caching is now reconciled (Milestone 3): `HydratedBloc` caches only the **in-progress** session (plan + sets) so a workout survives a restart; completed workouts are finalized as `WorkoutSession` records in Isar on `endWorkout`, and the hydrated state resets to idle.
