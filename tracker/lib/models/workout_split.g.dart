@@ -149,9 +149,11 @@ List<IsarLinkBase<dynamic>> _workoutSplitGetLinks(WorkoutSplit object) {
   return [];
 }
 
-void _workoutSplitAttach(IsarCollection<dynamic> col,
-    Id id,
-    WorkoutSplit object,) {
+void _workoutSplitAttach(
+  IsarCollection<dynamic> col,
+  Id id,
+  WorkoutSplit object,
+) {
   object.id = id;
 }
 

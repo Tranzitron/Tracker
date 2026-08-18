@@ -12,13 +12,6 @@ import '../../models/workout_set.dart';
 /// [WorkoutSet] but snapshots [exerciseName] so the UI can render set rows
 /// without a DB read. [order] preserves sequence.
 class ActiveSet {
-  final int exerciseId;
-  final String exerciseName;
-  final double weight;
-  final int reps;
-  final SetType type;
-  final int order;
-
   const ActiveSet({
     required this.exerciseId,
     required this.exerciseName,
@@ -27,6 +20,23 @@ class ActiveSet {
     this.type = SetType.working,
     this.order = 0,
   });
+
+  factory ActiveSet.fromJson(Map<String, dynamic> json) => ActiveSet(
+    exerciseId: _intValue(json['exerciseId']),
+    exerciseName: json['exerciseName'] is String
+        ? json['exerciseName'] as String
+        : '',
+    weight: _doubleValue(json['weight']),
+    reps: _intValue(json['reps']),
+    type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
+    order: _intValue(json['order']),
+  );
+  final int exerciseId;
+  final String exerciseName;
+  final double weight;
+  final int reps;
+  final SetType type;
+  final int order;
 
   bool get isWarmup => type == SetType.warmup;
 
@@ -39,17 +49,6 @@ class ActiveSet {
     'order': order,
   };
 
-  factory ActiveSet.fromJson(Map<String, dynamic> json) => ActiveSet(
-    exerciseId: _intValue(json['exerciseId']),
-    exerciseName: json['exerciseName'] is String
-        ? json['exerciseName'] as String
-        : '',
-    weight: _doubleValue(json['weight']),
-    reps: _intValue(json['reps']),
-    type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
-    order: _intValue(json['order']),
-  );
-
   static int _intValue(Object? value) =>
       value is num ? value.toInt() : int.tryParse('$value') ?? 0;
 
@@ -61,21 +60,11 @@ class ActiveSet {
 /// today"). Captured at start so the active-workout screen can lay out the plan
 /// even after the underlying [WorkoutSplit] changes.
 class PlanExercise {
-  final int exerciseId;
-  final String name;
-  final int order;
-
   const PlanExercise({
     required this.exerciseId,
     required this.name,
     this.order = 0,
   });
-
-  Map<String, dynamic> toJson() => {
-    'exerciseId': exerciseId,
-    'name': name,
-    'order': order,
-  };
 
   factory PlanExercise.fromJson(Map<String, dynamic> json) => PlanExercise(
     exerciseId: json['exerciseId'] is num
@@ -84,6 +73,15 @@ class PlanExercise {
     name: json['name'] is String ? json['name'] as String : '',
     order: json['order'] is num ? (json['order'] as num).toInt() : 0,
   );
+  final int exerciseId;
+  final String name;
+  final int order;
+
+  Map<String, dynamic> toJson() => {
+    'exerciseId': exerciseId,
+    'name': name,
+    'order': order,
+  };
 }
 
 Map<int, List<ActiveSet>> _groupSets(List<ActiveSet> sets) {
@@ -98,6 +96,35 @@ final _setsByExerciseCache = Expando<Map<int, List<ActiveSet>>>();
 final _workingVolumeCache = Expando<double>();
 
 class WorkoutState {
+  const WorkoutState({
+    required this.isInProgress,
+    this.startTime,
+    this.gymId,
+    this.gymName,
+    this.planTitle,
+    this.plan = const [],
+    this.sets = const [],
+  });
+
+  factory WorkoutState.fromJson(Map<String, dynamic> json) => WorkoutState(
+    isInProgress: json['isInProgress'] as bool? ?? false,
+    startTime: json['startTime'] != null
+        ? DateTime.tryParse(json['startTime'] as String)
+        : null,
+    gymId: json['gymId'] as int?,
+    gymName: json['gymName'] as String?,
+    planTitle: json['planTitle'] as String?,
+    plan:
+        (json['plan'] as List?)
+            ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
+    sets:
+        (json['sets'] as List?)
+            ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
+            .toList() ??
+        const [],
+  );
   final bool isInProgress;
   final DateTime? startTime;
 
@@ -126,16 +153,6 @@ class WorkoutState {
       .where((set) => !set.isWarmup)
       .fold<double>(0, (total, set) => total + set.weight * set.reps);
 
-  const WorkoutState({
-    required this.isInProgress,
-    this.startTime,
-    this.gymId,
-    this.gymName,
-    this.planTitle,
-    this.plan = const [],
-    this.sets = const [],
-  });
-
   /// The resting (no workout) state — the app does not boot into a session.
   static WorkoutState initial() => const WorkoutState(isInProgress: false);
 
@@ -148,26 +165,6 @@ class WorkoutState {
     'plan': plan.map((e) => e.toJson()).toList(),
     'sets': sets.map((s) => s.toJson()).toList(),
   };
-
-  factory WorkoutState.fromJson(Map<String, dynamic> json) => WorkoutState(
-    isInProgress: json['isInProgress'] as bool? ?? false,
-    startTime: json['startTime'] != null
-        ? DateTime.tryParse(json['startTime'] as String)
-        : null,
-    gymId: json['gymId'] as int?,
-    gymName: json['gymName'] as String?,
-    planTitle: json['planTitle'] as String?,
-    plan:
-        (json['plan'] as List?)
-            ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-    sets:
-        (json['sets'] as List?)
-            ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-  );
 
   WorkoutState copyWith({
     bool? isInProgress,

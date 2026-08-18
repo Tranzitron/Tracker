@@ -9,6 +9,13 @@ part 'gym.g.dart';
 /// is stored here so cross-machine equivalence can be derived/overridden later.
 @collection
 class Gym {
+  Gym({
+    required this.name,
+    this.description,
+    this.isPrimary = false,
+    this.order = -1,
+    this.multiplier = 1.0,
+  });
   Id id = Isar.autoIncrement;
   String name;
   String? description;
@@ -17,12 +24,4 @@ class Gym {
 
   /// Weight-equivalence multiplier vs. the primary gym (default 1.0).
   double multiplier;
-
-  Gym({
-    required this.name,
-    this.description,
-    this.isPrimary = false,
-    this.order = -1,
-    this.multiplier = 1.0,
-  });
 }

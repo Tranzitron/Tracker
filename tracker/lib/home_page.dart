@@ -188,8 +188,6 @@ class TabVisibilityScope extends InheritedWidget {
 }
 
 class HomePageSingleton {
-  static final HomePageSingleton _singleton = HomePageSingleton._internal();
-
   factory HomePageSingleton() => _singleton;
 
   HomePageSingleton._internal() {
@@ -201,6 +199,8 @@ class HomePageSingleton {
       TabName.exercises: 4,
     });
   }
+
+  static final HomePageSingleton _singleton = HomePageSingleton._internal();
 
   Function? indexSetState;
 

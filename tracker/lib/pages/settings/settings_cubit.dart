@@ -4,6 +4,13 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 /// User-facing application preferences persisted independently of workout data.
 class SettingsState {
+  factory SettingsState.fromJson(Map<String, dynamic> json) => SettingsState(
+    unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
+    displayName: json['displayName'] as String? ?? '',
+    email: json['email'] as String? ?? '',
+    notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+    analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
+  );
   const SettingsState({
     this.unit = WeightUnit.kilograms,
     this.displayName = '',
@@ -41,14 +48,6 @@ class SettingsState {
     'notificationsEnabled': notificationsEnabled,
     'analyticsEnabled': analyticsEnabled,
   };
-
-  factory SettingsState.fromJson(Map<String, dynamic> json) => SettingsState(
-    unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
-    displayName: json['displayName'] as String? ?? '',
-    email: json['email'] as String? ?? '',
-    notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-    analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
-  );
 }
 
 enum WeightUnit { kilograms, pounds }

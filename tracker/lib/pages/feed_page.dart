@@ -171,7 +171,7 @@ class _FeedMessage extends StatelessWidget {
           Icon(icon),
           const SizedBox(width: 12),
           Expanded(child: Text(message)),
-          if (action != null) action!,
+          ?action,
         ],
       ),
     ),

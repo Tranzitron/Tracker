@@ -13,13 +13,6 @@ enum SetType { warmup, working }
 /// the [Exercise] performed.
 @embedded
 class WorkoutSet {
-  int exerciseId;
-  double weight;
-  int reps;
-  @enumerated
-  SetType type;
-  int order;
-
   WorkoutSet({
     this.exerciseId = 0,
     this.weight = 0,
@@ -27,6 +20,12 @@ class WorkoutSet {
     this.type = SetType.working,
     this.order = 0,
   });
+  int exerciseId;
+  double weight;
+  int reps;
+  @enumerated
+  SetType type;
+  int order;
 
   bool get isWarmup => type == SetType.warmup;
 }

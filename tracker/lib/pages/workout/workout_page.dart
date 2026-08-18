@@ -204,7 +204,7 @@ class WorkoutListTile extends StatelessWidget {
               exercises!.map((e) => e.exerciseId).join(', '),
               overflow: TextOverflow.ellipsis,
             )
-          : const SizedBox(height: 0, width: 0),
+          : const SizedBox.shrink(),
       onTap: onTap,
     );
   }

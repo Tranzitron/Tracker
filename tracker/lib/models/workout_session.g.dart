@@ -150,9 +150,11 @@ List<IsarLinkBase<dynamic>> _workoutSessionGetLinks(WorkoutSession object) {
   return [];
 }
 
-void _workoutSessionAttach(IsarCollection<dynamic> col,
-    Id id,
-    WorkoutSession object,) {
+void _workoutSessionAttach(
+  IsarCollection<dynamic> col,
+  Id id,
+  WorkoutSession object,
+) {
   object.id = id;
 }
 

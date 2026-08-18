@@ -118,7 +118,7 @@ class _HeaderCard extends StatelessWidget {
             Text(_date(d), style: theme.textTheme.titleMedium),
             const SizedBox(height: 4),
             Text(
-              [if (gymName != null) gymName!, _duration(duration)].join(' · '),
+              [?gymName, _duration(duration)].join(' · '),
               style: theme.textTheme.bodyMedium?.copyWith(
                 color: theme.colorScheme.onSurfaceVariant,
               ),

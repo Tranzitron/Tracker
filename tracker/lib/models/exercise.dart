@@ -8,6 +8,14 @@ part 'exercise.g.dart';
 
 @collection
 class Exercise {
+  Exercise({
+    required this.title,
+    required this.primaryMuscle,
+    required this.equipment,
+    this.description,
+    this.secondaryMuscle,
+    this.movementPattern = MovementPattern.unspecified,
+  });
   Id id = Isar.autoIncrement;
   String title;
   String? description;
@@ -19,15 +27,6 @@ class Exercise {
   List<Equipment> equipment;
   @enumerated
   MovementPattern movementPattern;
-
-  Exercise({
-    required this.title,
-    required this.primaryMuscle,
-    required this.equipment,
-    this.description,
-    this.secondaryMuscle,
-    this.movementPattern = MovementPattern.unspecified,
-  });
 }
 
 /// Primary movement category, used for categorized browsing and split design.

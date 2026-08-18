@@ -10,6 +10,13 @@ part 'workout_session.g.dart';
 /// semantics simple; the gym can be resolved by id through the repository.
 @collection
 class WorkoutSession {
+  WorkoutSession({
+    this.title = 'Workout',
+    required this.startTime,
+    this.endTime,
+    this.gymId,
+    this.sets = const [],
+  });
   Id id = Isar.autoIncrement;
   String title;
   DateTime startTime;
@@ -19,12 +26,4 @@ class WorkoutSession {
   int? gymId;
 
   List<WorkoutSet> sets;
-
-  WorkoutSession({
-    this.title = 'Workout',
-    required this.startTime,
-    this.endTime,
-    this.gymId,
-    this.sets = const [],
-  });
 }

@@ -8,6 +8,18 @@ import 'package:tracker/models/workout_session.dart';
 /// Building this once per session-list update avoids repeatedly scanning all
 /// sessions while painting each calendar cell and calculating metrics.
 class WorkoutDateIndex {
+  factory WorkoutDateIndex.fromSessions(Iterable<WorkoutSession> sessions) {
+    final byDay = <DateTime, List<WorkoutSession>>{};
+    for (final session in sessions) {
+      final day = DateTime(
+        session.startTime.year,
+        session.startTime.month,
+        session.startTime.day,
+      );
+      byDay.putIfAbsent(day, () => <WorkoutSession>[]).add(session);
+    }
+    return WorkoutDateIndex._(byDay);
+  }
   WorkoutDateIndex._(Map<DateTime, List<WorkoutSession>> byDay)
     : _byDay = UnmodifiableMapView(<DateTime, List<WorkoutSession>>{
         for (final entry in byDay.entries)
@@ -25,19 +37,6 @@ class WorkoutDateIndex {
 
   late final Map<int, int> _monthCounts;
   late final int _streak;
-
-  factory WorkoutDateIndex.fromSessions(Iterable<WorkoutSession> sessions) {
-    final byDay = <DateTime, List<WorkoutSession>>{};
-    for (final session in sessions) {
-      final day = DateTime(
-        session.startTime.year,
-        session.startTime.month,
-        session.startTime.day,
-      );
-      byDay.putIfAbsent(day, () => <WorkoutSession>[]).add(session);
-    }
-    return WorkoutDateIndex._(byDay);
-  }
 
   final Map<DateTime, List<WorkoutSession>> _byDay;
   final Set<DateTime> workoutDays;
