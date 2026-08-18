@@ -69,15 +69,15 @@ Scope: the task bar and the Feed → Workout entry point.
 
 ### NavBar changes (`tracker/lib/home_page.dart`)
 
-- [ ] Rename the 4th destination label and its handling:
+- [x] Rename the 4th destination label and its handling:
   - Change `'CurrentWorkout'` label → `'Workout'` (line 128-like).
   - Keep `TabName.currentWorkout` for `HomePageSingleton.tabMap` (setName must not change or `changeTab(TabName.currentWorkout)` from `feed_page.dart:130` and `split_day_page.dart:82` break). Only the displayed label changes.
-- [ ] Lifted icon ("always lifted a bit"): wrap the tab icon so the glyph sits visually higher. Cleanest is a custom `Icon` wrapped with `Transform.translate(offset: Offset(0, -2))` inside the `NavigationDestination.icon` slot (per-destination placement), or set an `IconTheme`/custom `assets`. Prefer a small `Transform.translate` and validate on small widths.
+- [x] Lifted icon ("always lifted a bit"): wrap the tab icon so the glyph sits visually higher. Cleanest is a custom `Icon` wrapped with `Transform.translate(offset: Offset(0, -2))` inside the `NavigationDestination.icon` slot (per-destination placement), or set an `IconTheme`/custom `assets`. Prefer a small `Transform.translate` and validate on small widths.
   - Nudge values: start `Offset(0, -3)`; verify at textScale/overflow to avoid clipping (label inside `NavigationDestination` is `maxLines: 2`, softWrap off).
-- [ ] Icons for Editor/Exercises: currently `Icons.add_box_sharp` (editor) and `Icons.library_books_sharp` (exercises). Options (user decision at implementation time, default marked first):
+- [x] Icons for Editor/Exercises: currently `Icons.add_box_sharp` (editor) and `Icons.library_books_sharp` (exercises). Options (user decision at implementation time, default marked first):
   - Editor: `Icons.assignment_sharp` (default) / `Icons.edit_note_sharp` / keep `add_box_sharp`
   - Exercises: `Icons.local_gym_sharp` (default) / `Icons.sports_gymnastics_sharp`
-- [ ] Remove tap ripple/click flash of the whole `NavigationBar`:
+- [x] Remove tap ripple/click flash of the whole `NavigationBar`:
   - Set `indicatorColor: Colors.transparent` (already, line 97) — *also* set `ThemeData.navigationBarTheme.overlayColor = WidgetStatePropertyAll(Colors.transparent)` to kill the press-state ripple highlight. If a pure transparent `overlayColor` looks "no feedback" at all, keep a faint press — confirm with user, default = fully transparent.
   - Confirm active-tap does still `popUntil(first)` (existing `_selectTab` re-tap behavior, lines 85-95) — that's a zoom behavior we keep.
 
