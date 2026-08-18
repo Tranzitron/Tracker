@@ -63,9 +63,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
     final exercise = await pushTo(context, const ExercisePickerPage());
     if (exercise != null && mounted) {
       setState(() {
-        _items.add(
-          ExerciseItem(exerciseId: exercise.id, order: _items.length),
-        );
+        _items.add(ExerciseItem(exerciseId: exercise.id, order: _items.length));
       });
     }
   }
@@ -159,7 +157,8 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
             key: ValueKey('day-item-${_items[i].exerciseId}-$i'),
             index: i,
             orderLabel: '${i + 1}',
-            name: _names[_items[i].exerciseId] ??
+            name:
+                _names[_items[i].exerciseId] ??
                 'Exercise ${_items[i].exerciseId}',
             onDelete: () => setState(() => _items.removeAt(i)),
           ),

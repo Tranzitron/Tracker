@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
@@ -57,33 +57,32 @@ void main() {
     expect(state.sets.single.isWarmup, isFalse);
   });
 
-  test('repository exercise watcher emits initial and updated values',
-      () async {
-    final directory = Directory.systemTemp.createTempSync('tracker_m8_isar');
-    final isar = await Isar.open(
-      [ExerciseSchema],
-      directory: directory.path,
-    );
-    addTearDown(isar.close);
-    final repository = TrackerRepository(isar);
-    final values = <List<Exercise>>[];
-    final subscription = repository.exercises.watchAll().listen(values.add);
-    addTearDown(subscription.cancel);
+  test(
+    'repository exercise watcher emits initial and updated values',
+    () async {
+      final directory = Directory.systemTemp.createTempSync('tracker_m8_isar');
+      final isar = await Isar.open([ExerciseSchema], directory: directory.path);
+      addTearDown(isar.close);
+      final repository = TrackerRepository(isar);
+      final values = <List<Exercise>>[];
+      final subscription = repository.exercises.watchAll().listen(values.add);
+      addTearDown(subscription.cancel);
 
-    await _waitFor(() => values.isNotEmpty);
-    expect(values.last, isEmpty);
+      await _waitFor(() => values.isNotEmpty);
+      expect(values.last, isEmpty);
 
-    await repository.exercises.put(
-      Exercise(
-        title: 'Test Squat',
-        primaryMuscle: [Muscle.quadriceps],
-        equipment: [Equipment.barbell],
-        movementPattern: MovementPattern.legs,
-      ),
-    );
-    await _waitFor(() => values.any((list) => list.length == 1));
-    expect(values.last.single.title, 'Test Squat');
-  });
+      await repository.exercises.put(
+        Exercise(
+          title: 'Test Squat',
+          primaryMuscle: [Muscle.quadriceps],
+          equipment: [Equipment.barbell],
+          movementPattern: MovementPattern.legs,
+        ),
+      );
+      await _waitFor(() => values.any((list) => list.length == 1));
+      expect(values.last.single.title, 'Test Squat');
+    },
+  );
 
   test('SettingsCubit persists selected unit and profile in JSON', () {
     final cubit = SettingsCubit();

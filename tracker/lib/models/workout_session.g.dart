@@ -22,15 +22,12 @@ const WorkoutSessionSchema = CollectionSchema(
       name: r'endTime',
       type: IsarType.dateTime,
     ),
-    r'gymId': PropertySchema(
-      id: 1,
-      name: r'gymId',
-      type: IsarType.long,
-    ),
+    r'gymId': PropertySchema(id: 1, name: r'gymId', type: IsarType.long),
     r'sets': PropertySchema(
       id: 2,
       name: r'sets',
       type: IsarType.objectList,
+
       target: r'WorkoutSet',
     ),
     r'startTime': PropertySchema(
@@ -38,12 +35,9 @@ const WorkoutSessionSchema = CollectionSchema(
       name: r'startTime',
       type: IsarType.dateTime,
     ),
-    r'title': PropertySchema(
-      id: 4,
-      name: r'title',
-      type: IsarType.string,
-    )
+    r'title': PropertySchema(id: 4, name: r'title', type: IsarType.string),
   },
+
   estimateSize: _workoutSessionEstimateSize,
   serialize: _workoutSessionSerialize,
   deserialize: _workoutSessionDeserialize,
@@ -52,10 +46,11 @@ const WorkoutSessionSchema = CollectionSchema(
   indexes: {},
   links: {},
   embeddedSchemas: {r'WorkoutSet': WorkoutSetSchema},
+
   getId: _workoutSessionGetId,
   getLinks: _workoutSessionGetLinks,
   attach: _workoutSessionAttach,
-  version: '3.1.0+1',
+  version: '3.3.2',
 );
 
 int _workoutSessionEstimateSize(
@@ -103,7 +98,8 @@ WorkoutSession _workoutSessionDeserialize(
   final object = WorkoutSession(
     endTime: reader.readDateTimeOrNull(offsets[0]),
     gymId: reader.readLongOrNull(offsets[1]),
-    sets: reader.readObjectList<WorkoutSet>(
+    sets:
+        reader.readObjectList<WorkoutSet>(
           offsets[2],
           WorkoutSetSchema.deserialize,
           allOffsets,
@@ -130,12 +126,13 @@ P _workoutSessionDeserializeProp<P>(
       return (reader.readLongOrNull(offset)) as P;
     case 2:
       return (reader.readObjectList<WorkoutSet>(
-            offset,
-            WorkoutSetSchema.deserialize,
-            allOffsets,
-            WorkoutSet(),
-          ) ??
-          const []) as P;
+                offset,
+                WorkoutSetSchema.deserialize,
+                allOffsets,
+                WorkoutSet(),
+              ) ??
+              const [])
+          as P;
     case 3:
       return (reader.readDateTime(offset)) as P;
     case 4:
@@ -153,8 +150,9 @@ List<IsarLinkBase<dynamic>> _workoutSessionGetLinks(WorkoutSession object) {
   return [];
 }
 
-void _workoutSessionAttach(
-    IsarCollection<dynamic> col, Id id, WorkoutSession object) {
+void _workoutSessionAttach(IsarCollection<dynamic> col,
+    Id id,
+    WorkoutSession object,) {
   object.id = id;
 }
 
@@ -170,17 +168,16 @@ extension WorkoutSessionQueryWhereSort
 extension WorkoutSessionQueryWhere
     on QueryBuilder<WorkoutSession, WorkoutSession, QWhereClause> {
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterWhereClause> idEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: id,
-        upper: id,
-      ));
+      return query.addWhereClause(IdWhereClause.between(lower: id, upper: id));
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterWhereClause> idNotEqualTo(
-      Id id) {
+    Id id,
+  ) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -203,8 +200,9 @@ extension WorkoutSessionQueryWhere
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterWhereClause> idGreaterThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.greaterThan(lower: id, includeLower: include),
@@ -213,8 +211,9 @@ extension WorkoutSessionQueryWhere
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterWhereClause> idLessThan(
-      Id id,
-      {bool include = false}) {
+    Id id, {
+    bool include = false,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(
         IdWhereClause.lessThan(upper: id, includeUpper: include),
@@ -229,12 +228,14 @@ extension WorkoutSessionQueryWhere
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addWhereClause(IdWhereClause.between(
-        lower: lowerId,
-        includeLower: includeLower,
-        upper: upperId,
-        includeUpper: includeUpper,
-      ));
+      return query.addWhereClause(
+        IdWhereClause.between(
+          lower: lowerId,
+          includeLower: includeLower,
+          upper: upperId,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 }
@@ -242,188 +243,184 @@ extension WorkoutSessionQueryWhere
 extension WorkoutSessionQueryFilter
     on QueryBuilder<WorkoutSession, WorkoutSession, QFilterCondition> {
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeIsNull() {
+  endTimeIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'endTime',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'endTime'),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeIsNotNull() {
+  endTimeIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'endTime',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'endTime'),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeEqualTo(DateTime? value) {
+  endTimeEqualTo(DateTime? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'endTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'endTime', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeGreaterThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  endTimeGreaterThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'endTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'endTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeLessThan(
-    DateTime? value, {
-    bool include = false,
-  }) {
+  endTimeLessThan(DateTime? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'endTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'endTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      endTimeBetween(
+  endTimeBetween(
     DateTime? lower,
     DateTime? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'endTime',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'endTime',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdIsNull() {
+  gymIdIsNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'gymId',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNull(property: r'gymId'),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdIsNotNull() {
+  gymIdIsNotNull() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'gymId',
-      ));
+      return query.addFilterCondition(
+        const FilterCondition.isNotNull(property: r'gymId'),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdEqualTo(int? value) {
+  gymIdEqualTo(int? value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'gymId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'gymId', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdGreaterThan(
-    int? value, {
-    bool include = false,
-  }) {
+  gymIdGreaterThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'gymId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'gymId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdLessThan(
-    int? value, {
-    bool include = false,
-  }) {
+  gymIdLessThan(int? value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'gymId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'gymId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      gymIdBetween(
+  gymIdBetween(
     int? lower,
     int? upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'gymId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'gymId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition> idEqualTo(
-      Id value) {
+    Id value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'id', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      idGreaterThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idGreaterThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      idLessThan(
-    Id value, {
-    bool include = false,
-  }) {
+  idLessThan(Id value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'id',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'id',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -434,89 +431,55 @@ extension WorkoutSessionQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'id',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
-    });
-  }
-
-  QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsLengthEqualTo(int length) {
-    return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'sets',
-        length,
-        true,
-        length,
-        true,
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'id',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
       );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsIsEmpty() {
+  setsLengthEqualTo(int length) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'sets',
-        0,
-        true,
-        0,
-        true,
-      );
+      return query.listLength(r'sets', length, true, length, true);
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsIsNotEmpty() {
+  setsIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'sets',
-        0,
-        false,
-        999999,
-        true,
-      );
+      return query.listLength(r'sets', 0, true, 0, true);
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsLengthLessThan(
-    int length, {
-    bool include = false,
-  }) {
+  setsIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'sets',
-        0,
-        true,
-        length,
-        include,
-      );
+      return query.listLength(r'sets', 0, false, 999999, true);
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsLengthGreaterThan(
-    int length, {
-    bool include = false,
-  }) {
+  setsLengthLessThan(int length, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.listLength(
-        r'sets',
-        length,
-        include,
-        999999,
-        true,
-      );
+      return query.listLength(r'sets', 0, true, length, include);
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsLengthBetween(
+  setsLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'sets', length, include, 999999, true);
+    });
+  }
+
+  QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
+  setsLengthBetween(
     int lower,
     int upper, {
     bool includeLower = true,
@@ -534,109 +497,111 @@ extension WorkoutSessionQueryFilter
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      startTimeEqualTo(DateTime value) {
+  startTimeEqualTo(DateTime value) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'startTime', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      startTimeGreaterThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  startTimeGreaterThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'startTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      startTimeLessThan(
-    DateTime value, {
-    bool include = false,
-  }) {
+  startTimeLessThan(DateTime value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'startTime',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'startTime',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      startTimeBetween(
+  startTimeBetween(
     DateTime lower,
     DateTime upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'startTime',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'startTime',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleEqualTo(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleEqualTo(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleGreaterThan(
-    String value, {
-    bool include = false,
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleLessThan(
+  titleGreaterThan(
     String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleBetween(
+  titleLessThan(
+    String value, {
+    bool include = false,
+    bool caseSensitive = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
+  titleBetween(
     String lower,
     String upper, {
     bool includeLower = true,
@@ -644,84 +609,86 @@ extension WorkoutSessionQueryFilter
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'title',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'title',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleStartsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.startsWith(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
+  titleEndsWith(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.endsWith(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleContains(String value, {bool caseSensitive = true}) {
+  titleContains(String value, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'title',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.contains(
+          property: r'title',
+          value: value,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleMatches(String pattern, {bool caseSensitive = true}) {
+  titleMatches(String pattern, {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'title',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.matches(
+          property: r'title',
+          wildcard: pattern,
+          caseSensitive: caseSensitive,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleIsEmpty() {
+  titleIsEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'title',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'title', value: ''),
+      );
     });
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      titleIsNotEmpty() {
+  titleIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'title',
-        value: '',
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(property: r'title', value: ''),
+      );
     });
   }
 }
@@ -729,7 +696,7 @@ extension WorkoutSessionQueryFilter
 extension WorkoutSessionQueryObject
     on QueryBuilder<WorkoutSession, WorkoutSession, QFilterCondition> {
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterFilterCondition>
-      setsElement(FilterQuery<WorkoutSet> q) {
+  setsElement(FilterQuery<WorkoutSet> q) {
     return QueryBuilder.apply(this, (query) {
       return query.object(q, r'sets');
     });
@@ -748,7 +715,7 @@ extension WorkoutSessionQuerySortBy
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterSortBy>
-      sortByEndTimeDesc() {
+  sortByEndTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.desc);
     });
@@ -773,7 +740,7 @@ extension WorkoutSessionQuerySortBy
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterSortBy>
-      sortByStartTimeDesc() {
+  sortByStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.desc);
     });
@@ -801,7 +768,7 @@ extension WorkoutSessionQuerySortThenBy
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterSortBy>
-      thenByEndTimeDesc() {
+  thenByEndTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'endTime', Sort.desc);
     });
@@ -838,7 +805,7 @@ extension WorkoutSessionQuerySortThenBy
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QAfterSortBy>
-      thenByStartTimeDesc() {
+  thenByStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
       return query.addSortBy(r'startTime', Sort.desc);
     });
@@ -872,14 +839,15 @@ extension WorkoutSessionQueryWhereDistinct
   }
 
   QueryBuilder<WorkoutSession, WorkoutSession, QDistinct>
-      distinctByStartTime() {
+  distinctByStartTime() {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'startTime');
     });
   }
 
-  QueryBuilder<WorkoutSession, WorkoutSession, QDistinct> distinctByTitle(
-      {bool caseSensitive = true}) {
+  QueryBuilder<WorkoutSession, WorkoutSession, QDistinct> distinctByTitle({
+    bool caseSensitive = true,
+  }) {
     return QueryBuilder.apply(this, (query) {
       return query.addDistinctBy(r'title', caseSensitive: caseSensitive);
     });
@@ -907,7 +875,7 @@ extension WorkoutSessionQueryProperty
   }
 
   QueryBuilder<WorkoutSession, List<WorkoutSet>, QQueryOperations>
-      setsProperty() {
+  setsProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'sets');
     });

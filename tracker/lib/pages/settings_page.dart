@@ -31,8 +31,9 @@ class SettingsPage extends StatelessWidget {
                   context,
                   icon: Icons.person,
                   title: 'Profile Settings',
-                  subtitle:
-                      state.displayName.isEmpty ? 'Add your name and email' : '${state.displayName} · ${state.email}',
+                  subtitle: state.displayName.isEmpty
+                      ? 'Add your name and email'
+                      : '${state.displayName} · ${state.email}',
                   onTap: () => _editProfile(context, state),
                 ),
                 _buildSettingsCard(
@@ -53,7 +54,9 @@ class SettingsPage extends StatelessWidget {
                   context,
                   icon: Icons.security,
                   title: 'Privacy & Security',
-                  subtitle: state.analyticsEnabled ? 'Analytics sharing enabled' : 'Analytics sharing disabled',
+                  subtitle: state.analyticsEnabled
+                      ? 'Analytics sharing enabled'
+                      : 'Analytics sharing disabled',
                   onTap: () => _toggleAnalytics(context, state),
                 ),
               ],
@@ -118,7 +121,10 @@ class SettingsPage extends StatelessWidget {
     name.dispose();
     email.dispose();
     if (result != null && context.mounted) {
-      context.read<SettingsCubit>().saveProfile(displayName: result.$1, email: result.$2);
+      context.read<SettingsCubit>().saveProfile(
+        displayName: result.$1,
+        email: result.$2,
+      );
     }
   }
 
@@ -132,7 +138,9 @@ class SettingsPage extends StatelessWidget {
             ListTile(
               title: Text(unit.label),
               leading: Icon(
-                unit == current ? Icons.radio_button_checked : Icons.radio_button_unchecked,
+                unit == current
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
               ),
               onTap: () => Navigator.pop(context, unit),
             ),
@@ -188,10 +196,7 @@ class SettingsPage extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(message),
-            Switch(
-              value: value,
-              onChanged: (v) => Navigator.pop(context, v),
-            ),
+            Switch(value: value, onChanged: (v) => Navigator.pop(context, v)),
           ],
         ),
         actions: [

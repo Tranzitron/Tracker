@@ -88,9 +88,9 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
 
   Future<void> _save() async {
     if (_title.text.trim().isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Give the split a name.')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Give the split a name.')));
       return;
     }
 
@@ -165,8 +165,9 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                     Card(
                       child: ListTile(
                         title: Text(_days[i].title),
-                        subtitle:
-                            Text('${_days[i].exercises.length} exercise(s)'),
+                        subtitle: Text(
+                          '${_days[i].exercises.length} exercise(s)',
+                        ),
                         trailing: IconButton(
                           icon: const Icon(Icons.delete_outline),
                           tooltip: 'Remove day',

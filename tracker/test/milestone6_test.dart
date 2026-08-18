@@ -73,18 +73,14 @@ void main() {
 
     test('skips sessions with only warmup sets for that exercise', () {
       final sessions = [
-        _session(DateTime(2026, 1, 1), 1, [
-          _set(7, 60, 8, SetType.warmup),
-        ]),
+        _session(DateTime(2026, 1, 1), 1, [_set(7, 60, 8, SetType.warmup)]),
       ];
       expect(exerciseBest1rm(sessions, const {}, 7), isEmpty);
     });
 
     test('exercisePeakWeight uses normalized working weight', () {
       final sessions = [
-        _session(DateTime(2026, 1, 1), 2, [
-          _set(7, 110, 5, SetType.working),
-        ]),
+        _session(DateTime(2026, 1, 1), 2, [_set(7, 110, 5, SetType.working)]),
       ];
       const multipliers = {2: 0.9};
       final peak = exercisePeakWeight(sessions, multipliers, 7);
@@ -113,9 +109,7 @@ void main() {
           _set(7, 100, 5, SetType.working),
           _set(7, 60, 8, SetType.warmup),
         ]),
-        _session(DateTime(2026, 1, 2), 1, [
-          _set(7, 90, 5, SetType.working),
-        ]),
+        _session(DateTime(2026, 1, 2), 1, [_set(7, 90, 5, SetType.working)]),
       ];
       final s = exerciseSummary(sessions, const {1: 1.0}, 7);
       expect(s.sessionCount, 2);
@@ -127,9 +121,7 @@ void main() {
   group('AnalyticsService snapshots', () {
     test('memoizes equivalent inputs and keeps snapshot immutable', () {
       final sessions = [
-        _session(DateTime(2026, 1, 1), 1, [
-          _set(7, 100, 5, SetType.working),
-        ]),
+        _session(DateTime(2026, 1, 1), 1, [_set(7, 100, 5, SetType.working)]),
       ];
       final service = AnalyticsService();
       final first = service.snapshot(
@@ -217,12 +209,8 @@ void main() {
 
     test('returns null with no shared exercises', () {
       final sessions = [
-        _session(DateTime(2026, 1, 1), 1, [
-          _set(1, 100, 5, SetType.working),
-        ]),
-        _session(DateTime(2026, 1, 2), 2, [
-          _set(3, 40, 8, SetType.working),
-        ]),
+        _session(DateTime(2026, 1, 1), 1, [_set(1, 100, 5, SetType.working)]),
+        _session(DateTime(2026, 1, 2), 2, [_set(3, 40, 8, SetType.working)]),
       ];
       expect(estimateGymMultiplier(sessions, 1, 2), isNull);
     });
@@ -232,9 +220,7 @@ void main() {
     testWidgets('LineChart renders an empty state', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: LineChart(points: <ProgressionPoint>[]),
-          ),
+          home: Scaffold(body: LineChart(points: <ProgressionPoint>[])),
         ),
       );
       expect(find.text('No data yet'), findsOneWidget);
@@ -256,8 +242,9 @@ void main() {
       expect(find.byType(CustomPaint), findsWidgets);
     });
 
-    testWidgets('ExerciseDetailPage builds and shows an empty chart',
-        (tester) async {
+    testWidgets('ExerciseDetailPage builds and shows an empty chart', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         MaterialApp(
           home: ExerciseDetailPage(
@@ -278,9 +265,7 @@ void main() {
     });
 
     testWidgets('ProgressionPage opens without a repository', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: ProgressionPage()),
-      );
+      await tester.pumpWidget(const MaterialApp(home: ProgressionPage()));
       await tester.pump();
       await tester.pumpAndSettle();
       expect(find.text('Working volume over time'), findsOneWidget);

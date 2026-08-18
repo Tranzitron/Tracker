@@ -57,8 +57,11 @@ class _GymsPageState extends State<GymsPage> {
 
   Future<void> _editGym(Gym gym) async {
     final repo = RepositoryScope.maybeOf(context);
-    final edited =
-        await _editGymDialog(context, title: 'Edit Gym', initial: gym);
+    final edited = await _editGymDialog(
+      context,
+      title: 'Edit Gym',
+      initial: gym,
+    );
     if (edited != null && repo != null) {
       await repo.gyms.put(edited);
     }
@@ -147,7 +150,7 @@ class _GymsPageState extends State<GymsPage> {
               repo?.gyms.getAll().then((gyms) {
                 if (mounted) _addGym(gyms);
               });
-            }
+            },
           ),
         ),
         SliverToBoxAdapter(
@@ -241,8 +244,9 @@ Future<Gym?> _editGymDialog(
               TextField(
                 controller: multiplier,
                 enabled: !initial.isPrimary,
-                keyboardType:
-                    const TextInputType.numberWithOptions(decimal: true),
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
                 decoration: InputDecoration(
                   labelText: initial.isPrimary
                       ? 'Multiplier (primary = ×1.0)'

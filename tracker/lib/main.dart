@@ -87,13 +87,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       home: const HomePage(),
-      theme: ThemeData.light(
-        useMaterial3: true,
-      ).copyWith(navigationBarTheme: _navigationBarTheme),
+      theme: ThemeData.light(useMaterial3: true)
+          .copyWith(navigationBarTheme: _navigationBarTheme),
       themeMode: ThemeMode.system,
-      darkTheme: ThemeData.dark(
-        useMaterial3: true,
-      ).copyWith(navigationBarTheme: _navigationBarTheme),
+      darkTheme: ThemeData.dark(useMaterial3: true)
+          .copyWith(navigationBarTheme: _navigationBarTheme),
       debugShowCheckedModeBanner: false,
     );
   }

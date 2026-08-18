@@ -140,19 +140,19 @@ class _FeedEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const Card(
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Icon(Icons.fitness_center, size: 40),
-              SizedBox(height: 8),
-              Text('No workouts logged yet.'),
-              SizedBox(height: 4),
-              Text('Complete a workout to see activity here.'),
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: EdgeInsets.all(20),
+      child: Column(
+        children: [
+          Icon(Icons.fitness_center, size: 40),
+          SizedBox(height: 8),
+          Text('No workouts logged yet.'),
+          SizedBox(height: 4),
+          Text('Complete a workout to see activity here.'),
+        ],
+      ),
+    ),
+  );
 }
 
 class _FeedMessage extends StatelessWidget {
@@ -164,18 +164,18 @@ class _FeedMessage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Card(
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Icon(icon),
-              const SizedBox(width: 12),
-              Expanded(child: Text(message)),
-              if (action != null) action!,
-            ],
-          ),
-        ),
-      );
+    child: Padding(
+      padding: const EdgeInsets.all(16),
+      child: Row(
+        children: [
+          Icon(icon),
+          const SizedBox(width: 12),
+          Expanded(child: Text(message)),
+          if (action != null) action!,
+        ],
+      ),
+    ),
+  );
 }
 
 class _ActivityCard extends StatelessWidget {

@@ -4,15 +4,15 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.4.3 <4.0.0'
+  sdk: '>=3.13.0 <4.0.0'
   flutter: 3.47.0
 
 dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.9
-  isar: ^3.1.0+1
-  isar_flutter_libs: ^3.1.0+1
+  isar_community: ^3.3.2
+  isar_community_flutter_libs: ^3.3.2
   path_provider: ^2.1.6
   quiver: ^3.2.2
   hydrated_bloc: ^11.0.0
@@ -22,7 +22,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  isar_generator: ^3.1.0+1
+  isar_community_generator: ^3.3.2
   build_runner: any
 
 # path_provider_android 2.3.x depends on package:jni 1.0.x, whose JList/JMap

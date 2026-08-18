@@ -18,8 +18,10 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int _currentIndex = 0;
-  final List<GlobalKey<NavigatorState>> _navigatorKeys =
-      List.generate(5, (index) => GlobalKey<NavigatorState>());
+  final List<GlobalKey<NavigatorState>> _navigatorKeys = List.generate(
+    5,
+    (index) => GlobalKey<NavigatorState>(),
+  );
   final Set<int> _visited = {0};
 
   void _selectTab(int index) {
@@ -74,13 +76,13 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _pageFor(int index) => switch (index) {
-        0 => const FeedPage(),
-        1 => const HistoryPage(),
-        2 => const CurrentWorkoutPage(),
-        3 => const WorkoutPage(),
-        4 => const ExercisesPage(),
-        _ => const SizedBox.shrink(),
-      };
+    0 => const FeedPage(),
+    1 => const HistoryPage(),
+    2 => const CurrentWorkoutPage(),
+    3 => const WorkoutPage(),
+    4 => const ExercisesPage(),
+    _ => const SizedBox.shrink(),
+  };
 
   @override
   Widget build(BuildContext context) {
@@ -127,8 +129,9 @@ class _HomePageState extends State<HomePage> {
                 offset: const Offset(0, -6),
                 child: Icon(
                   Icons.fitness_center_sharp,
-                  color:
-                      state.isInProgress ? Colors.blueAccent : Colors.redAccent,
+                  color: state.isInProgress
+                      ? Colors.blueAccent
+                      : Colors.redAccent,
                 ),
               ),
               label: 'Workout',

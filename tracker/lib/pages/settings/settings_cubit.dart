@@ -35,21 +35,20 @@ class SettingsState {
   }
 
   Map<String, dynamic> toJson() => {
-        'unit': unit.name,
-        'displayName': displayName,
-        'email': email,
-        'notificationsEnabled': notificationsEnabled,
-        'analyticsEnabled': analyticsEnabled,
-      };
+    'unit': unit.name,
+    'displayName': displayName,
+    'email': email,
+    'notificationsEnabled': notificationsEnabled,
+    'analyticsEnabled': analyticsEnabled,
+  };
 
   factory SettingsState.fromJson(Map<String, dynamic> json) => SettingsState(
-        unit:
-            WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
-        displayName: json['displayName'] as String? ?? '',
-        email: json['email'] as String? ?? '',
-        notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-        analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
-      );
+    unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
+    displayName: json['displayName'] as String? ?? '',
+    email: json['email'] as String? ?? '',
+    notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
+    analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
+  );
 }
 
 enum WeightUnit { kilograms, pounds }

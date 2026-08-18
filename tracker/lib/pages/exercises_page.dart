@@ -224,22 +224,22 @@ class _GroupSection extends StatelessWidget {
 
 class MuscleGroupLabel {
   static String label(MuscleGroup g) => switch (g) {
-        MuscleGroup.abdominals => 'Abdominals',
-        MuscleGroup.arms => 'Arms',
-        MuscleGroup.shoulders => 'Shoulders',
-        MuscleGroup.back => 'Back',
-        MuscleGroup.legs => 'Legs',
-        MuscleGroup.chest => 'Chest',
-      };
+    MuscleGroup.abdominals => 'Abdominals',
+    MuscleGroup.arms => 'Arms',
+    MuscleGroup.shoulders => 'Shoulders',
+    MuscleGroup.back => 'Back',
+    MuscleGroup.legs => 'Legs',
+    MuscleGroup.chest => 'Chest',
+  };
 }
 
 class MovementPatternLabel {
   static String label(MovementPattern pattern) => switch (pattern) {
-        MovementPattern.unspecified => 'Other',
-        MovementPattern.push => 'Push',
-        MovementPattern.pull => 'Pull',
-        MovementPattern.legs => 'Legs',
-        MovementPattern.core => 'Core',
-        MovementPattern.fullBody => 'Full body',
-      };
+    MovementPattern.unspecified => 'Other',
+    MovementPattern.push => 'Push',
+    MovementPattern.pull => 'Pull',
+    MovementPattern.legs => 'Legs',
+    MovementPattern.core => 'Core',
+    MovementPattern.fullBody => 'Full body',
+  };
 }

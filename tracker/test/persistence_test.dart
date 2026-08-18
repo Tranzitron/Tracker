@@ -8,7 +8,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
 import 'package:tracker/data/seed.dart';
 import 'package:tracker/models/exercise.dart';
@@ -34,15 +34,12 @@ void main() {
 
   setUp(() async {
     final dir = Directory.systemTemp.createTempSync('isar_test');
-    isar = await Isar.open(
-      [
-        ExerciseSchema,
-        GymSchema,
-        WorkoutSessionSchema,
-        WorkoutSplitSchema,
-      ],
-      directory: dir.path,
-    );
+    isar = await Isar.open([
+      ExerciseSchema,
+      GymSchema,
+      WorkoutSessionSchema,
+      WorkoutSplitSchema,
+    ], directory: dir.path);
     repo = TrackerRepository(isar);
   });
 
@@ -92,102 +89,106 @@ void main() {
     expect(await repo.gyms.getAll(), hasLength(1));
   });
 
-  test('workout split CRUD preserves embedded days and exercise items',
-      () async {
-    final split = WorkoutSplit(
-      title: 'PPL',
-      description: 'Push / Pull / Legs',
-      order: 0,
-      splitDays: [
-        WorkoutSplitDay(
-          title: 'Push',
-          order: 0,
-          exercises: [
-            ExerciseItem(exerciseId: 1, order: 0, targetSets: 4, targetReps: 6),
-            ExerciseItem(exerciseId: 2, order: 1),
-          ],
-        ),
-      ],
-    );
-
-    final id = await repo.splits.put(split);
-    final fetched = await repo.splits.getById(id);
-
-    expect(fetched, isNotNull);
-    expect(fetched!.splitDays, hasLength(1));
-    expect(fetched.splitDays.first.exercises, hasLength(2));
-    expect(fetched.splitDays.first.exercises.first.exerciseId, 1);
-    expect(fetched.splitDays.first.exercises.first.targetSets, 4);
-
-    expect(await repo.splits.delete(id), isTrue);
-    expect(await repo.splits.getById(id), isNull);
-  });
-
-  test('workout session persists with embedded sets and warmup flags',
-      () async {
-    final gymId = await repo.gyms.put(Gym(name: 'Home', isPrimary: true));
-
-    final id = await repo.sessions.put(
-      WorkoutSession(
-        title: 'Push A',
-        startTime: DateTime(2026, 1, 1, 9),
-        endTime: DateTime(2026, 1, 1, 10),
-        gymId: gymId,
-        sets: [
-          WorkoutSet(
-            exerciseId: 1,
-            weight: 100,
-            reps: 5,
-            type: SetType.working,
+  test(
+    'workout split CRUD preserves embedded days and exercise items',
+    () async {
+      final split = WorkoutSplit(
+        title: 'PPL',
+        description: 'Push / Pull / Legs',
+        order: 0,
+        splitDays: [
+          WorkoutSplitDay(
+            title: 'Push',
             order: 0,
-          ),
-          WorkoutSet(
-            exerciseId: 1,
-            weight: 60,
-            reps: 8,
-            type: SetType.warmup,
-            order: 1,
+            exercises: [
+              ExerciseItem(
+                exerciseId: 1,
+                order: 0,
+                targetSets: 4,
+                targetReps: 6,
+              ),
+              ExerciseItem(exerciseId: 2, order: 1),
+            ],
           ),
         ],
-      ),
-    );
+      );
 
-    final fetched = await repo.sessions.getById(id);
-    expect(fetched, isNotNull);
-    expect(fetched!.title, 'Push A');
-    expect(fetched.gymId, gymId);
-    expect(fetched.sets, hasLength(2));
-    expect(fetched.sets[0].weight, 100);
-    expect(fetched.sets[0].type, SetType.working);
-    expect(fetched.sets[0].isWarmup, isFalse);
-    expect(fetched.sets[1].isWarmup, isTrue);
+      final id = await repo.splits.put(split);
+      final fetched = await repo.splits.getById(id);
 
-    expect(await repo.sessions.getAll(), hasLength(1));
-    expect((await repo.sessions.getRecent()).single.id, fetched.id);
-    expect(await repo.sessions.getRecent(limit: 1), hasLength(1));
-    expect(
-      (await repo.sessions.getForDate(DateTime(2026, 1, 1))).single.id,
-      fetched.id,
-    );
-    expect(
-      (await repo.sessions.getBetween(
-        DateTime(2026, 1, 1, 9),
-        DateTime(2026, 1, 1, 10),
-      ))
-          .single
-          .id,
-      fetched.id,
-    );
-    expect(
-      () => repo.sessions.getRecent(limit: 0),
-      throwsArgumentError,
-    );
-    expect(
-      () => repo.sessions.getBetween(
-        DateTime(2026, 1, 2),
-        DateTime(2026, 1, 1),
-      ),
-      throwsArgumentError,
-    );
-  });
+      expect(fetched, isNotNull);
+      expect(fetched!.splitDays, hasLength(1));
+      expect(fetched.splitDays.first.exercises, hasLength(2));
+      expect(fetched.splitDays.first.exercises.first.exerciseId, 1);
+      expect(fetched.splitDays.first.exercises.first.targetSets, 4);
+
+      expect(await repo.splits.delete(id), isTrue);
+      expect(await repo.splits.getById(id), isNull);
+    },
+  );
+
+  test(
+    'workout session persists with embedded sets and warmup flags',
+    () async {
+      final gymId = await repo.gyms.put(Gym(name: 'Home', isPrimary: true));
+
+      final id = await repo.sessions.put(
+        WorkoutSession(
+          title: 'Push A',
+          startTime: DateTime(2026, 1, 1, 9),
+          endTime: DateTime(2026, 1, 1, 10),
+          gymId: gymId,
+          sets: [
+            WorkoutSet(
+              exerciseId: 1,
+              weight: 100,
+              reps: 5,
+              type: SetType.working,
+              order: 0,
+            ),
+            WorkoutSet(
+              exerciseId: 1,
+              weight: 60,
+              reps: 8,
+              type: SetType.warmup,
+              order: 1,
+            ),
+          ],
+        ),
+      );
+
+      final fetched = await repo.sessions.getById(id);
+      expect(fetched, isNotNull);
+      expect(fetched!.title, 'Push A');
+      expect(fetched.gymId, gymId);
+      expect(fetched.sets, hasLength(2));
+      expect(fetched.sets[0].weight, 100);
+      expect(fetched.sets[0].type, SetType.working);
+      expect(fetched.sets[0].isWarmup, isFalse);
+      expect(fetched.sets[1].isWarmup, isTrue);
+
+      expect(await repo.sessions.getAll(), hasLength(1));
+      expect((await repo.sessions.getRecent()).single.id, fetched.id);
+      expect(await repo.sessions.getRecent(limit: 1), hasLength(1));
+      expect(
+        (await repo.sessions.getForDate(DateTime(2026, 1, 1))).single.id,
+        fetched.id,
+      );
+      expect(
+        (await repo.sessions.getBetween(
+          DateTime(2026, 1, 1, 9),
+          DateTime(2026, 1, 1, 10),
+        )).single.id,
+        fetched.id,
+      );
+      expect(() => repo.sessions.getRecent(limit: 0), throwsArgumentError);
+      expect(
+        () => repo.sessions.getBetween(
+          DateTime(2026, 1, 2),
+          DateTime(2026, 1, 1),
+        ),
+        throwsArgumentError,
+      );
+    },
+  );
 }

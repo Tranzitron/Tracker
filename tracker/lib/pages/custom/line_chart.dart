@@ -26,8 +26,9 @@ class LineChart extends StatelessWidget {
         child: Center(
           child: Text(
             'No data yet',
-            style: theme.textTheme.bodySmall
-                ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            style: theme.textTheme.bodySmall?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
           ),
         ),
       );
@@ -86,9 +87,9 @@ class _LineChartPainter extends CustomPainter {
     double xFor(int i) => chartWidth == 1
         ? _leftPad
         : _leftPad +
-            (points.length == 1
-                ? chartWidth / 2
-                : chartWidth * i / (points.length - 1));
+              (points.length == 1
+                  ? chartWidth / 2
+                  : chartWidth * i / (points.length - 1));
 
     final linePaint = Paint()
       ..color = lineColor

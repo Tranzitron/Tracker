@@ -49,8 +49,10 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
     final theme = Theme.of(context);
     final session = widget.session;
     final workingSets = session.sets.where((s) => !s.isWarmup).toList();
-    final workingVolume =
-        workingSets.fold<double>(0, (sum, s) => sum + s.weight * s.reps);
+    final workingVolume = workingSets.fold<double>(
+      0,
+      (sum, s) => sum + s.weight * s.reps,
+    );
 
     return CustomScrollView(
       slivers: <Widget>[
@@ -80,7 +82,8 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
                 else
                   for (final set in session.sets)
                     _SetRow(
-                      name: _exerciseNames[set.exerciseId] ??
+                      name:
+                          _exerciseNames[set.exerciseId] ??
                           'Exercise ${set.exerciseId}',
                       set: set,
                     ),
@@ -116,8 +119,9 @@ class _HeaderCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               [if (gymName != null) gymName!, _duration(duration)].join(' · '),
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -155,8 +159,9 @@ class _Stat extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

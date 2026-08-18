@@ -64,20 +64,17 @@ class _ExercisePickerPageState extends State<ExercisePickerPage> {
           ),
         ),
         SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              final e = _shown[index];
-              return ListTile(
-                title: Text(e.title),
-                subtitle: Text(
-                  e.primaryMuscle.map((m) => m.scientificName).join(', '),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                onTap: () => Navigator.of(context).pop(e),
-              );
-            },
-            childCount: _shown.length,
-          ),
+          delegate: SliverChildBuilderDelegate((context, index) {
+            final e = _shown[index];
+            return ListTile(
+              title: Text(e.title),
+              subtitle: Text(
+                e.primaryMuscle.map((m) => m.scientificName).join(', '),
+                overflow: TextOverflow.ellipsis,
+              ),
+              onTap: () => Navigator.of(context).pop(e),
+            );
+          }, childCount: _shown.length),
         ),
       ],
     );

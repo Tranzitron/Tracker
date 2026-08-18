@@ -98,14 +98,12 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                   ),
                 _InfoRow(
                   label: 'Equipment',
-                  value:
-                      exercise.equipment.map((e) => e.displayName).join(', '),
+                  value: exercise.equipment
+                      .map((e) => e.displayName)
+                      .join(', '),
                 ),
                 const Divider(height: 32),
-                Text(
-                  'Performance history',
-                  style: theme.textTheme.titleMedium,
-                ),
+                Text('Performance history', style: theme.textTheme.titleMedium),
                 const SizedBox(height: 8),
                 Row(
                   children: <Widget>[
@@ -156,8 +154,9 @@ class _Stat extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -185,8 +184,9 @@ class _InfoRow extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: theme.textTheme.bodyMedium
-                  ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: theme.colorScheme.onSurfaceVariant,
+              ),
             ),
           ),
           Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
@@ -199,11 +199,11 @@ class _InfoRow extends StatelessWidget {
 /// Shared movement-pattern display names (avoids duplicating the switch).
 class MovementPatternLabel {
   static String label(MovementPattern m) => switch (m) {
-        MovementPattern.unspecified => 'Unspecified',
-        MovementPattern.push => 'Push',
-        MovementPattern.pull => 'Pull',
-        MovementPattern.legs => 'Legs',
-        MovementPattern.core => 'Core',
-        MovementPattern.fullBody => 'Full body',
-      };
+    MovementPattern.unspecified => 'Unspecified',
+    MovementPattern.push => 'Push',
+    MovementPattern.pull => 'Pull',
+    MovementPattern.legs => 'Legs',
+    MovementPattern.core => 'Core',
+    MovementPattern.fullBody => 'Full body',
+  };
 }

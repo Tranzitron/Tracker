@@ -104,16 +104,12 @@ class _ProgressionPageState extends State<ProgressionPage> {
 
     final theme = Theme.of(context);
     final summary = _snapshot.summary;
-    final volume = displayProgressionPoints(
-      context,
-      _snapshot.volume,
+    final volume = displayProgressionPoints(context, _snapshot.volume);
+    final totalVolume = volume.fold<double>(
+      0,
+      (sum, point) => sum + point.value,
     );
-    final totalVolume =
-        volume.fold<double>(0, (sum, point) => sum + point.value);
-    final best1rm = displayProgressionPoints(
-      context,
-      _snapshot.best1rm,
-    );
+    final best1rm = displayProgressionPoints(context, _snapshot.best1rm);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -155,8 +151,9 @@ class _ProgressionPageState extends State<ProgressionPage> {
         Text(
           'Warm-up sets are excluded; weights are normalized by each '
           'gym\'s multiplier.',
-          style: theme.textTheme.bodySmall
-              ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+          style: theme.textTheme.bodySmall?.copyWith(
+            color: theme.colorScheme.onSurfaceVariant,
+          ),
         ),
       ],
     );
@@ -198,8 +195,9 @@ class _Stat extends StatelessWidget {
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall
-                    ?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),

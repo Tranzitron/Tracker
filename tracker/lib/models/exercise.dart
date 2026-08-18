@@ -1,8 +1,9 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import 'muscle.dart';
 
 part 'exercise.g.dart';
+
 // dart run build_runner build
 
 @collection

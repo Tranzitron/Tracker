@@ -53,8 +53,9 @@ void main() {
     expect(find.text('Go to Current Workout'), findsOneWidget);
   });
 
-  testWidgets('settings replaces placeholder cards with controls',
-      (tester) async {
+  testWidgets('settings replaces placeholder cards with controls', (
+    tester,
+  ) async {
     await tester.pumpWidget(
       BlocProvider(
         create: (_) => SettingsCubit(),

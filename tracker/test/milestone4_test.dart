@@ -10,7 +10,7 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
@@ -32,74 +32,73 @@ void main() {
 
   setUp(() async {
     final dir = Directory.systemTemp.createTempSync('m4_test');
-    isar = await Isar.open(
-      [ExerciseSchema, WorkoutSplitSchema],
-      directory: dir.path,
-    );
+    isar = await Isar.open([
+      ExerciseSchema,
+      WorkoutSplitSchema,
+    ], directory: dir.path);
     repo = TrackerRepository(isar);
   });
 
   tearDown(() => isar.close());
 
-  test('create exercise + split, add/reorder day exercises, read back',
-      () async {
-    final benchId = await repo.exercises.put(
-      Exercise(
-        title: 'Bench Press',
-        primaryMuscle: [Muscle.chest],
-        equipment: [Equipment.barbell],
-        movementPattern: MovementPattern.push,
-      ),
-    );
-    final squatId = await repo.exercises.put(
-      Exercise(
-        title: 'Squat',
-        primaryMuscle: [Muscle.quadriceps],
-        equipment: [Equipment.barbell],
-        movementPattern: MovementPattern.legs,
-      ),
-    );
-
-    final split = WorkoutSplit(
-      title: 'PPL',
-      description: 'Push / Pull / Legs',
-      order: 0,
-      splitDays: [
-        WorkoutSplitDay(
-          title: 'Push',
-          order: 0,
-          exercises: [
-            ExerciseItem(exerciseId: benchId, order: 0),
-            ExerciseItem(exerciseId: squatId, order: 1),
-          ],
+  test(
+    'create exercise + split, add/reorder day exercises, read back',
+    () async {
+      final benchId = await repo.exercises.put(
+        Exercise(
+          title: 'Bench Press',
+          primaryMuscle: [Muscle.chest],
+          equipment: [Equipment.barbell],
+          movementPattern: MovementPattern.push,
         ),
-      ],
-    );
-    final id = await repo.splits.put(split);
+      );
+      final squatId = await repo.exercises.put(
+        Exercise(
+          title: 'Squat',
+          primaryMuscle: [Muscle.quadriceps],
+          equipment: [Equipment.barbell],
+          movementPattern: MovementPattern.legs,
+        ),
+      );
 
-    var fetched = (await repo.splits.getById(id))!;
-    expect(fetched.title, 'PPL');
-    expect(fetched.splitDays.single.exercises, hasLength(2));
-    expect(fetched.splitDays.single.exercises[0].exerciseId, benchId);
+      final split = WorkoutSplit(
+        title: 'PPL',
+        description: 'Push / Pull / Legs',
+        order: 0,
+        splitDays: [
+          WorkoutSplitDay(
+            title: 'Push',
+            order: 0,
+            exercises: [
+              ExerciseItem(exerciseId: benchId, order: 0),
+              ExerciseItem(exerciseId: squatId, order: 1),
+            ],
+          ),
+        ],
+      );
+      final id = await repo.splits.put(split);
 
-    // Reorder: squat becomes the first exercise of the day.
-    fetched.splitDays.single.exercises = [
-      ExerciseItem(exerciseId: squatId, order: 0),
-      ExerciseItem(exerciseId: benchId, order: 1),
-    ];
-    await repo.splits.put(fetched);
+      var fetched = (await repo.splits.getById(id))!;
+      expect(fetched.title, 'PPL');
+      expect(fetched.splitDays.single.exercises, hasLength(2));
+      expect(fetched.splitDays.single.exercises[0].exerciseId, benchId);
 
-    final reread = (await repo.splits.getById(id))!;
-    final orders = reread.splitDays.single.exercises
-        .map((e) => (e.exerciseId, e.order))
-        .toList();
-    expect(orders, [
-      (squatId, 0),
-      (benchId, 1),
-    ]);
+      // Reorder: squat becomes the first exercise of the day.
+      fetched.splitDays.single.exercises = [
+        ExerciseItem(exerciseId: squatId, order: 0),
+        ExerciseItem(exerciseId: benchId, order: 1),
+      ];
+      await repo.splits.put(fetched);
 
-    // Delete the split.
-    expect(await repo.splits.delete(id), isTrue);
-    expect(await repo.splits.getById(id), isNull);
-  });
+      final reread = (await repo.splits.getById(id))!;
+      final orders = reread.splitDays.single.exercises
+          .map((e) => (e.exerciseId, e.order))
+          .toList();
+      expect(orders, [(squatId, 0), (benchId, 1)]);
+
+      // Delete the split.
+      expect(await repo.splits.delete(id), isTrue);
+      expect(await repo.splits.getById(id), isNull);
+    },
+  );
 }

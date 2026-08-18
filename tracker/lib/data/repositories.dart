@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 import '../models/exercise.dart';
 import '../models/gym.dart';
@@ -150,11 +150,11 @@ class WorkoutSessionRepository {
 /// Facade bundling every repository for easy construction and injection.
 class TrackerRepository {
   TrackerRepository(Isar isar)
-      : isar = isar,
-        exercises = ExerciseRepository(isar),
-        gyms = GymRepository(isar),
-        splits = WorkoutSplitRepository(isar),
-        sessions = WorkoutSessionRepository(isar);
+    : isar = isar,
+      exercises = ExerciseRepository(isar),
+      gyms = GymRepository(isar),
+      splits = WorkoutSplitRepository(isar),
+      sessions = WorkoutSessionRepository(isar);
 
   /// Raw [Isar] kept for seeding and one-off queries; business code should
   /// prefer the typed repositories above.

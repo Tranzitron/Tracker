@@ -41,9 +41,9 @@ class AnalyticsSnapshot {
     required this.summary,
     required this.exerciseId,
     required this.revision,
-  })  : best1rm = List.unmodifiable(best1rm),
-        peakWeight = List.unmodifiable(peakWeight),
-        volume = List.unmodifiable(volume);
+  }) : best1rm = List.unmodifiable(best1rm),
+       peakWeight = List.unmodifiable(peakWeight),
+       volume = List.unmodifiable(volume);
 
   final int? exerciseId;
   final Object? revision;
@@ -87,13 +87,12 @@ class AnalyticsService {
     required Map<int, double> multipliers,
     int? exerciseId,
     Object? revision,
-  }) =>
-      snapshot(
-        sessions: sessions,
-        multipliers: multipliers,
-        exerciseId: exerciseId,
-        revision: revision,
-      );
+  }) => snapshot(
+    sessions: sessions,
+    multipliers: multipliers,
+    exerciseId: exerciseId,
+    revision: revision,
+  );
 
   void clear() => _cache.clear();
 }

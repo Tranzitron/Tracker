@@ -13,11 +13,7 @@ import 'gym_picker.dart';
 /// exercises and lets the user start that workout as the active session. This
 /// replaces the old `Text('restart if stuck in fake workout')` placeholder.
 class SplitDayPage extends StatefulWidget {
-  const SplitDayPage({
-    super.key,
-    required this.splitTitle,
-    required this.day,
-  });
+  const SplitDayPage({super.key, required this.splitTitle, required this.day});
 
   final String splitTitle;
   final WorkoutSplitDay day;
@@ -45,9 +41,7 @@ class _SplitDayPageState extends State<SplitDayPage> {
   Future<void> _load() async {
     final repo = RepositoryScope.maybeOf(context);
     final exercises = await repo?.exercises.getAll() ?? const [];
-    final names = <int, String>{
-      for (final e in exercises) e.id: e.title,
-    };
+    final names = <int, String>{for (final e in exercises) e.id: e.title};
     if (!mounted) return;
     setState(() {
       _names = names;

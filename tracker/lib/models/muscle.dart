@@ -16,9 +16,7 @@ enum Muscle {
   hamstrings(scientificName: 'hamstrings'),
   quadriceps(scientificName: 'quadriceps');
 
-  const Muscle({
-    required this.scientificName,
-  });
+  const Muscle({required this.scientificName});
 
   final String scientificName;
 
@@ -42,11 +40,4 @@ enum Muscle {
   };
 }
 
-enum MuscleGroup {
-  abdominals,
-  arms,
-  shoulders,
-  back,
-  legs,
-  chest,
-}
+enum MuscleGroup { abdominals, arms, shoulders, back, legs, chest }

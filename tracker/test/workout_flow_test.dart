@@ -13,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_session.dart';
@@ -46,10 +46,10 @@ void main() {
 
     setUp(() async {
       final dir = Directory.systemTemp.createTempSync('workout_flow_isar');
-      isar = await Isar.open(
-        [WorkoutSessionSchema, GymSchema],
-        directory: dir.path,
-      );
+      isar = await Isar.open([
+        WorkoutSessionSchema,
+        GymSchema,
+      ], directory: dir.path);
       repo = TrackerRepository(isar);
       cubit = WorkoutCubit(repository: repo);
     });
@@ -67,12 +67,7 @@ void main() {
       expect(cubit.state.isInProgress, isTrue);
       expect(cubit.state.gymId, gymId);
 
-      cubit.logSet(
-        exerciseId: 1,
-        exerciseName: 'Squat',
-        weight: 100,
-        reps: 5,
-      );
+      cubit.logSet(exerciseId: 1, exerciseName: 'Squat', weight: 100, reps: 5);
       cubit.logSet(
         exerciseId: 1,
         exerciseName: 'Squat',
@@ -80,12 +75,7 @@ void main() {
         reps: 8,
         type: SetType.warmup,
       );
-      cubit.logSet(
-        exerciseId: 1,
-        exerciseName: 'Squat',
-        weight: 100,
-        reps: 5,
-      );
+      cubit.logSet(exerciseId: 1, exerciseName: 'Squat', weight: 100, reps: 5);
       expect(cubit.state.sets, hasLength(3));
       expect(cubit.state.sets[1].isWarmup, isTrue);
 

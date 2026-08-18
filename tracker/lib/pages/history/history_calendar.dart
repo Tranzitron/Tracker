@@ -131,8 +131,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     final selected =
         _selectedDay != null && _selectedDay!.isAtSameMomentAs(date);
 
-    final foreground =
-        selected ? theme.colorScheme.onPrimary : theme.colorScheme.onSurface;
+    final foreground = selected
+        ? theme.colorScheme.onPrimary
+        : theme.colorScheme.onSurface;
     final dot = selected
         ? theme.colorScheme.onPrimary
         : (hasWorkout ? theme.colorScheme.primary : Colors.transparent);

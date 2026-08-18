@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../models/exercise.dart';
@@ -13,14 +13,11 @@ import '../models/workout_split.dart';
 class DbInstance {
   static Future<Isar> getIsar() async {
     final dir = await getApplicationDocumentsDirectory();
-    return Isar.open(
-      [
-        ExerciseSchema,
-        WorkoutSplitSchema,
-        GymSchema,
-        WorkoutSessionSchema,
-      ],
-      directory: dir.path,
-    );
+    return Isar.open([
+      ExerciseSchema,
+      WorkoutSplitSchema,
+      GymSchema,
+      WorkoutSessionSchema,
+    ], directory: dir.path);
   }
 }

@@ -185,12 +185,12 @@ class _WorkoutHeaderData {
   final double workingVolume;
 
   static _WorkoutHeaderData fromState(WorkoutState state) => _WorkoutHeaderData(
-        planTitle: state.planTitle,
-        gymName: state.gymName,
-        startTime: state.startTime,
-        setCount: state.sets.length,
-        workingVolume: state.workingVolume,
-      );
+    planTitle: state.planTitle,
+    gymName: state.gymName,
+    startTime: state.startTime,
+    setCount: state.sets.length,
+    workingVolume: state.workingVolume,
+  );
 }
 
 class _WorkoutHeader extends StatelessWidget {
@@ -550,12 +550,12 @@ class _AddSetFormState extends State<_AddSetForm> {
     final displayedWeight = double.tryParse(_weight.text) ?? 0.0;
     final weight = kilogramsFromDisplay(context, displayedWeight);
     context.read<WorkoutCubit>().logSet(
-          exerciseId: id,
-          exerciseName: name,
-          weight: weight,
-          reps: reps,
-          type: _warmup ? SetType.warmup : SetType.working,
-        );
+      exerciseId: id,
+      exerciseName: name,
+      weight: weight,
+      reps: reps,
+      type: _warmup ? SetType.warmup : SetType.working,
+    );
     _weight.clear();
     setState(() {});
   }

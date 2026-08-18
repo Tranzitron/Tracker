@@ -9,11 +9,11 @@ import 'package:tracker/models/workout_session.dart';
 /// sessions while painting each calendar cell and calculating metrics.
 class WorkoutDateIndex {
   WorkoutDateIndex._(Map<DateTime, List<WorkoutSession>> byDay)
-      : _byDay = UnmodifiableMapView(<DateTime, List<WorkoutSession>>{
-          for (final entry in byDay.entries)
-            entry.key: UnmodifiableListView(entry.value),
-        }),
-        workoutDays = UnmodifiableSetView(byDay.keys.toSet()) {
+    : _byDay = UnmodifiableMapView(<DateTime, List<WorkoutSession>>{
+        for (final entry in byDay.entries)
+          entry.key: UnmodifiableListView(entry.value),
+      }),
+      workoutDays = UnmodifiableSetView(byDay.keys.toSet()) {
     final counts = <int, int>{};
     for (final day in byDay.keys) {
       final key = day.year * 100 + day.month;

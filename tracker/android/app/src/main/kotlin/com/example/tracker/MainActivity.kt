@@ -1,4 +1,4 @@
-package com.example.tracker
+package me.raph.tracker
 
 import io.flutter.embedding.android.FlutterActivity
 

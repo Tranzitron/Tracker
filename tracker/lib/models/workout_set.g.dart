@@ -18,33 +18,18 @@ const WorkoutSetSchema = Schema(
       name: r'exerciseId',
       type: IsarType.long,
     ),
-    r'isWarmup': PropertySchema(
-      id: 1,
-      name: r'isWarmup',
-      type: IsarType.bool,
-    ),
-    r'order': PropertySchema(
-      id: 2,
-      name: r'order',
-      type: IsarType.long,
-    ),
-    r'reps': PropertySchema(
-      id: 3,
-      name: r'reps',
-      type: IsarType.long,
-    ),
+    r'isWarmup': PropertySchema(id: 1, name: r'isWarmup', type: IsarType.bool),
+    r'order': PropertySchema(id: 2, name: r'order', type: IsarType.long),
+    r'reps': PropertySchema(id: 3, name: r'reps', type: IsarType.long),
     r'type': PropertySchema(
       id: 4,
       name: r'type',
       type: IsarType.byte,
       enumMap: _WorkoutSettypeEnumValueMap,
     ),
-    r'weight': PropertySchema(
-      id: 5,
-      name: r'weight',
-      type: IsarType.double,
-    )
+    r'weight': PropertySchema(id: 5, name: r'weight', type: IsarType.double),
   },
+
   estimateSize: _workoutSetEstimateSize,
   serialize: _workoutSetSerialize,
   deserialize: _workoutSetDeserialize,
@@ -84,7 +69,8 @@ WorkoutSet _workoutSetDeserialize(
     exerciseId: reader.readLongOrNull(offsets[0]) ?? 0,
     order: reader.readLongOrNull(offsets[2]) ?? 0,
     reps: reader.readLongOrNull(offsets[3]) ?? 0,
-    type: _WorkoutSettypeValueEnumMap[reader.readByteOrNull(offsets[4])] ??
+    type:
+        _WorkoutSettypeValueEnumMap[reader.readByteOrNull(offsets[4])] ??
         SetType.working,
     weight: reader.readDoubleOrNull(offsets[5]) ?? 0,
   );
@@ -108,7 +94,8 @@ P _workoutSetDeserializeProp<P>(
       return (reader.readLongOrNull(offset) ?? 0) as P;
     case 4:
       return (_WorkoutSettypeValueEnumMap[reader.readByteOrNull(offset)] ??
-          SetType.working) as P;
+              SetType.working)
+          as P;
     case 5:
       return (reader.readDoubleOrNull(offset) ?? 0) as P;
     default:
@@ -116,52 +103,44 @@ P _workoutSetDeserializeProp<P>(
   }
 }
 
-const _WorkoutSettypeEnumValueMap = {
-  'warmup': 0,
-  'working': 1,
-};
-const _WorkoutSettypeValueEnumMap = {
-  0: SetType.warmup,
-  1: SetType.working,
-};
+const _WorkoutSettypeEnumValueMap = {'warmup': 0, 'working': 1};
+const _WorkoutSettypeValueEnumMap = {0: SetType.warmup, 1: SetType.working};
 
 extension WorkoutSetQueryFilter
     on QueryBuilder<WorkoutSet, WorkoutSet, QFilterCondition> {
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition> exerciseIdEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'exerciseId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'exerciseId', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition>
-      exerciseIdGreaterThan(
-    int value, {
-    bool include = false,
-  }) {
+  exerciseIdGreaterThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'exerciseId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'exerciseId',
+          value: value,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition>
-      exerciseIdLessThan(
-    int value, {
-    bool include = false,
-  }) {
+  exerciseIdLessThan(int value, {bool include = false}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'exerciseId',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'exerciseId',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -172,33 +151,35 @@ extension WorkoutSetQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'exerciseId',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'exerciseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition> isWarmupEqualTo(
-      bool value) {
+    bool value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'isWarmup',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'isWarmup', value: value),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition> orderEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'order',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'order', value: value),
+      );
     });
   }
 
@@ -207,11 +188,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'order',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'order',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -220,11 +203,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'order',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'order',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -235,23 +220,25 @@ extension WorkoutSetQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'order',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'order',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition> repsEqualTo(
-      int value) {
+    int value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'reps',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'reps', value: value),
+      );
     });
   }
 
@@ -260,11 +247,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'reps',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'reps',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -273,11 +262,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'reps',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'reps',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -288,23 +279,25 @@ extension WorkoutSetQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'reps',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'reps',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
   QueryBuilder<WorkoutSet, WorkoutSet, QAfterFilterCondition> typeEqualTo(
-      SetType value) {
+    SetType value,
+  ) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'type',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'type', value: value),
+      );
     });
   }
 
@@ -313,11 +306,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'type',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'type',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -326,11 +321,13 @@ extension WorkoutSetQueryFilter
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'type',
-        value: value,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'type',
+          value: value,
+        ),
+      );
     });
   }
 
@@ -341,13 +338,15 @@ extension WorkoutSetQueryFilter
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'type',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'type',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
     });
   }
 
@@ -356,11 +355,14 @@ extension WorkoutSetQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'weight',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'weight',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -370,12 +372,15 @@ extension WorkoutSetQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        include: include,
-        property: r'weight',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'weight',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -385,12 +390,15 @@ extension WorkoutSetQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.lessThan(
-        include: include,
-        property: r'weight',
-        value: value,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'weight',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 
@@ -402,14 +410,17 @@ extension WorkoutSetQueryFilter
     double epsilon = Query.epsilon,
   }) {
     return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.between(
-        property: r'weight',
-        lower: lower,
-        includeLower: includeLower,
-        upper: upper,
-        includeUpper: includeUpper,
-        epsilon: epsilon,
-      ));
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'weight',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
     });
   }
 }

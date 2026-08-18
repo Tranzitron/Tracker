@@ -46,12 +46,14 @@ class _NewExercisePageState extends State<NewExercisePage> {
     final repo = RepositoryScope.maybeOf(context);
     final exercise = Exercise(
       title: _title.text.trim(),
-      description:
-          _description.text.trim().isEmpty ? null : _description.text.trim(),
+      description: _description.text.trim().isEmpty
+          ? null
+          : _description.text.trim(),
       primaryMuscle: _primary.toList(),
       secondaryMuscle: _secondary.isEmpty ? null : _secondary.toList(),
-      equipment:
-          _equipment.isEmpty ? [Equipment.bodyweight] : _equipment.toList(),
+      equipment: _equipment.isEmpty
+          ? [Equipment.bodyweight]
+          : _equipment.toList(),
       movementPattern: _movement,
     );
     if (repo != null) {
@@ -164,13 +166,13 @@ class _NewExercisePageState extends State<NewExercisePage> {
   }
 
   String _movementLabel(MovementPattern m) => switch (m) {
-        MovementPattern.unspecified => 'Unspecified',
-        MovementPattern.push => 'Push',
-        MovementPattern.pull => 'Pull',
-        MovementPattern.legs => 'Legs',
-        MovementPattern.core => 'Core',
-        MovementPattern.fullBody => 'Full body',
-      };
+    MovementPattern.unspecified => 'Unspecified',
+    MovementPattern.push => 'Push',
+    MovementPattern.pull => 'Pull',
+    MovementPattern.legs => 'Legs',
+    MovementPattern.core => 'Core',
+    MovementPattern.fullBody => 'Full body',
+  };
 }
 
 class _ChipSection extends StatelessWidget {
