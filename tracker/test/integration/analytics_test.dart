@@ -1,0 +1,71 @@
+// Analytics widget integration tests — DB-free chart/page smoke tests (no
+// repository). The pure analytics math they render is unit-tested separately:
+// test/unit/analytics_test.dart.
+
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tracker/analytics/analytics.dart';
+import 'package:tracker/models/exercise.dart';
+import 'package:tracker/models/muscle.dart';
+import 'package:tracker/pages/analytics/progression_page.dart';
+import 'package:tracker/pages/custom/line_chart.dart';
+import 'package:tracker/pages/exercises/exercise_detail_page.dart';
+
+void main() {
+  group('analytics widgets (DB-free)', () {
+    testWidgets('LineChart renders an empty state', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(
+          home: Scaffold(body: LineChart(points: <ProgressionPoint>[])),
+        ),
+      );
+      expect(find.text('No data yet'), findsOneWidget);
+    });
+
+    testWidgets('LineChart renders a series without crashing', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(
+            body: LineChart(
+              points: [
+                ProgressionPoint(date: DateTime(2026, 1, 1), value: 10),
+                ProgressionPoint(date: DateTime(2026, 1, 2), value: 20),
+              ],
+            ),
+          ),
+        ),
+      );
+      expect(find.byType(CustomPaint), findsWidgets);
+    });
+
+    testWidgets('ExerciseDetailPage builds and shows an empty chart', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ExerciseDetailPage(
+            exercise: Exercise(
+              title: 'Bench Press',
+              primaryMuscle: [Muscle.chest],
+              equipment: [Equipment.barbell],
+              movementPattern: MovementPattern.push,
+            ),
+          ),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Bench Press'), findsOneWidget);
+      expect(find.text('Best 1RM'), findsOneWidget);
+      expect(find.text('No data yet'), findsOneWidget);
+    });
+
+    testWidgets('ProgressionPage opens without a repository', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: ProgressionPage()));
+      await tester.pump();
+      await tester.pumpAndSettle();
+      expect(find.text('Working volume over time'), findsOneWidget);
+      expect(find.text('No data yet'), findsNWidgets(2));
+    });
+  });
+}

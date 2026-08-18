@@ -17,14 +17,15 @@ cd tracker && flutter pub get
 # Static analysis (this is what CI runs)
 cd tracker && flutter analyze
 
-# Run tests (single test: `flutter test test/widget_test.dart`)
+# Run tests (single: `flutter test test/integration/app_test.dart`)
+# Unit tier (pure Dart, no Isar/DB): `flutter test test/unit`
 cd tracker && flutter test
 
 # Regenerate code from Isar/JsonSerializable annotations
 cd tracker && dart run build_runner build
 ```
 
-Tests live under `tracker/test/` and cover persistence, cubit flows, widget flows, analytics, settings, and hydration edge cases. CI (`dart.yml`) runs dependency installation, `flutter analyze`, generated-code verification, generated-file drift detection, and `flutter test` on `ubuntu-latest`.
+Tests live under `tracker/test/`, split by tier. `test/unit/` holds pure-Dart tests (analytics math, calendar/streak, weight format, state serialization) — no Isar, no widgets. `test/integration/` holds tests that open a real Isar DB, use `HydratedStorage`, or pump the widget tree (repositories/CRUD, WorkoutCubit flows, page widgets, app shell). Shared test infra (Isar core init, temp Isar open, `pumpApp`, in-memory Hydrated storage, watcher polling) lives in `test/helpers/test_helpers.dart`. CI (`dart.yml`) runs dependency installation, `flutter analyze`, generated-code verification, generated-file drift detection, and `flutter test` on `ubuntu-latest`.
 
 ## Architecture
 
@@ -57,7 +58,7 @@ The app uses **Isar** for local persistence and **Bloc (flutter_bloc + HydratedB
 
 **Placeholder/known-incomplete code** (present in the scaffold, not implemented):
 - `ExerciseDetailPage` shows best-1RM chart and summary stats; deeper performance-log detail is optional polish.
-- Milestone 8 adds `test/milestone8_test.dart` for malformed hydration defaults, idle cubit behavior, Isar watcher updates, and settings persistence. CI verifies generated code with `dart run build_runner build --delete-conflicting-outputs` and fails if generated files drift. Platform release builds require local signing/toolchains; CI does not claim store-ready artifacts.
+- Malformed hydration defaults, idle cubit behavior, Isar watcher updates, and settings persistence are covered across `test/unit/` and `test/integration/`. CI verifies generated code with `dart run build_runner build --delete-conflicting-outputs` and fails if generated files drift. Platform release builds require local signing/toolchains; CI does not claim store-ready artifacts.
 - Hardware directories (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) are stock Flutter platform runners; `tracker/ios/Podfile.lock` and `build/` are committed and may be stale.
 
 ## README (planning notes)

@@ -1,12 +1,9 @@
-// Milestone 3 — core workout logging.
-//
-// Two layers:
+// Workout integration tests (lib/pages/workout/). Two layers:
 //  1. Cubit+repository: start → select gym → log working + warmup sets → end
-//     workout → a WorkoutSession with the right gym/sets/duration lands in Isar
-//     (Checkpoint 3 persistence), plus hydration round-trips.
+//     workout → a WorkoutSession with the right gym/sets/duration lands in Isar,
+//     plus hydration round-trips and the idle-guard.
 //  2. Widget: the CurrentWorkout page renders the plan and logs a set inline.
 
-import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -21,35 +18,38 @@ import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/workout/current_workout_page.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
+import '../helpers/test_helpers.dart';
+
 void main() {
-  setUpAll(() async {
-    await Isar.initializeIsarCore(
-      libraries: {
-        Abi.windowsX64: 'test/assets/isar_windows_x64.dll',
-        Abi.linuxX64: 'test/assets/libisar_linux_x64.so',
-        Abi.macosX64: 'test/assets/libisar_macos.dylib',
-      },
-    );
-  });
+  setUpAll(initIsarCore);
 
   setUp(() async {
-    final dir = Directory.systemTemp.createTempSync('workout_flow_test');
+    final dir = Directory.systemTemp.createTempSync('workout_test');
     HydratedBloc.storage = await HydratedStorage.build(
       storageDirectory: HydratedStorageDirectory(dir.path),
     );
   });
 
-  group('WorkoutCubit persistence (Checkpoint 3)', () {
+  test('WorkoutCubit ignores ending an idle workout', () async {
+    final cubit = WorkoutCubit();
+    addTearDown(cubit.close);
+
+    await cubit.endWorkout();
+
+    expect(cubit.state.isInProgress, isFalse);
+    expect(cubit.state.sets, isEmpty);
+  });
+
+  group('WorkoutCubit persistence', () {
     late Isar isar;
     late TrackerRepository repo;
     late WorkoutCubit cubit;
 
     setUp(() async {
-      final dir = Directory.systemTemp.createTempSync('workout_flow_isar');
-      isar = await Isar.open([
+      isar = await openTestIsar([
         WorkoutSessionSchema,
         GymSchema,
-      ], directory: dir.path);
+      ], name: 'workout_test_flow');
       repo = TrackerRepository(isar);
       cubit = WorkoutCubit(repository: repo);
     });

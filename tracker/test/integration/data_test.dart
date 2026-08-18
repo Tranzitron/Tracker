@@ -1,11 +1,7 @@
-// Repository/persistence tests. These open a real Isar DB in a throwaway temp
-// directory (no path_provider) and exercise CRUD through TrackerRepository.
-//
-// Checkpoint 1: every model can be created/read/updated/deleted through the
-// repository, and a workout session persists with its embedded sets.
-
-import 'dart:ffi';
-import 'dart:io';
+// Data/persistence integration tests. These open a real Isar DB in a throwaway
+// temp directory (no path_provider) and exercise CRUD through TrackerRepository,
+// plus Isar stream watchers. Covers: seed, exercise/gym/split/session CRUD,
+// embedded split days, and the exercise watcher.
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
@@ -18,28 +14,23 @@ import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/models/workout_split.dart';
 
+import '../helpers/test_helpers.dart';
+
+final _schemas = <CollectionSchema<dynamic>>[
+  ExerciseSchema,
+  GymSchema,
+  WorkoutSessionSchema,
+  WorkoutSplitSchema,
+];
+
 void main() {
   late Isar isar;
   late TrackerRepository repo;
 
-  setUpAll(() async {
-    await Isar.initializeIsarCore(
-      libraries: {
-        Abi.windowsX64: 'test/assets/isar_windows_x64.dll',
-        Abi.linuxX64: 'test/assets/libisar_linux_x64.so',
-        Abi.macosX64: 'test/assets/libisar_macos.dylib',
-      },
-    );
-  });
+  setUpAll(initIsarCore);
 
   setUp(() async {
-    final dir = Directory.systemTemp.createTempSync('isar_test');
-    isar = await Isar.open([
-      ExerciseSchema,
-      GymSchema,
-      WorkoutSessionSchema,
-      WorkoutSplitSchema,
-    ], directory: dir.path);
+    isar = await openTestIsar(_schemas, name: 'data_test');
     repo = TrackerRepository(isar);
   });
 
@@ -127,6 +118,64 @@ void main() {
     },
   );
 
+  test('create exercise + split, add/reorder day exercises, delete', () async {
+    final benchId = await repo.exercises.put(
+      Exercise(
+        title: 'Bench Press',
+        primaryMuscle: [Muscle.chest],
+        equipment: [Equipment.barbell],
+        movementPattern: MovementPattern.push,
+      ),
+    );
+    final squatId = await repo.exercises.put(
+      Exercise(
+        title: 'Squat',
+        primaryMuscle: [Muscle.quadriceps],
+        equipment: [Equipment.barbell],
+        movementPattern: MovementPattern.legs,
+      ),
+    );
+
+    final split = WorkoutSplit(
+      title: 'PPL',
+      description: 'Push / Pull / Legs',
+      order: 0,
+      splitDays: [
+        WorkoutSplitDay(
+          title: 'Push',
+          order: 0,
+          exercises: [
+            ExerciseItem(exerciseId: benchId, order: 0),
+            ExerciseItem(exerciseId: squatId, order: 1),
+          ],
+        ),
+      ],
+    );
+    final id = await repo.splits.put(split);
+
+    var fetched = (await repo.splits.getById(id))!;
+    expect(fetched.title, 'PPL');
+    expect(fetched.splitDays.single.exercises, hasLength(2));
+    expect(fetched.splitDays.single.exercises[0].exerciseId, benchId);
+
+    // Reorder: squat becomes the first exercise of the day.
+    fetched.splitDays.single.exercises = [
+      ExerciseItem(exerciseId: squatId, order: 0),
+      ExerciseItem(exerciseId: benchId, order: 1),
+    ];
+    await repo.splits.put(fetched);
+
+    final reread = (await repo.splits.getById(id))!;
+    final orders = reread.splitDays.single.exercises
+        .map((e) => (e.exerciseId, e.order))
+        .toList();
+    expect(orders, [(squatId, 0), (benchId, 1)]);
+
+    // Delete the split.
+    expect(await repo.splits.delete(id), isTrue);
+    expect(await repo.splits.getById(id), isNull);
+  });
+
   test(
     'workout session persists with embedded sets and warmup flags',
     () async {
@@ -189,6 +238,29 @@ void main() {
         ),
         throwsArgumentError,
       );
+    },
+  );
+
+  test(
+    'repository exercise watcher emits initial and updated values',
+    () async {
+      final values = <List<Exercise>>[];
+      final subscription = repo.exercises.watchAll().listen(values.add);
+      addTearDown(subscription.cancel);
+
+      await waitFor(() => values.isNotEmpty);
+      expect(values.last, isEmpty);
+
+      await repo.exercises.put(
+        Exercise(
+          title: 'Test Squat',
+          primaryMuscle: [Muscle.quadriceps],
+          equipment: [Equipment.barbell],
+          movementPattern: MovementPattern.legs,
+        ),
+      );
+      await waitFor(() => values.any((list) => list.length == 1));
+      expect(values.last.single.title, 'Test Squat');
     },
   );
 }

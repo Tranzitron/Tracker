@@ -1,4 +1,4 @@
-// Smoke tests for the bottom-nav shell.
+// App-shell integration tests: the bottom-nav shell.
 //
 // MyApp's root build depends on WorkoutCubit, a HydratedCubit, so storage must
 // be initialized before pumping (mirroring main()). We use an in-memory Storage
@@ -12,27 +12,10 @@
 // also proves every tab resolves to a buildable screen.
 
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:tracker/main.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
 
-import 'in_memory_storage.dart';
-
-Future<WorkoutCubit> pumpApp(WidgetTester tester) async {
-  final cubit = WorkoutCubit();
-  await tester.pumpWidget(
-    MultiBlocProvider(
-      providers: [
-        BlocProvider<WorkoutCubit>(create: (_) => cubit, lazy: false),
-      ],
-      child: const MyApp(),
-    ),
-  );
-  await tester.pumpAndSettle();
-  return cubit;
-}
+import '../helpers/test_helpers.dart';
 
 void main() {
   setUp(() {

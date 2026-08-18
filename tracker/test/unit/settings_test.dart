@@ -1,18 +1,12 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
-import 'package:tracker/pages/settings_page.dart';
+// Unit tests for settings (lib/pages/settings/) — pure: weight unit conversion
+// and SettingsState JSON round-trip. The SettingsCubit (HydratedCubit) and
+// SettingsPage widget are integration tests: test/integration/settings_test.dart.
 
-import 'in_memory_storage.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
 
 void main() {
-  setUp(() {
-    HydratedBloc.storage = InMemoryStorage();
-  });
-
-  group('Milestone 7 settings', () {
+  group('Setting conversions & state', () {
     test('converts pounds and kilograms at the UI boundary', () {
       expect(WeightUnit.kilograms.fromKilograms(100), 100);
       expect(WeightUnit.pounds.fromKilograms(100), closeTo(220.462, 0.001));
@@ -34,21 +28,5 @@ void main() {
       expect(restored.notificationsEnabled, isFalse);
       expect(restored.analyticsEnabled, isFalse);
     });
-  });
-
-  testWidgets('settings replaces placeholder cards with controls', (
-    tester,
-  ) async {
-    await tester.pumpWidget(
-      BlocProvider(
-        create: (_) => SettingsCubit(),
-        child: const MaterialApp(home: SettingsPage()),
-      ),
-    );
-    await tester.pump();
-    expect(find.text('Profile Settings'), findsOneWidget);
-    expect(find.text('Units'), findsOneWidget);
-    expect(find.text('Notifications'), findsOneWidget);
-    expect(find.text('Privacy & Security'), findsOneWidget);
   });
 }
