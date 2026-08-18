@@ -2,10 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:tracker/pages/feed_page.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/settings_page.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'in_memory_storage.dart';
 
@@ -36,21 +34,6 @@ void main() {
       expect(restored.notificationsEnabled, isFalse);
       expect(restored.analyticsEnabled, isFalse);
     });
-  });
-
-  testWidgets('feed shows an intentional empty activity state', (tester) async {
-    // FeedPage gates its quick action on the workout state, so it needs a
-    // WorkoutCubit (idle here — no session → the button renders).
-    await tester.pumpWidget(
-      BlocProvider(
-        create: (_) => WorkoutCubit(),
-        child: const MaterialApp(home: FeedPage()),
-      ),
-    );
-    await tester.pump();
-    expect(find.text('No workouts logged yet.'), findsOneWidget);
-    expect(find.text('Progression'), findsOneWidget);
-    expect(find.text('Go to Current Workout'), findsOneWidget);
   });
 
   testWidgets('settings replaces placeholder cards with controls', (

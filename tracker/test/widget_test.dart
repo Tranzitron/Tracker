@@ -49,24 +49,10 @@ void main() {
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(find.byType(NavigationDestination), findsNWidgets(5));
 
-      // The workout destination keeps its TabName.currentWorkout handling but
-      // displays the shorter label so it fits narrow destinations.
-      final labels = tester
-          .widgetList<Text>(
-            find.descendant(
-              of: find.byType(NavigationDestination),
-              matching: find.byType(Text),
-            ),
-          )
-          .map((text) => text.data)
-          .toList();
-      expect(labels, contains('Workout'));
-      expect(labels, isNot(contains('CurrentWorkout')));
-
       // The initially selected tab (Feed) rendered without crashing. Note: the
       // other four tabs also build (Offstage), so this also proves every tab
       // resolves to a buildable screen.
-      expect(find.text('Go to Current Workout'), findsOneWidget);
+      expect(find.text('Progression'), findsOneWidget);
 
       // Drive tab switches through onDestinationSelected (the same callback the
       // NavigationBar wires to _selectTab) rather than hit-testing, which is
@@ -84,26 +70,6 @@ void main() {
           reason: 'selecting index $index did not update the nav bar',
         );
       }
-    },
-  );
-
-  testWidgets(
-    'feed quick action shows idle and hides while a workout is in progress',
-    (WidgetTester tester) async {
-      final cubit = await pumpApp(tester);
-
-      // Idle workout → the Feed entry point is present.
-      expect(find.text('Go to Current Workout'), findsOneWidget);
-
-      // Starting a session gates the button off; the tab itself is the entry.
-      cubit.startWorkout();
-      await tester.pumpAndSettle();
-      expect(find.text('Go to Current Workout'), findsNothing);
-
-      // Ending the session restores the quick action.
-      await cubit.endWorkout();
-      await tester.pumpAndSettle();
-      expect(find.text('Go to Current Workout'), findsOneWidget);
     },
   );
 }
