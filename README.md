@@ -35,3 +35,15 @@ the repo, so every clone carries the same hook. Git runs it once
 git config core.hooksPath .husky   # one-time activation
 git commit -m "..."                # dart fix --apply + dart format run here
 ```
+
+This is **cross-platform** (Windows, macOS, Linux):
+
+- Husky is a pure-Dart package (`husky` on pub.dev), no native/node deps.
+- The hook itself is a plain `sh` script — Git for Windows ships the
+  software needed to run shell scripts, and macOS/Linux run it directly.
+- `.husky/** text eol=lf` in `.gitattributes` pins the hook to LF line
+  endings on every OS, so Windows' CRLF autoconversion never breaks the
+  `#!/usr/bin/env sh` script.
+
+The only requirement on every machine is git + Dart (assumed already
+installed).

@@ -30,7 +30,10 @@ hook that formats code with `dart fix --apply` then `dart format .`. The
 hook lives at repo-root `.husky/pre-commit` (committed, so it's
 project-specific); git runs it because `core.hooksPath` points at `.husky`
 (already set here; a fresh clone needs the one-time
-`git config core.hooksPath .husky`).
+`git config core.hooksPath .husky`). Cross-platform: `husky` is pure Dart
+and the plain-`sh` hook is LF-pinned via `.gitattributes`
+(`.husky/** text eol=lf`) so Windows CRLF autoconversion can't break it on
+any of Windows / macOS / Linux.
 
 Tests live under `tracker/test/`, split by tier. `test/unit/` holds pure-Dart tests (analytics math, calendar/streak, weight format, state serialization) — no Isar, no widgets. `test/integration/` holds tests that open a real Isar DB, use `HydratedStorage`, or pump the widget tree (repositories/CRUD, WorkoutCubit flows, page widgets, app shell). Shared test infra (Isar core init, temp Isar open, `pumpApp`, in-memory Hydrated storage, watcher polling) lives in `test/helpers/test_helpers.dart`. CI (`dart.yml`) runs dependency installation, `flutter analyze`, generated-code verification, generated-file drift detection, and `flutter test` on `ubuntu-latest`.
 
