@@ -20,3 +20,18 @@ without hiding the page with a floating action button or something of the sort.
 
 - [x] Move settings to Feed
 - [ ] Add Current Workout to navigation
+
+## Git hooks
+
+This repo uses **Husky (the Dart package, pub.dev)** to run a `pre-commit`
+hook that formats Dart code with `dart fix --apply` (then `dart format .`),
+re-staging whatever the formatter touched.
+
+The hook script is **project-specific**: `.husky/pre-commit` is committed to
+the repo, so every clone carries the same hook. Git runs it once
+`core.hooksPath` points at the `.husky/` directory. On a fresh clone, run:
+
+```bash
+git config core.hooksPath .husky   # one-time activation
+git commit -m "..."                # dart fix --apply + dart format run here
+```
