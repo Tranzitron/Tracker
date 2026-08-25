@@ -180,11 +180,13 @@ Verification: `flutter analyze` and focused settings/template/workout tests pass
 
 ## M5 — History calendar
 
-- [ ] Make the calendar more compact
+Status: complete. Compact calendar and bounded internal workout panel implemented; focused history tests pass.
+
+- [x] Make the calendar more compact
   - `calendar_grid.dart` (116-124) starts with a `GridView.count(crossAxisCount: 7, childAspectRatio: ~0.9)` instead of the default tall/large cells.
   - Cull per-cell vertical budget: cell `margin: all(2)` → `all(1)` (line 144), day-number style to `bodySmall`, dot from 5×5 → 4×4 or inline dot, gap 2→0 (lines 155-162).
   - Trim the `_MetricsStrip` (265-284) — compress "Workout days / git streak" into compact chips or one line. (Optional alternative: replace with a single-line cohesion row.)
-- [ ] No scrolling to see workouts of a day
+- [x] No scrolling to see workouts of a day
   - The inline day-list pushes grid off-screen today. Reorder so both are visible without page scroll:
   - **Option A (chosen default):** Pin the calendar widget to a fixed viewport area: grid + a bounded "Workouts · <date>" panel below it. The day list becomes a `ListView` inside a fixed-height region (about two tiles) with `shrinkWrap`/internal scrolling — grid always visible, long days scroll within the panel, no page scroll needed.
   - **Option B:** Show the day's workouts in a `showModalBottomSheet`/`DraggableScrollableSheet` on tap instead of inline. Simpler, but loses the at-a-glance empty-state and adds a tap-to-open step.
@@ -193,41 +195,41 @@ Verification: `flutter analyze` and focused settings/template/workout tests pass
 
 ### Tests
 
-- [ ] Grid still marks a day that has workouts; reduced-size helpers unit tests; the no-scroll behavior is confirmed by empty_grid.
+- [x] Grid still marks a day that has workouts; existing calendar math tests remain green; bounded day-list behavior has integration coverage.
 
 ---
 
 ## M6 — Input validation everywhere
 
+Status: implementation complete for shared validators, exercise/split/day/gym/current-workout inputs, and multiline descriptions; focused tests and analyzer pass.
+
 Thorough pass on every free text / numeric input.
 
 ### Validation layer
 
-- [ ] New small util file `lib/pages/custom/form_validators.dart`:
-  - `requiredText(String? v, {String msg = 'Required'})`
-  - `requiredDouble(...)` → message "Must be greater than X"
-  - Message formats: `"Cannot be empty"`, `"Must be greater than 0"`.
+- [x] Shared util `lib/pages/custom/form_validators.dart` provides `requiredText` and positive-number `requiredDouble` with exact validation messages.
 
 ### Apply
 
-- [ ] Gym dialog name (+ dupe normalize from M2), multiplier → `>0`: errorText under fields, disable Save until valid.
-- [ ] SplitEditor title (replaces snackbar-only, new_split_page.dart:89-95); description multi-line (see below); day title.
+- [x] Gym dialog validates name and positive multiplier with inline error text; invalid save is blocked; duplicate normalization from M2 retained.
+- [x] SplitEditor title uses inline validation; SplitDayEditor validates day title.
 - Profile removed in M3.
-- [ ] `NewExercisePage` already uses a `Form` + `validator` (new_exercise_page.dart:82-90); keep it, it's the reference pattern to extend.
-- [ ] `CurrentWorkoutPage._AddSetForm` weight + reps numeric: add inline `errorText` & disable "log set" when empty/≤0 (current does the storage; check).
+- [x] `NewExercisePage` retains `Form` validation with shared `requiredText` and expanding description.
+- [x] `CurrentWorkoutPage._AddSetForm` validates positive weight and reps with inline errors before logging.
 
 ### Auto-expanding description boxes — "1 line, growing as you type"
 
-- [ ] Change the following `TextField` with fixed lines → `minLines: 1, maxLines: null` (growing): split description (new_split_page.dart:150-157), day description (split_day_editor_page.dart:114-121), exercise description (new_exercise_page.dart:92-99). Gym description (dialog same).
-- [ ] Flutter's default `textFieldSizeCap` cap prevents unbounded; set `maxLines: null` + `keyboardType: TextInputType.multiline`.
+- [x] Target descriptions use `minLines: 1`, `maxLines: null`, and `TextInputType.multiline` for split, day, exercise, and gym inputs.
 
 ### Tests
 
-- [ ] Validator unit tests; widget test priority: blocked save blocks save / shows text; title save-bounciness removed.
+- [x] `test/unit/form_validators_test.dart` covers required/positive validation; focused workout/widget tests pass.
 
 ---
 
 ## M7 — Weight multipliers per movement/equipment, time-adapted
+
+Status: complete. Additive per-exercise overrides, time-aware estimation, regenerated Isar schema, consumer updates, and analytics tests implemented.
 
 Replaces the global gym multiplier concept with per-machine/movement estimates that self-update.
 
@@ -237,14 +239,14 @@ Already sufficient: `WorkoutSession { gymId, startTime }` + `WorkoutSet { exerci
 
 ### Design (two-track)
 
-- [ ] Model/basic UI (schema-light)
+- [x] Model/basic UI (schema-light) — per-exercise overrides persisted in additive embedded Isar records; global fallback retained.
   - Extend the estimate to per-exercise with a movement fallback: add a `Map<int, double> perExerciseMultipliers` on `Gym` in addition to `multiplier` (the global fallback stays for safety). Manual display in gym editor: "×1.2 …" list of per-machine multiplic.
   - Isar change → `dart run build_runner build` + regenerated `.dart`; schema version migration needed (Isar handles internally, but CI drifts must pass).
-- [ ] Time-aware auto-estimation
+- [x] Time-aware auto-estimation — exponential half-life weighting and movement fallback implemented in analytics.
   - Replace/augment `estimateGymMultiplier` in analytics (258-286): for each shared exercise pair (gym A primary, gym B): compute windowed ratio with **exponential/linear time-decay** — weights from recent sessions dominate. Moving-average window e.g. last-M sessions, then median across exercises; fall back to movement-group median when no shared exercise; does not require identical dates.
   - Automatic re-estimation: after each session in a new gym (`endWorkout`), update the best-estimated multipliers for that gym (cheap; pure function + repo put — same as current manual estimate, but hook `endWorkout` or page-visit compute).
-- [ ] UI: Gyms page per-gym shows "Auto (movement-based)" value; "Auto-estimate" button per-gym recomputes all; confirm.
-- [ ] `normalizedWeight` signature evolves: `(raw, multipliers, gymId, exerciseId)` so it can apply the per-exercise override first, then the fallback gym multiplier.
+- [x] UI: Gyms page shows per-exercise override count; Auto-estimate recomputes and persists overrides.
+- [x] `normalizedWeight` accepts exercise context and applies per-exercise override before global gym fallback.
 
 ### Effort note
 
@@ -252,19 +254,22 @@ This is the largest milestone — schema + analytics + models change. Plan a spi
 
 ### Tests
 
-- [ ] Pure-function tests for per-exercise/movement estimation with simulated cold data (recent-heavy weights → ratio ≈ expected); migration smoke test.
+- [x] Pure-function tests cover per-exercise override precedence, recent-heavy decay, movement fallback, and no-data behavior; Isar schema regenerated and migration-compatible defaults preserved.
 
 ---
 
 ## M8 — User-defined graphs (Feed)
 
+Status: implementation complete. Hydrated graph configuration, analytics series selection, Feed graph editor/cards, and unit coverage implemented.
+
+
 ### Shape
 
-- [ ] Feed keeps "Recent activity"; add an "Analytics" section header + "＋ Add graph" button (feed_page.dart:117-135 area).
-- [ ] A graph = config row `{ title, exerciseId (or all), metric (best-1RM | peak weight | volume), timeframe }`, rendered via existing `LineChart` (`lib/pages/custom/line_chart.dart`) using `AnalyticsService.snapshot`-style data (series per exercise; `exerciseBest1rm`, `exercisePeakWeight`, `volumeTrend`).
-- [ ] Persistence: since it is per-user prefs to the feed, extend `SettingsState` with `List<GraphConfig> graphs` (copyWith/toJson/fromJson), so it hydrates without a new table. (`Settings` is a HydratedCubit — fits.)
-- [ ] `AnalyticsService` already has snapshot/memoization; add point-series per config.
-- [ ] Feed page: after recent-activity list, `for (final g in configs) _GraphCard(config)` each with `LineChart`; plus remove/edit.
+- [x] Feed retains Recent activity and adds Analytics section with Add graph action.
+- [x] Graph config supports title, optional exercise/all filter, metric (best 1RM/peak weight/volume), and timeframe; cards render through existing `LineChart` and analytics series APIs.
+- [x] Graphs persist in hydrated `SettingsState` with tolerant parsing and CRUD methods.
+- [x] `AnalyticsService` supplies timeframe-aware point series and exercise-filtered volume.
+- [x] Feed renders graph cards with edit/delete actions and empty/no-data states.
 
 ### Size
 

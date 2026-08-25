@@ -200,7 +200,7 @@ class AnalyticsService {
         exerciseId,
         exerciseMultipliers,
       ),
-      volume: volumeTrend(sessions, multipliers, exerciseMultipliers),
+      volume: volumeTrend(sessions, multipliers, null, exerciseMultipliers),
       summary: exerciseSummary(
         sessions,
         multipliers,
