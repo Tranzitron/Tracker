@@ -3,6 +3,7 @@ import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/custom/form_validators.dart';
 import 'package:tracker/pages/workout/exercise_picker_page.dart';
 
 /// Split day editor (Plan.md §1.3.1.1 / §1.3.1.1.1): configure a day's title,
@@ -23,6 +24,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
   List<ExerciseItem> _items = [];
   Map<int, String> _names = const {};
   bool _didLoad = false;
+  String? _titleError;
 
   @override
   void initState() {
@@ -69,8 +71,13 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
   }
 
   void _save() {
+    _titleError = requiredText(_title.text);
+    if (_titleError != null) {
+      setState(() {});
+      return;
+    }
     final day = WorkoutSplitDay(
-      title: _title.text.trim().isEmpty ? 'Split Day' : _title.text.trim(),
+      title: _title.text.trim(),
       description: _description.text.trim(),
       exercises: [
         for (var i = 0; i < _items.length; i++)
@@ -103,9 +110,11 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
               children: <Widget>[
                 TextField(
                   controller: _title,
-                  decoration: const InputDecoration(
+                  onChanged: (_) => setState(() => _titleError = null),
+                  decoration: InputDecoration(
                     labelText: 'Day name',
-                    border: OutlineInputBorder(),
+                    errorText: _titleError,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -115,7 +124,9 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
                     labelText: 'Description (optional)',
                     border: OutlineInputBorder(),
                   ),
-                  maxLines: 2,
+                  minLines: 1,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
                 ),
                 const SizedBox(height: 24),
                 Row(

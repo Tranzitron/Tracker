@@ -3,6 +3,7 @@ import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/form_validators.dart';
 
 /// Custom exercise creation form (Plan.md §1.4): title, movement pattern,
 /// target muscle groups, equipment and a description, persisted to the library
@@ -87,8 +88,7 @@ class _NewExercisePageState extends State<NewExercisePage> {
                       labelText: 'Name',
                       border: OutlineInputBorder(),
                     ),
-                    validator: (v) =>
-                        (v == null || v.trim().isEmpty) ? 'Required' : null,
+                    validator: (v) => requiredText(v),
                   ),
                   const SizedBox(height: 16),
                   TextFormField(
@@ -97,7 +97,9 @@ class _NewExercisePageState extends State<NewExercisePage> {
                       labelText: 'Description (optional)',
                       border: OutlineInputBorder(),
                     ),
-                    maxLines: 2,
+                    minLines: 1,
+                    maxLines: null,
+                    keyboardType: TextInputType.multiline,
                   ),
                   const SizedBox(height: 16),
                   DropdownButtonFormField<MovementPattern>(

@@ -4,6 +4,7 @@ import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/form_validators.dart';
 
 /// Gym management (Plan.md §2.2 / §2.3): create/edit gyms, mark one as the
 /// primary baseline (multiplier locked to 1.0), and set or auto-estimate each
@@ -225,6 +226,11 @@ class _GymsPageState extends State<GymsPage> {
 }
 
 /// Shows an add/edit dialog; returns the [Gym] to persist or null on cancel.
+String? _gymNameError(String value) => requiredText(value);
+
+String? _gymMultiplierError(String value, {required bool isPrimary}) =>
+    isPrimary ? null : requiredDouble(value);
+
 String _normalizeGymField(String value) =>
     value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
 
@@ -248,83 +254,103 @@ Future<Gym?> _editGymDialog(
   return showDialog<Gym>(
     context: context,
     builder: (context) {
-      return AlertDialog(
-        title: Text(title),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: <Widget>[
-              TextField(
-                controller: name,
-                decoration: const InputDecoration(
-                  labelText: 'Gym name',
-                  border: OutlineInputBorder(),
+      return StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: <Widget>[
+                TextField(
+                  controller: name,
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: 'Gym name',
+                    errorText: _gymNameError(name.text),
+                    border: const OutlineInputBorder(),
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: description,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optional)',
-                  border: OutlineInputBorder(),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: description,
+                  decoration: const InputDecoration(
+                    labelText: 'Description (optional)',
+                    border: OutlineInputBorder(),
+                  ),
+                  minLines: 1,
+                  maxLines: null,
+                  keyboardType: TextInputType.multiline,
                 ),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: multiplier,
-                enabled: !initial.isPrimary,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                decoration: InputDecoration(
-                  labelText: initial.isPrimary
-                      ? 'Multiplier (primary = ×1.0)'
-                      : 'Weight multiplier',
-                  helperText: initial.isPrimary
-                      ? 'The primary gym is the fixed baseline.'
-                      : 'Scales logged weights to the primary gym.',
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () async {
-              final nameText = name.text.trim();
-              if (nameText.isEmpty) return;
-              final candidate = Gym(
-                name: nameText,
-                description: description.text.trim(),
-                isPrimary: initial.isPrimary,
-                order: initial.order,
-                multiplier: initial.isPrimary
-                    ? 1.0
-                    : double.tryParse(multiplier.text.trim()) ?? 1.0,
-              )..id = initial.id;
-              final existing = await getExistingGyms?.call() ?? const <Gym>[];
-              if (existing.any(
-                (gym) => gym.id != initial.id && sameGymName(gym, candidate),
-              )) {
-                if (context.mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('A gym with this name already exists'),
+                const SizedBox(height: 12),
+                TextField(
+                  controller: multiplier,
+                  enabled: !initial.isPrimary,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
+                    labelText: initial.isPrimary
+                        ? 'Multiplier (primary = ×1.0)'
+                        : 'Weight multiplier',
+                    helperText: initial.isPrimary
+                        ? 'The primary gym is the fixed baseline.'
+                        : 'Scales logged weights to the primary gym.',
+                    border: const OutlineInputBorder(),
+                    errorText: _gymMultiplierError(
+                      multiplier.text,
+                      isPrimary: initial.isPrimary,
                     ),
-                  );
-                }
-                return;
-              }
-              if (context.mounted) Navigator.of(context).pop(candidate);
-            },
-            child: const Text('Save'),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ],
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Cancel'),
+            ),
+            FilledButton(
+              onPressed: () async {
+                final nameText = name.text.trim();
+                final multiplierError = _gymMultiplierError(
+                  multiplier.text,
+                  isPrimary: initial.isPrimary,
+                );
+                if (_gymNameError(nameText) != null ||
+                    multiplierError != null) {
+                  setState(() {});
+                  return;
+                }
+                final candidate = Gym(
+                  name: nameText,
+                  description: description.text.trim(),
+                  isPrimary: initial.isPrimary,
+                  order: initial.order,
+                  multiplier: initial.isPrimary
+                      ? 1.0
+                      : double.tryParse(multiplier.text.trim()) ?? 1.0,
+                )..id = initial.id;
+                final existing = await getExistingGyms?.call() ?? const <Gym>[];
+                if (existing.any(
+                  (gym) => gym.id != initial.id && sameGymName(gym, candidate),
+                )) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('A gym with this name already exists'),
+                      ),
+                    );
+                  }
+                  return;
+                }
+                if (context.mounted) Navigator.of(context).pop(candidate);
+              },
+              child: const Text('Save'),
+            ),
+          ],
+        ),
       );
     },
   );

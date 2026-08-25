@@ -5,6 +5,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/form_validators.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
@@ -441,15 +442,15 @@ class _AddSetFormState extends State<_AddSetForm> {
   final _reps = TextEditingController();
   bool _warmup = false;
   int? _selectedId;
-  bool _repsInvalid = false;
+  String? _weightError;
+  String? _repsError;
 
   @override
   void initState() {
     super.initState();
     _selectedId = widget.exerciseId;
-    _reps.addListener(() {
-      setState(() => _repsInvalid = false);
-    });
+    _weight.addListener(() => setState(() => _weightError = null));
+    _reps.addListener(() => setState(() => _repsError = null));
   }
 
   @override
@@ -479,6 +480,7 @@ class _AddSetFormState extends State<_AddSetForm> {
                 decoration: InputDecoration(
                   labelText: 'Weight (${weightUnitOf(context).symbol})',
                   border: const OutlineInputBorder(),
+                  errorText: _weightError,
                 ),
               ),
             ),
@@ -490,7 +492,7 @@ class _AddSetFormState extends State<_AddSetForm> {
                 decoration: InputDecoration(
                   labelText: 'Reps',
                   border: const OutlineInputBorder(),
-                  errorText: _repsInvalid ? 'Required' : null,
+                  errorText: _repsError,
                 ),
               ),
             ),
@@ -528,9 +530,14 @@ class _AddSetFormState extends State<_AddSetForm> {
   }
 
   void _add() {
+    final weightError = requiredDouble(_weight.text);
+    final repsError = requiredDouble(_reps.text);
     final reps = int.tryParse(_reps.text);
-    if (reps == null || reps <= 0) {
-      setState(() => _repsInvalid = true);
+    if (weightError != null || repsError != null || reps == null) {
+      setState(() {
+        _weightError = weightError;
+        _repsError = repsError;
+      });
       return;
     }
     final id = _selectedId;
