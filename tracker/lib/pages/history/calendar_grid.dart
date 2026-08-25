@@ -20,6 +20,7 @@ class WorkoutDateIndex {
     }
     return WorkoutDateIndex._(byDay);
   }
+
   WorkoutDateIndex._(Map<DateTime, List<WorkoutSession>> byDay)
     : _byDay = UnmodifiableMapView(<DateTime, List<WorkoutSession>>{
         for (final entry in byDay.entries)

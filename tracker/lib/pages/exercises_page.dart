@@ -13,6 +13,21 @@ import '../home_page.dart';
 
 enum _BrowseMode { muscle, movement }
 
+Map<MuscleGroup, List<Exercise>> groupExercisesByMuscle(
+  List<Exercise> exercises,
+) {
+  final grouped = <MuscleGroup, List<Exercise>>{};
+  for (final exercise in exercises) {
+    final muscleGroups = exercise.primaryMuscle
+        .map((muscle) => Muscle.muscleToGroup[muscle]!)
+        .toSet();
+    for (final muscleGroup in muscleGroups) {
+      grouped.putIfAbsent(muscleGroup, () => []).add(exercise);
+    }
+  }
+  return grouped;
+}
+
 class ExercisesPage extends StatefulWidget {
   const ExercisesPage({super.key});
 
@@ -141,14 +156,7 @@ class _ExercisesPageState extends State<ExercisesPage> {
   }
 
   List<_ExerciseGroup> _groupsByMuscle(List<Exercise> exercises) {
-    final grouped = <MuscleGroup, List<Exercise>>{};
-    for (final exercise in exercises) {
-      for (final muscle in exercise.primaryMuscle) {
-        grouped
-            .putIfAbsent(Muscle.muscleToGroup[muscle]!, () => [])
-            .add(exercise);
-      }
-    }
+    final grouped = groupExercisesByMuscle(exercises);
     return [
       for (final entry in grouped.entries)
         _ExerciseGroup(

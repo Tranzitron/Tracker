@@ -16,6 +16,7 @@ class Exercise {
     this.secondaryMuscle,
     this.movementPattern = MovementPattern.unspecified,
   });
+
   Id id = Isar.autoIncrement;
   String title;
   String? description;

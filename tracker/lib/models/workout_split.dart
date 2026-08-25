@@ -13,6 +13,7 @@ class WorkoutSplit {
     this.splitDays = const [],
     this.order = -1,
   });
+
   Id id = Isar.autoIncrement;
   String title;
   String description;
@@ -28,6 +29,7 @@ class WorkoutSplitDay {
     this.exercises = const [],
     this.order = -1,
   });
+
   String title;
   String description;
   List<ExerciseItem> exercises;
@@ -45,6 +47,7 @@ class ExerciseItem {
     this.targetReps,
     this.restSeconds,
   });
+
   int exerciseId;
   int order;
   int? targetSets;

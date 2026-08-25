@@ -27,37 +27,58 @@ class SettingsPage extends StatelessWidget {
                   subtitle: 'Manage gyms and weight multipliers',
                   onTap: () => pushTo(context, const GymsPage()),
                 ),
-                _buildSettingsCard(
-                  context,
-                  icon: Icons.person,
-                  title: 'Profile Settings',
-                  subtitle: state.displayName.isEmpty
-                      ? 'Add your name and email'
-                      : '${state.displayName} · ${state.email}',
-                  onTap: () => _editProfile(context, state),
+                Card(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 6,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.scale,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
+                        const SizedBox(width: 16),
+                        const Expanded(child: Text('Units')),
+                        DropdownButton<WeightUnit>(
+                          value: state.unit,
+                          onChanged: (unit) {
+                            if (unit != null) {
+                              context.read<SettingsCubit>().setUnit(unit);
+                            }
+                          },
+                          items: [
+                            for (final unit in WeightUnit.values)
+                              DropdownMenuItem(
+                                value: unit,
+                                child: Text(unit.symbol),
+                              ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
                 ),
-                _buildSettingsCard(
-                  context,
-                  icon: Icons.scale,
-                  title: 'Units',
-                  subtitle: 'Display weights in ${state.unit.symbol}',
-                  onTap: () => _chooseUnit(context, state.unit),
-                ),
-                _buildSettingsCard(
+                _buildSwitchCard(
                   context,
                   icon: Icons.notifications,
                   title: 'Notifications',
-                  subtitle: state.notificationsEnabled ? 'Enabled' : 'Disabled',
-                  onTap: () => _toggleNotifications(context, state),
+                  subtitle:
+                      'Allow workout reminders and progress notifications',
+                  value: state.notificationsEnabled,
+                  onChanged: context
+                      .read<SettingsCubit>()
+                      .setNotificationsEnabled,
                 ),
-                _buildSettingsCard(
+                _buildSwitchCard(
                   context,
                   icon: Icons.security,
                   title: 'Privacy & Security',
-                  subtitle: state.analyticsEnabled
-                      ? 'Analytics sharing enabled'
-                      : 'Analytics sharing disabled',
-                  onTap: () => _toggleAnalytics(context, state),
+                  subtitle: 'Allow anonymous analytics to improve the app',
+                  value: state.analyticsEnabled,
+                  onChanged: context.read<SettingsCubit>().setAnalyticsEnabled,
                 ),
               ],
             ),
@@ -86,125 +107,22 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Future<void> _editProfile(BuildContext context, SettingsState state) async {
-    final name = TextEditingController(text: state.displayName);
-    final email = TextEditingController(text: state.email);
-    final result = await showDialog<(String, String)>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Profile Settings'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              controller: name,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            TextField(
-              controller: email,
-              decoration: const InputDecoration(labelText: 'Email'),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, (name.text, email.text)),
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
-    name.dispose();
-    email.dispose();
-    if (result != null && context.mounted) {
-      context.read<SettingsCubit>().saveProfile(
-        displayName: result.$1,
-        email: result.$2,
-      );
-    }
-  }
-
-  Future<void> _chooseUnit(BuildContext context, WeightUnit current) async {
-    final selected = await showDialog<WeightUnit>(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: const Text('Weight units'),
-        children: [
-          for (final unit in WeightUnit.values)
-            ListTile(
-              title: Text(unit.label),
-              leading: Icon(
-                unit == current
-                    ? Icons.radio_button_checked
-                    : Icons.radio_button_unchecked,
-              ),
-              onTap: () => Navigator.pop(context, unit),
-            ),
-        ],
-      ),
-    );
-    if (selected != null && context.mounted) {
-      context.read<SettingsCubit>().setUnit(selected);
-    }
-  }
-
-  Future<void> _toggleNotifications(
-    BuildContext context,
-    SettingsState state,
-  ) async {
-    final value = await _confirmToggle(
-      context,
-      title: 'Notifications',
-      message: 'Allow workout reminders and progress notifications?',
-      value: state.notificationsEnabled,
-    );
-    if (value != null && context.mounted) {
-      context.read<SettingsCubit>().setNotificationsEnabled(value);
-    }
-  }
-
-  Future<void> _toggleAnalytics(
-    BuildContext context,
-    SettingsState state,
-  ) async {
-    final value = await _confirmToggle(
-      context,
-      title: 'Privacy & Security',
-      message: 'Allow anonymous analytics to improve the app?',
-      value: state.analyticsEnabled,
-    );
-    if (value != null && context.mounted) {
-      context.read<SettingsCubit>().setAnalyticsEnabled(value);
-    }
-  }
-
-  Future<bool?> _confirmToggle(
+  Widget _buildSwitchCard(
     BuildContext context, {
+    required IconData icon,
     required String title,
-    required String message,
+    required String subtitle,
     required bool value,
+    required ValueChanged<bool> onChanged,
   }) {
-    return showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(message),
-            Switch(value: value, onChanged: (v) => Navigator.pop(context, v)),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-        ],
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: SwitchListTile(
+        secondary: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle),
+        value: value,
+        onChanged: onChanged,
       ),
     );
   }

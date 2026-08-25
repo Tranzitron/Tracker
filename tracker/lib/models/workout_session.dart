@@ -17,6 +17,7 @@ class WorkoutSession {
     this.gymId,
     this.sets = const [],
   });
+
   Id id = Isar.autoIncrement;
   String title;
   DateTime startTime;

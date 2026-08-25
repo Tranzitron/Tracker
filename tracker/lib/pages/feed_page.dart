@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
+import 'package:tracker/home_page.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -7,6 +9,7 @@ import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/history/session_detail_page.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/settings_page.dart';
+import 'package:tracker/pages/workout/workout_cubit.dart';
 
 /// Personal activity feed built from completed workout sessions.
 class FeedPage extends StatefulWidget {
@@ -107,6 +110,24 @@ class _FeedPageState extends State<FeedPage> {
             );
           }
         }
+        slivers.add(
+          BlocBuilder<WorkoutCubit, WorkoutState>(
+            builder: (context, state) {
+              if (state.isInProgress) return const SliverToBoxAdapter();
+              return SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+                  child: FilledButton.icon(
+                    onPressed: () =>
+                        HomePageSingleton().changeTab(TabName.currentWorkout),
+                    icon: const Icon(Icons.fitness_center_sharp),
+                    label: const Text('Go to Current Workout'),
+                  ),
+                ),
+              );
+            },
+          ),
+        );
         slivers.add(
           SliverToBoxAdapter(
             child: Padding(

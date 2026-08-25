@@ -16,15 +16,13 @@ void main() {
     test('settings state round-trips persisted preferences', () {
       const state = SettingsState(
         unit: WeightUnit.pounds,
-        displayName: 'Alex',
-        email: 'alex@example.com',
         notificationsEnabled: false,
         analyticsEnabled: false,
       );
       final restored = SettingsState.fromJson(state.toJson());
       expect(restored.unit, WeightUnit.pounds);
-      expect(restored.displayName, 'Alex');
-      expect(restored.email, 'alex@example.com');
+      expect(restored.toJson().containsKey('displayName'), isFalse);
+      expect(restored.toJson().containsKey('email'), isFalse);
       expect(restored.notificationsEnabled, isFalse);
       expect(restored.analyticsEnabled, isFalse);
     });

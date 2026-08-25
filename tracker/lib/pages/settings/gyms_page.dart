@@ -48,7 +48,8 @@ class _GymsPageState extends State<GymsPage> {
     final created = await _editGymDialog(
       context,
       title: 'New Gym',
-      initial: Gym(name: '', order: nextOrder),
+      initial: Gym(name: '', order: nextOrder, isPrimary: gyms.isEmpty),
+      getExistingGyms: repo?.gyms.getAll,
     );
     if (created != null && repo != null) {
       await repo.gyms.put(created);
@@ -61,6 +62,7 @@ class _GymsPageState extends State<GymsPage> {
       context,
       title: 'Edit Gym',
       initial: gym,
+      getExistingGyms: repo?.gyms.getAll,
     );
     if (edited != null && repo != null) {
       await repo.gyms.put(edited);
@@ -205,10 +207,19 @@ class _GymsPageState extends State<GymsPage> {
 }
 
 /// Shows an add/edit dialog; returns the [Gym] to persist or null on cancel.
+String _normalizeGymField(String value) =>
+    value.trim().replaceAll(RegExp(r'\s+'), ' ').toLowerCase();
+
+bool sameGymName(Gym first, Gym second) =>
+    _normalizeGymField(first.name) == _normalizeGymField(second.name) &&
+    _normalizeGymField(first.description ?? '') ==
+        _normalizeGymField(second.description ?? '');
+
 Future<Gym?> _editGymDialog(
   BuildContext context, {
   required String title,
   required Gym initial,
+  Future<List<Gym>> Function()? getExistingGyms,
 }) {
   final name = TextEditingController(text: initial.name);
   final description = TextEditingController(text: initial.description ?? '');
@@ -266,19 +277,32 @@ Future<Gym?> _editGymDialog(
             child: const Text('Cancel'),
           ),
           FilledButton(
-            onPressed: () {
+            onPressed: () async {
               final nameText = name.text.trim();
               if (nameText.isEmpty) return;
-              final mult = double.tryParse(multiplier.text.trim()) ?? 1.0;
-              Navigator.of(context).pop(
-                Gym(
-                  name: nameText,
-                  description: description.text.trim(),
-                  isPrimary: initial.isPrimary,
-                  order: initial.order,
-                  multiplier: initial.isPrimary ? 1.0 : mult,
-                )..id = initial.id,
-              );
+              final candidate = Gym(
+                name: nameText,
+                description: description.text.trim(),
+                isPrimary: initial.isPrimary,
+                order: initial.order,
+                multiplier: initial.isPrimary
+                    ? 1.0
+                    : double.tryParse(multiplier.text.trim()) ?? 1.0,
+              )..id = initial.id;
+              final existing = await getExistingGyms?.call() ?? const <Gym>[];
+              if (existing.any(
+                (gym) => gym.id != initial.id && sameGymName(gym, candidate),
+              )) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('A gym with this name already exists'),
+                    ),
+                  );
+                }
+                return;
+              }
+              if (context.mounted) Navigator.of(context).pop(candidate);
             },
             child: const Text('Save'),
           ),
@@ -312,6 +336,7 @@ class _GymTile extends StatelessWidget {
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
       child: ListTile(
+        onTap: onEdit,
         leading: Icon(
           primary ? Icons.home_sharp : Icons.fitness_center_sharp,
           color: primary ? theme.colorScheme.primary : null,
@@ -325,7 +350,6 @@ class _GymTile extends StatelessWidget {
         trailing: PopupMenuButton<String>(
           onSelected: (action) => switch (action) {
             'primary' => onPrimary(),
-            'edit' => onEdit(),
             'estimate' => onEstimate(),
             'delete' => onDelete(),
             _ => null,
@@ -336,7 +360,6 @@ class _GymTile extends StatelessWidget {
                 value: 'primary',
                 child: Text('Set as primary'),
               ),
-            const PopupMenuItem(value: 'edit', child: Text('Edit')),
             if (!primary && canEstimate)
               const PopupMenuItem(
                 value: 'estimate',

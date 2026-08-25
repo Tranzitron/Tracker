@@ -16,6 +16,7 @@ class Gym {
     this.order = -1,
     this.multiplier = 1.0,
   });
+
   Id id = Isar.autoIncrement;
   String name;
   String? description;

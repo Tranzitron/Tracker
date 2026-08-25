@@ -20,6 +20,7 @@ class WorkoutSet {
     this.type = SetType.working,
     this.order = 0,
   });
+
   int exerciseId;
   double weight;
   int reps;

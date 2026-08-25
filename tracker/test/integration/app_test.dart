@@ -25,17 +25,25 @@ void main() {
   testWidgets(
     'boots into the five-tab shell, every screen builds, and tabs switch',
     (WidgetTester tester) async {
-      await pumpApp(tester);
+      final cubit = await pumpApp(tester);
 
       // The app's root shell is a bottom NavigationBar with the five pluggable
       // tab destinations (Feed, History, Workout, Editor, Exercises).
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(find.byType(NavigationDestination), findsNWidgets(5));
+      expect(find.text('Workout'), findsOneWidget);
+      expect(find.text('CurrentWorkout'), findsNothing);
 
       // The initially selected tab (Feed) rendered without crashing. Note: the
       // other four tabs also build (Offstage), so this also proves every tab
       // resolves to a buildable screen.
       expect(find.text('Progression'), findsOneWidget);
+
+      expect(find.text('Go to Current Workout'), findsOneWidget);
+      cubit.startWorkout();
+      expect(cubit.state.isInProgress, isTrue);
+      await tester.pumpAndSettle();
+      expect(find.text('Go to Current Workout'), findsNothing);
 
       // Drive tab switches through onDestinationSelected (the same callback the
       // NavigationBar wires to _selectTab) rather than hit-testing, which is

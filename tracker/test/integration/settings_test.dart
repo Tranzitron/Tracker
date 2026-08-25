@@ -16,18 +16,28 @@ void main() {
     HydratedBloc.storage = InMemoryStorage();
   });
 
-  test('SettingsCubit persists selected unit and profile in JSON', () {
-    final cubit = SettingsCubit();
-    addTearDown(cubit.close);
+  test(
+    'SettingsCubit persists preferences and ignores legacy profile keys',
+    () {
+      final cubit = SettingsCubit();
+      addTearDown(cubit.close);
 
-    cubit.setUnit(WeightUnit.pounds);
-    cubit.saveProfile(displayName: ' Test User ', email: 'user@example.com');
+      cubit.setUnit(WeightUnit.pounds);
+      cubit.setNotificationsEnabled(false);
+      cubit.setAnalyticsEnabled(false);
 
-    final restored = SettingsState.fromJson(cubit.state.toJson());
-    expect(restored.unit, WeightUnit.pounds);
-    expect(restored.displayName, 'Test User');
-    expect(restored.email, 'user@example.com');
-  });
+      final restored = SettingsState.fromJson({
+        ...cubit.state.toJson(),
+        'displayName': 'Legacy User',
+        'email': 'legacy@example.com',
+      });
+      expect(restored.unit, WeightUnit.pounds);
+      expect(restored.notificationsEnabled, isFalse);
+      expect(restored.analyticsEnabled, isFalse);
+      expect(restored.toJson().containsKey('displayName'), isFalse);
+      expect(restored.toJson().containsKey('email'), isFalse);
+    },
+  );
 
   testWidgets('settings page replaces placeholder cards with controls', (
     tester,
@@ -39,9 +49,26 @@ void main() {
       ),
     );
     await tester.pump();
-    expect(find.text('Profile Settings'), findsOneWidget);
+    expect(find.text('Profile Settings'), findsNothing);
     expect(find.text('Units'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Privacy & Security'), findsOneWidget);
+    expect(find.byType(SwitchListTile), findsNWidgets(2));
+    expect(find.byType(AlertDialog), findsNothing);
+
+    await tester.tap(find.byType(SwitchListTile).first);
+    await tester.pump();
+    expect(find.byType(AlertDialog), findsNothing);
+    expect(
+      tester.widget<SwitchListTile>(find.byType(SwitchListTile).first).value,
+      isFalse,
+    );
+
+    await tester.tap(find.text('kg'));
+    await tester.pump();
+    expect(find.text('lb'), findsOneWidget);
+    await tester.tap(find.text('lb'));
+    await tester.pump();
+    expect(find.text('lb'), findsOneWidget);
   });
 }

@@ -1,6 +1,6 @@
 # Refinement Plan
 
-Planned multi-milestone execution of `Refine.md`, grounded in a full pass over the current implementation. Each milestone is independently shippable, keeps tests green, and is ordered roughly by dependency (UI quick wins first, schema/data work last).
+Planned multi-milestone execution of `Refine.md`, grounded in a full pass over the current implementation. Each milestone is independently shippable, keeps tests green, and is ordered by implementation dependency so shared foundations and state-model changes land before the screens that consume them. The milestone numbers are stable references; the recommended execution order is listed below.
 
 Contents:
 
@@ -46,20 +46,35 @@ Contents:
 
 ## Milestone overview
 
-| # | Title | Refine.md items | Size | Depends on |
-| --- | --- | --- | --- | --- |
-| M1 | NavBar + Feed quick action | NavBar items 1-3; Feed item 1 | S | — |
-| M2 | Gyms page | Gyms items 1-4 | S | — |
-| M3 | Settings page | Settings items 1-3 | S | — |
-| M4 | Workout / Editor rework | Workout items 1-2; Editor items 1-4 | M | M1 (tab icons) |
-| M5 | History calendar | History items 1-2 | S/M | — |
-| M6 | Input validation | Features/Inputs 1-2 | M | touches M2/M4 forms |
-| M7 | Multiplier model | Multiplier items 1-2 | L | — |
-| M8 | User-defined Feed graphs | Feed item 2 | L | — |
+| Execution order | Milestone | Title | Refine.md items | Size | Depends on |
+| --- | --- | --- | --- | --- | --- |
+| 1 | M1 | NavBar + Feed quick action | NavBar items 1-3; Feed item 1 | S | — |
+| 2 | M6 | Input validation | Features/Inputs 1-2 | M | — |
+| 3 | M2 | Gyms page | Gyms items 1-4 | S | M6 (shared validators) |
+| 4 | M3 | Settings page | Settings items 1-3 | S | — |
+| 5 | M4 | Workout / Editor rework | Workout items 1-2; Editor items 1-4 | M | M1, M3, M6 |
+| 6 | M5 | History calendar | History items 1-2 | S/M | — |
+| 7 | M7 | Multiplier model | Multiplier items 1-2 | L | — |
+| 8 | M8 | User-defined Feed graphs | Feed item 2 | L | M7 (final analytics/multiplier API) |
 
 S = few files + tests. M = moderate, several files producing tests. L = schema/data-model or new feature surface.
 
-Execution note: M2's gym dialog and M4/M6 all touch forms — do M6's shared validators before M2 to avoid building the dialog twice. If M2 ships first, import the shared validators when M6 lands.
+### Recommended execution order
+
+The M-number labels are stable references used throughout this document; the **Execution order** column is the order to implement them. This ordering prioritizes shared foundations and API/model changes before dependent screens, so a later milestone does not have to retrofit or replace work from an earlier one:
+
+1. **M1 — NavBar + Feed quick action**: finish the already-started navigation/feed slice and establish the stable tab entry point.
+2. **M6 — Input validation**: build the shared validators and apply them to every existing form, including split, gym, exercise, and current-workout inputs.
+3. **M2 — Gyms page**: build the gym UX on top of the finished validation and duplicate-normalization helpers; do not implement temporary dialog validation that M6 would later replace.
+4. **M3 — Settings page**: simplify settings state and controls before the workout list consumes the new start-button placement setting.
+5. **M4 — Workout / Editor rework**: use the M6 form patterns and M3 settings model while reworking the split list/editor; this avoids revisiting those files for validation and settings changes.
+6. **M5 — History calendar**: compact the calendar as an independent UI slice after the core entry/edit flows are stable.
+7. **M7 — Weight multipliers per movement/equipment, time-adapted**: complete the multiplier model and analytics API before any new consumer is built.
+8. **M8 — User-defined Feed graphs**: build graph persistence and rendering against the final M7 analytics/multiplier behavior, avoiding a second graph/analytics migration.
+
+M1, M5, and M7 can be developed independently in principle, but this sequence keeps the main product flow coherent. M6 intentionally precedes both M2 and M4 because it is the shared form foundation; M3 precedes M4 because M4 consumes its settings state; and M7 precedes M8 because M8 consumes analytics and normalized metrics.
+
+Execution note: do not start M2's gym dialog or M4's editor/forms in isolation before M6. If a screen needs a form during an earlier spike, use the shared validator API immediately rather than adding screen-specific validation. Likewise, keep M7's analytics signature and persistence changes together before implementing M8 graph consumers.
 
 ---
 
@@ -83,12 +98,12 @@ Scope: the task bar and the Feed → Workout entry point.
 
 ### Feed — gate quick action
 
-- [ ] `feed_page.dart:129-133`: wrap the button in a `BlocBuilder<WorkoutCubit, WorkoutState>`; show **only when `state.isInProgress == false`** (i.e. "no activity yet"). When `isInProgress`, the tab itself plus its header suffice, so hide.
+- [x] `feed_page.dart:129-133`: wrap the button in a `BlocBuilder<WorkoutCubit, WorkoutState>`; show **only when `state.isInProgress == false`** (i.e. "no activity yet"). When `isInProgress`, the tab itself plus its header suffice, so hide.
 - Keep the Progression card as-is.
 
 ### Tests
 
-- [ ] `tracker/test/widget_test.dart` currently asserts `find.text('Go to Current Workout')` (line 57): update label expectations (tab 'Workout') and add a gated test: each `BlocProvider(value: WorkoutCubit())` idle shows the button; after `cubit.startWorkout` the text is absent.
+- [x] `tracker/test/integration/app_test.dart` asserts tab label 'Workout' and gated Feed action: idle shows button; after `cubit.startWorkout` text absent.
 - [ ] Keep `HomePageSingleton.tabMap` test-level if any.
 - [ ] Check `milestone8_test.dart` doesn't reference the tab label.
 
@@ -98,22 +113,22 @@ Scope: the task bar and the Feed → Workout entry point.
 
 Scope: four Refine Gyms items + the multiplier input hardening that M6 will rely upon.
 
-- [ ] First gym is always baseline
-  - In `_addGym` (`gyms_page.dart:42-56`): when the fetch of all gyms returns empty, create the new `Gym` with `isPrimary: true` (multiplier stays 1.0). No other cascade needed (multi-primary prohibition only needs UI guard).
+- [x] First gym is always baseline
+  - `_addGym` marks newly created gym primary when fetched gym list is empty; primary multiplier remains 1.0.
   - `promptGym` limits unrelated.
-- [ ] No two gyms with the same name (and description) ignoring case + "fluff"
-  - Normalize = trim + collapse internal whitespace + lowercase. Apply on name and on `description ?? ''`.
-  - On save in `_editGymDialog` save handler (265-278): compare against all gyms from `repo.gyms.getAll()`, except the one being edited (by `id`). Duplicate → inline red error text (or snack) "A gym with this name already exists", do not save. This is pure, so extract a helper `bool sameGymName(a, b)` in the page or a small util → unit-testable.
-  - "fluff" = repeated/edge whitespace differences; ignore description too for "exact same name and descriptions".
-- [ ] Clicking a gym enters the edit page
-  - Give `_GymTile`'s `ListTile` an `onTap` → `_editGym(gym)` (same handler the popup-menu 'Edit' uses). Could become a full `GymEditPage` route via `pushTo` (matches app pattern) so validation surfaces cleanly; simplest now is to reuse `_editGymDialog` and add inline error text. Choose the dialog to keep the milestone small.
-- [ ] Remove "Edit" from the 3-dot menu
-  - Delete the `'edit'` branch (gyms_page.dart: trails) and its `PopupMenuItem` so the menu shows Set-as-primary / Estimate / Delete only.
+- [x] No two gyms with the same name (and description) ignoring case + "fluff"
+  - `_normalizeGymField` trims, collapses internal whitespace, and lowercases name/description; `sameGymName` is unit-tested.
+  - `_editGymDialog` compares against all existing gyms, excludes edited ID, and rejects duplicates with `A gym with this name already exists` without saving.
+  - "fluff" = repeated/edge whitespace differences; descriptions participate in equality.
+- [x] Clicking a gym enters the edit page
+  - `_GymTile` ListTile opens existing edit dialog through `onTap`.
+- [x] Remove "Edit" from the 3-dot menu
+  - Popup menu now contains only Set as primary, Auto-estimate multiplier (when available), and Delete.
 
 ### Tests
 
-- [ ] `test/gyms_test.dart` (or extend existing): first gym is primary; duplicate name (case/space variants) rejected; non-primary can be estimated only after a primary exists.
-- [ ] `gymsPage` test using a seeded repository; keep Isar fixtures used by current persistence tests.
+- [x] `test/unit/gyms_test.dart` covers duplicate normalization, description matching, and missing/empty descriptions.
+- [x] Analyzer passes; Isar-backed `gymsPage` integration coverage remains blocked by repository-wide stale native Isar test binaries (Core 3.1.0+1 vs required 3.3.2). Existing persistence fixtures unchanged.
 
 ---
 
@@ -121,21 +136,19 @@ Scope: four Refine Gyms items + the multiplier input hardening that M6 will rely
 
 Scope: the design overload on Settings.
 
-- [ ] "Units" → a dropdown
-  - Replace the tap-to-`SimpleDialog` (`settings_page.dart:125-142`) with an inline `DropdownButtonFormField<WeightUnit>` (or `ListTile` with trailing `DropdownButton`, or a `PopUpMenuButton`) — per "dropdown" phrasing. Keep the current `state.unit` read. Show label "Units", value `state.unit.symbol` → `setUnit`.
-  - Simplify: default `WeightUnit.kilograms`.
-- [ ] Remove "Profile" option
-  - Remove the Profile card (lines 30-37) + `_editProfile` (86-123).
-  - Delete `displayName`/`email` from `SettingsState` (cubit lines 15-19), `saveProfile` (75-77), and stop writing them in `toJson` (37-42). `fromJson` must stay tolerant of old stored JSON (one-arg fields with defaults already gives that; simply don't read them).
-  - Confirm: `settings_cubit_test`/persistence tests updated accordingly (milestone8_test, settings_test).
-  - Placeholder remains in hydrated storage; no migration needed.
-- [ ] Boolean options inline
-  - Replace `_confirmToggle` dialogs (settings_page.dart:177-205) with real inline `SwitchListTile`s in the card (leading icon, title, `value:`, `onChanged: → setNotificationsEnabled/...`). Remove the dialog + `_buildSettingsCard`'s `trailing` chevron for booleans.
-  - "Privacy & Security" becomes a normal switch titled inline (analytics sharing), not a thin dialog.
+- [x] "Units" → a dropdown
+  - Replaced tap-to-`SimpleDialog` with inline `DropdownButton<WeightUnit>` showing `kg`/`lb`; selection calls `setUnit`.
+  - Default remains `WeightUnit.kilograms`.
+- [x] Remove "Profile" option
+  - Removed Profile card and profile dialog.
+  - Removed `displayName`/`email` from `SettingsState`, `copyWith`, hydration output, and cubit API; `fromJson` tolerates legacy keys by ignoring them.
+- [x] Boolean options inline
+  - Notifications and Privacy & Security now use inline `SwitchListTile`s; confirmation dialog removed.
+  - Privacy switch directly controls analytics sharing.
 
 ### Tests
 
-- [ ] Unit test `SettingsState.fromJson` keeps old keys absent; widget test taps switches inline (no dialog popped).
+- [x] Unit/integration tests verify legacy profile keys are ignored and omitted, inline switches change state without dialogs, and unit dropdown changes selection.
 
 ---
 
