@@ -1,5 +1,6 @@
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
+import '../../analytics/analytics.dart';
 import '../../data/repositories.dart';
 import '../../models/gym.dart';
 import '../../models/workout_session.dart';
@@ -278,27 +279,57 @@ class WorkoutCubit extends HydratedCubit<WorkoutState> {
 
     final repo = repository;
     if (repo != null) {
-      await repo.sessions.put(
-        WorkoutSession(
-          title:
-              s.planTitle ??
-              (s.gymName != null ? '${s.gymName} workout' : 'Workout'),
-          startTime: s.startTime ?? DateTime.now(),
-          endTime: DateTime.now(),
-          gymId: s.gymId,
-          sets: s.sets
-              .map(
-                (a) => WorkoutSet(
-                  exerciseId: a.exerciseId,
-                  weight: a.weight,
-                  reps: a.reps,
-                  type: a.type,
-                  order: a.order,
-                ),
-              )
-              .toList(),
-        ),
+      final completed = WorkoutSession(
+        title:
+            s.planTitle ??
+            (s.gymName != null ? '${s.gymName} workout' : 'Workout'),
+        startTime: s.startTime ?? DateTime.now(),
+        endTime: DateTime.now(),
+        gymId: s.gymId,
+        sets: s.sets
+            .map(
+              (a) => WorkoutSet(
+                exerciseId: a.exerciseId,
+                weight: a.weight,
+                reps: a.reps,
+                type: a.type,
+                order: a.order,
+              ),
+            )
+            .toList(),
       );
+      await repo.sessions.put(completed);
+
+      // Keep per-exercise estimates fresh without changing the persisted
+      // session shape. Existing manually entered multipliers remain fallback.
+      if (completed.gymId != null) {
+        final primary = await repo.gyms.getPrimary();
+        if (primary != null && primary.id != completed.gymId) {
+          final gyms = await repo.gyms.getAll();
+          final sessions = await repo.sessions.getAll();
+          final estimates = estimateGymExerciseMultipliers(
+            sessions,
+            primary.id,
+            completed.gymId!,
+          );
+          final gym = gyms.firstWhere(
+            (candidate) => candidate.id == completed.gymId,
+          );
+          if (estimates.isNotEmpty) {
+            gym.perExerciseMultipliers = [
+              for (final entry in estimates.entries)
+                GymExerciseMultiplier(
+                  exerciseId: entry.key,
+                  multiplier: entry.value,
+                ),
+            ];
+            gym.multiplier =
+                estimateGymMultiplier(sessions, primary.id, gym.id) ??
+                gym.multiplier;
+            await repo.gyms.put(gym);
+          }
+        }
+      }
     }
 
     emit(WorkoutState.initial());

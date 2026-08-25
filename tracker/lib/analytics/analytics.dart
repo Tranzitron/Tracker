@@ -1,12 +1,34 @@
 /// Pure analytics for progression/multipliers (Plan.md §2.3, §2.4).
 library;
 
+import 'dart:math' as math;
+
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
 
-/// Scales a raw logged weight by its gym's multiplier (default 1.0).
-double normalizedWeight(double raw, Map<int, double> multipliers, int? gymId) =>
-    raw * (multipliers[gymId] ?? 1.0);
+/// Scales a raw weight using an exercise override, then the gym fallback.
+///
+/// [exerciseMultipliers] is keyed by gym id and then exercise id. The optional
+/// positional [exerciseId] keeps existing callers source-compatible.
+double normalizedWeight(
+  double raw,
+  Map<int, double> multipliers,
+  int? gymId, [
+  int? exerciseId,
+  Map<int, Map<int, double>> exerciseMultipliers = const {},
+]) {
+  final exercise = gymId == null || exerciseId == null
+      ? null
+      : exerciseMultipliers[gymId]?[exerciseId];
+  return raw * (exercise ?? multipliers[gymId] ?? 1.0);
+}
+
+typedef PerGymExerciseMultipliers = Map<int, Map<int, double>>;
+
+Map<int, double> flattenExerciseMultipliers(
+  int gymId,
+  Map<int, double> values,
+) => {for (final entry in values.entries) entry.key: entry.value};
 
 double epley1rm({required double weight, required int reps}) =>
     reps <= 1 ? weight : weight * (1 + reps / 30);
@@ -64,18 +86,37 @@ class AnalyticsService {
     required Map<int, double> multipliers,
     int? exerciseId,
     Object? revision,
+    PerGymExerciseMultipliers exerciseMultipliers = const {},
   }) {
     final key = _AnalyticsKey(
       _fingerprint(sessions),
-      _mapFingerprint(multipliers),
+      Object.hash(
+        _mapFingerprint(multipliers),
+        _nestedMapFingerprint(exerciseMultipliers),
+      ),
       exerciseId,
       revision,
     );
     return _cache[key] ??= AnalyticsSnapshot(
-      best1rm: exerciseBest1rm(sessions, multipliers, exerciseId),
-      peakWeight: exercisePeakWeight(sessions, multipliers, exerciseId),
-      volume: volumeTrend(sessions, multipliers),
-      summary: exerciseSummary(sessions, multipliers, exerciseId),
+      best1rm: exerciseBest1rm(
+        sessions,
+        multipliers,
+        exerciseId,
+        exerciseMultipliers,
+      ),
+      peakWeight: exercisePeakWeight(
+        sessions,
+        multipliers,
+        exerciseId,
+        exerciseMultipliers,
+      ),
+      volume: volumeTrend(sessions, multipliers, exerciseMultipliers),
+      summary: exerciseSummary(
+        sessions,
+        multipliers,
+        exerciseId,
+        exerciseMultipliers,
+      ),
       exerciseId: exerciseId,
       revision: revision,
     );
@@ -87,11 +128,13 @@ class AnalyticsService {
     required Map<int, double> multipliers,
     int? exerciseId,
     Object? revision,
+    PerGymExerciseMultipliers exerciseMultipliers = const {},
   }) => snapshot(
     sessions: sessions,
     multipliers: multipliers,
     exerciseId: exerciseId,
     revision: revision,
+    exerciseMultipliers: exerciseMultipliers,
   );
 
   void clear() => _cache.clear();
@@ -155,14 +198,24 @@ int _mapFingerprint(Map<int, double> map) {
   return hash;
 }
 
+int _nestedMapFingerprint(PerGymExerciseMultipliers map) {
+  var hash = 17;
+  final gyms = map.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+  for (final gym in gyms) {
+    hash = Object.hash(hash, gym.key, _mapFingerprint(gym.value));
+  }
+  return hash;
+}
+
 Iterable<WorkoutSet> _workingSets(WorkoutSession s) =>
     s.sets.where((set) => !set.isWarmup);
 
 List<ProgressionPoint> exerciseBest1rm(
   List<WorkoutSession> sessions,
   Map<int, double> multipliers,
-  int? exerciseId,
-) {
+  int? exerciseId, [
+  PerGymExerciseMultipliers exerciseMultipliers = const {},
+]) {
   final points = <ProgressionPoint>[];
   for (final session in sessions) {
     final sets = _workingSets(session)
@@ -171,7 +224,13 @@ List<ProgressionPoint> exerciseBest1rm(
     final best = sets
         .map(
           (s) => epley1rm(
-            weight: normalizedWeight(s.weight, multipliers, session.gymId),
+            weight: normalizedWeight(
+              s.weight,
+              multipliers,
+              session.gymId,
+              s.exerciseId,
+              exerciseMultipliers,
+            ),
             reps: s.reps,
           ),
         )
@@ -185,8 +244,9 @@ List<ProgressionPoint> exerciseBest1rm(
 List<ProgressionPoint> exercisePeakWeight(
   List<WorkoutSession> sessions,
   Map<int, double> multipliers,
-  int? exerciseId,
-) {
+  int? exerciseId, [
+  PerGymExerciseMultipliers exerciseMultipliers = const {},
+]) {
   final points = <ProgressionPoint>[];
   for (final session in sessions) {
     final sets = _workingSets(session)
@@ -196,7 +256,15 @@ List<ProgressionPoint> exercisePeakWeight(
       ProgressionPoint(
         date: session.startTime,
         value: sets
-            .map((s) => normalizedWeight(s.weight, multipliers, session.gymId))
+            .map(
+              (s) => normalizedWeight(
+                s.weight,
+                multipliers,
+                session.gymId,
+                s.exerciseId,
+                exerciseMultipliers,
+              ),
+            )
             .reduce((a, b) => a > b ? a : b),
       ),
     );
@@ -207,8 +275,9 @@ List<ProgressionPoint> exercisePeakWeight(
 
 List<ProgressionPoint> volumeTrend(
   List<WorkoutSession> sessions,
-  Map<int, double> multipliers,
-) {
+  Map<int, double> multipliers, [
+  PerGymExerciseMultipliers exerciseMultipliers = const {},
+]) {
   final points = <ProgressionPoint>[];
   for (final session in sessions) {
     final sets = _workingSets(session);
@@ -220,7 +289,14 @@ List<ProgressionPoint> volumeTrend(
           0.0,
           (sum, s) =>
               sum +
-              normalizedWeight(s.weight, multipliers, session.gymId) * s.reps,
+              normalizedWeight(
+                    s.weight,
+                    multipliers,
+                    session.gymId,
+                    s.exerciseId,
+                    exerciseMultipliers,
+                  ) *
+                  s.reps,
         ),
       ),
     );
@@ -232,8 +308,9 @@ List<ProgressionPoint> volumeTrend(
 ExerciseSummary exerciseSummary(
   List<WorkoutSession> sessions,
   Map<int, double> multipliers,
-  int? exerciseId,
-) {
+  int? exerciseId, [
+  PerGymExerciseMultipliers exerciseMultipliers = const {},
+]) {
   var count = 0;
   var peak = 0.0;
   var best = 0.0;
@@ -244,7 +321,13 @@ ExerciseSummary exerciseSummary(
     count++;
     var volume = 0.0;
     for (final set in sets) {
-      final weight = normalizedWeight(set.weight, multipliers, session.gymId);
+      final weight = normalizedWeight(
+        set.weight,
+        multipliers,
+        session.gymId,
+        set.exerciseId,
+        exerciseMultipliers,
+      );
       volume += weight * set.reps;
       final oneRm = epley1rm(weight: weight, reps: set.reps);
       if (oneRm > best) best = oneRm;
@@ -254,35 +337,106 @@ ExerciseSummary exerciseSummary(
   return ExerciseSummary(best1rm: best, peakVolume: peak, sessionCount: count);
 }
 
+/// Estimates a gym-wide multiplier using the median ratio of shared exercises.
+/// The legacy calculation remains the default; pass [halfLife] to apply
+/// exponential recency weighting to observations.
 double? estimateGymMultiplier(
   List<WorkoutSession> sessions,
   int? primaryGymId,
-  int gymId,
-) {
-  final primary = <int, List<double>>{};
-  final secondary = <int, List<double>>{};
+  int gymId, {
+  Duration? halfLife,
+  DateTime? now,
+}) {
+  final estimates = estimateGymExerciseMultipliers(
+    sessions,
+    primaryGymId,
+    gymId,
+    halfLife: halfLife ?? const Duration(days: 180),
+    now: now,
+  );
+  if (estimates.isEmpty) return null;
+  return _median(estimates.values.toList());
+}
+
+/// Returns one time-weighted multiplier per exercise shared by both gyms.
+/// Recent observations receive exponentially higher weight. A missing shared
+/// exercise can be represented by a movement fallback via [exercises].
+Map<int, double> estimateGymExerciseMultipliers(
+  List<WorkoutSession> sessions,
+  int? primaryGymId,
+  int gymId, {
+  Duration halfLife = const Duration(days: 180),
+  DateTime? now,
+  Map<int, Object>? exercises,
+}) {
+  final latest = now ?? _latestSessionDate(sessions) ?? DateTime.now();
+  final primary = <int, List<_WeightedValue>>{};
+  final secondary = <int, List<_WeightedValue>>{};
   for (final session in sessions) {
-    if (session.gymId == null) continue;
     final bucket = session.gymId == primaryGymId
         ? primary
         : (session.gymId == gymId ? secondary : null);
     if (bucket == null) continue;
+    final ageDays = latest.difference(session.startTime).inHours / 24;
+    final weight = halfLife.inHours <= 0
+        ? 1.0
+        : _expDecay(ageDays < 0 ? 0 : ageDays, halfLife.inHours / 24);
     for (final set in _workingSets(session)) {
-      bucket.putIfAbsent(set.exerciseId, () => []).add(set.weight);
+      bucket
+          .putIfAbsent(set.exerciseId, () => [])
+          .add(_WeightedValue(set.weight, weight));
     }
   }
-  final ratios = <double>[];
+  final result = <int, double>{};
+  final ratiosByGroup = <Object, List<double>>{};
   for (final entry in primary.entries) {
     final other = secondary[entry.key];
     if (other == null || other.isEmpty) continue;
-    final a = _mean(entry.value);
-    final b = _mean(other);
-    if (a > 0 && b > 0) ratios.add(a / b);
+    final a = _weightedMean(entry.value);
+    final b = _weightedMean(other);
+    if (a > 0 && b > 0) {
+      final ratio = a / b;
+      result[entry.key] = ratio;
+      final group = exercises?[entry.key];
+      if (group != null) ratiosByGroup.putIfAbsent(group, () => []).add(ratio);
+    }
   }
-  if (ratios.isEmpty) return null;
-  ratios.sort();
-  return ratios[ratios.length ~/ 2];
+  if (exercises != null) {
+    for (final entry in exercises.entries) {
+      if (result.containsKey(entry.key)) continue;
+      final fallback = ratiosByGroup[entry.value];
+      if (fallback != null && fallback.isNotEmpty) {
+        result[entry.key] = _median(fallback);
+      }
+    }
+  }
+  return result;
 }
 
-double _mean(List<double> values) =>
-    values.fold<double>(0, (a, b) => a + b) / values.length;
+class _WeightedValue {
+  const _WeightedValue(this.value, this.weight);
+  final double value;
+  final double weight;
+}
+
+double _weightedMean(List<_WeightedValue> values) {
+  var total = 0.0;
+  var weights = 0.0;
+  for (final value in values) {
+    total += value.value * value.weight;
+    weights += value.weight;
+  }
+  return weights == 0 ? 0 : total / weights;
+}
+
+double _expDecay(double ageDays, double halfLifeDays) =>
+    ageDays == 0 ? 1 : math.pow(0.5, ageDays / halfLifeDays).toDouble();
+
+DateTime? _latestSessionDate(List<WorkoutSession> sessions) => sessions.isEmpty
+    ? null
+    : sessions.map((s) => s.startTime).reduce((a, b) => a.isAfter(b) ? a : b);
+
+double _median(List<double> values) {
+  final sorted = [...values]..sort();
+  return sorted[sorted.length ~/ 2];
+}

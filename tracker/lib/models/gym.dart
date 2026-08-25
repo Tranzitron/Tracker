@@ -15,6 +15,7 @@ class Gym {
     this.isPrimary = false,
     this.order = -1,
     this.multiplier = 1.0,
+    this.perExerciseMultipliers = const [],
   });
 
   Id id = Isar.autoIncrement;
@@ -24,5 +25,16 @@ class Gym {
   int order;
 
   /// Weight-equivalence multiplier vs. the primary gym (default 1.0).
+  double multiplier;
+
+  /// Exercise-specific overrides, stored as embedded rows for Isar compatibility.
+  List<GymExerciseMultiplier> perExerciseMultipliers;
+}
+
+@embedded
+class GymExerciseMultiplier {
+  GymExerciseMultiplier({this.exerciseId = 0, this.multiplier = 1.0});
+
+  int exerciseId;
   double multiplier;
 }

@@ -208,5 +208,52 @@ void main() {
       ];
       expect(estimateGymMultiplier(sessions, 1, 2), isNull);
     });
+
+    test('supports per-exercise override before gym fallback', () {
+      expect(
+        normalizedWeight(
+          100,
+          const {2: 0.9},
+          2,
+          7,
+          const {
+            2: {7: 0.8},
+          },
+        ),
+        closeTo(80, 0.001),
+      );
+    });
+
+    test('recent observations dominate time-weighted estimate', () {
+      final sessions = [
+        _session(DateTime(2025, 1, 1), 1, [_set(1, 100, 5, SetType.working)]),
+        _session(DateTime(2025, 1, 1), 2, [_set(1, 200, 5, SetType.working)]),
+        _session(DateTime(2026, 1, 1), 1, [_set(1, 100, 5, SetType.working)]),
+        _session(DateTime(2026, 1, 1), 2, [_set(1, 100, 5, SetType.working)]),
+      ];
+      final result = estimateGymExerciseMultipliers(
+        sessions,
+        1,
+        2,
+        halfLife: const Duration(days: 30),
+        now: DateTime(2026, 1, 2),
+      );
+      expect(result[1], closeTo(1.0, 0.02));
+    });
+
+    test('estimates movement fallback for cold exercise', () {
+      final sessions = [
+        _session(DateTime(2026, 1, 1), 1, [_set(1, 100, 5, SetType.working)]),
+        _session(DateTime(2026, 1, 1), 2, [_set(1, 125, 5, SetType.working)]),
+      ];
+      final result = estimateGymExerciseMultipliers(
+        sessions,
+        1,
+        2,
+        exercises: const {1: 'push', 2: 'push'},
+      );
+      expect(result[1], closeTo(0.8, 0.001));
+      expect(result[2], closeTo(0.8, 0.001));
+    });
   });
 }
