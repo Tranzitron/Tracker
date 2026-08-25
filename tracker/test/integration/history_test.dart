@@ -8,9 +8,31 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/pages/history/history_calendar.dart';
 import 'package:tracker/pages/history/session_detail_page.dart';
 
 void main() {
+  testWidgets('calendar keeps a bounded internal day list', (tester) async {
+    final sessions = List.generate(
+      8,
+      (index) =>
+          WorkoutSession(title: 'Workout $index', startTime: DateTime.now()),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: Scaffold(
+          body: HistoryCalendar(sessions: sessions, gymNames: const {}),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(ListView), findsOneWidget);
+    expect(tester.getSize(find.byType(ListView)).height, 128);
+    expect(find.text('Workout 0'), findsOneWidget);
+  });
+
   group('SessionDetailPage UI', () {
     testWidgets('renders header, stats and every set with warmup marker', (
       tester,
