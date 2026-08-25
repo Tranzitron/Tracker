@@ -5,6 +5,7 @@ import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'gym_picker.dart';
@@ -20,6 +21,7 @@ class WorkoutPage extends StatefulWidget {
 
 class _WorkoutPageState extends State<WorkoutPage> {
   Stream<List<WorkoutSplit>>? _stream;
+  Map<int, String> _exerciseNames = const {};
   bool _didLoad = false;
 
   @override
@@ -27,7 +29,17 @@ class _WorkoutPageState extends State<WorkoutPage> {
     super.didChangeDependencies();
     if (!_didLoad) {
       _didLoad = true;
-      _stream = RepositoryScope.maybeOf(context)?.splits.watchAll();
+      final repo = RepositoryScope.maybeOf(context);
+      _stream = repo?.splits.watchAll();
+      repo?.exercises.getAll().then((exercises) {
+        if (mounted) {
+          setState(
+            () => _exerciseNames = {
+              for (final exercise in exercises) exercise.id: exercise.title,
+            },
+          );
+        }
+      });
     }
   }
 
@@ -47,14 +59,29 @@ class _WorkoutPageState extends State<WorkoutPage> {
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    const BuildStartWorkoutButton(),
+                    if (context
+                            .watch<SettingsCubit>()
+                            .state
+                            .freeStartPlacement ==
+                        FreeStartPlacement.before)
+                      const BuildStartWorkoutButton(),
                     if (splits.isEmpty)
                       const Padding(
                         padding: EdgeInsets.symmetric(vertical: 24),
                         child: Text('No splits yet. Create one below.'),
                       )
                     else
-                      for (final split in splits) BuildMaterialSplit(split),
+                      for (final split in splits)
+                        BuildMaterialSplit(
+                          split,
+                          exerciseNames: _exerciseNames,
+                        ),
+                    if (context
+                            .watch<SettingsCubit>()
+                            .state
+                            .freeStartPlacement ==
+                        FreeStartPlacement.after)
+                      const BuildStartWorkoutButton(),
                     const BuildNewSplitButton(),
                   ],
                 );
@@ -120,9 +147,14 @@ class BuildNewSplitButton extends StatelessWidget {
 }
 
 class BuildMaterialSplit extends StatelessWidget {
-  const BuildMaterialSplit(this.split, {super.key});
+  const BuildMaterialSplit(
+    this.split, {
+    required this.exerciseNames,
+    super.key,
+  });
 
   final WorkoutSplit split;
+  final Map<int, String> exerciseNames;
 
   @override
   Widget build(BuildContext context) {
@@ -161,6 +193,7 @@ class BuildMaterialSplit extends StatelessWidget {
                       isSplitDay: true,
                       titleText: split.splitDays[index].title,
                       exercises: split.splitDays[index].exercises,
+                      exerciseNames: exerciseNames,
                     ),
                   ],
                 ),
@@ -178,6 +211,7 @@ class WorkoutListTile extends StatelessWidget {
     required this.titleText,
     required this.isSplitDay,
     this.exercises,
+    this.exerciseNames = const {},
     this.onTap,
     this.trailing,
   });
@@ -185,6 +219,7 @@ class WorkoutListTile extends StatelessWidget {
   final String titleText;
   final bool isSplitDay;
   final List<ExerciseItem>? exercises;
+  final Map<int, String> exerciseNames;
   final void Function()? onTap;
   final Widget? trailing;
 
@@ -201,7 +236,13 @@ class WorkoutListTile extends StatelessWidget {
       trailing: trailing,
       subtitle: exercises != null
           ? Text(
-              exercises!.map((e) => e.exerciseId).join(', '),
+              exercises!
+                  .map(
+                    (e) =>
+                        exerciseNames[e.exerciseId] ??
+                        'Exercise ${e.exerciseId}',
+                  )
+                  .join(', '),
               overflow: TextOverflow.ellipsis,
             )
           : const SizedBox.shrink(),

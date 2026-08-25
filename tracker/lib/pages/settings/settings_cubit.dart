@@ -3,32 +3,41 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 /// User-facing application preferences persisted independently of workout data.
+enum FreeStartPlacement { before, after, disabled }
+
 class SettingsState {
   factory SettingsState.fromJson(Map<String, dynamic> json) => SettingsState(
     unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
     notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
     analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
+    freeStartPlacement:
+        FreeStartPlacement.values.asNameMap()[json['freeStartPlacement']] ??
+        FreeStartPlacement.before,
   );
 
   const SettingsState({
     this.unit = WeightUnit.kilograms,
     this.notificationsEnabled = true,
     this.analyticsEnabled = true,
+    this.freeStartPlacement = FreeStartPlacement.before,
   });
 
   final WeightUnit unit;
   final bool notificationsEnabled;
   final bool analyticsEnabled;
+  final FreeStartPlacement freeStartPlacement;
 
   SettingsState copyWith({
     WeightUnit? unit,
     bool? notificationsEnabled,
     bool? analyticsEnabled,
+    FreeStartPlacement? freeStartPlacement,
   }) {
     return SettingsState(
       unit: unit ?? this.unit,
       notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
       analyticsEnabled: analyticsEnabled ?? this.analyticsEnabled,
+      freeStartPlacement: freeStartPlacement ?? this.freeStartPlacement,
     );
   }
 
@@ -36,6 +45,7 @@ class SettingsState {
     'unit': unit.name,
     'notificationsEnabled': notificationsEnabled,
     'analyticsEnabled': analyticsEnabled,
+    'freeStartPlacement': freeStartPlacement.name,
   };
 }
 
@@ -64,6 +74,9 @@ class SettingsCubit extends HydratedCubit<SettingsState> {
 
   void setAnalyticsEnabled(bool value) =>
       emit(state.copyWith(analyticsEnabled: value));
+
+  void setFreeStartPlacement(FreeStartPlacement placement) =>
+      emit(state.copyWith(freeStartPlacement: placement));
 
   @override
   SettingsState? fromJson(Map<String, dynamic> json) =>

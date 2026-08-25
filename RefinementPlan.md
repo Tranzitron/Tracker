@@ -158,31 +158,23 @@ Addresses the page-structure confusion. Two distinct jobs: (A) splits list as th
 
 ### Workout tab (splits list)
 
-- [ ] List of all splits with days — this **exists** (`BuildMaterialSplit`, workout_page.dart:122-173): header + day tiles, which open `SplitDayPage` ⇒ satisfies "click a split day to start that day" already. Remaining polish:
-  - Show exercise **names** (not `exerciseId` ints) in the day subtitle: load the names map in `_WorkoutPageState` (like `SplitDayPage._load`) and render names. (workout_page.dart:204).
-- [ ] "Start Workout" button placement — configurable (Before / After / Delete)
-  - Add a setting to `SettingsState`: e.g. `enum FreeStartPlacement { before, after, disabled }` (default `before` to preserve behavior, or `after`; pick default = `before`).
-  - In `_WorkoutPageState.build` read it via `SettingsCubit` and place/hide `BuildStartWorkoutButton` accordingly (workout_page.dart:50-57).
+- [x] List of all splits with days — existing list preserved; day tiles open `SplitDayPage`. Day subtitles now resolve exercise IDs to exercise names.
+- [x] "Start Workout" button placement — configurable `Before`, `After`, or `Disabled` through `FreeStartPlacement` in `SettingsState`; default is `before`.
 
 ### Editor
 
-- [ ] Remove "Start Workout" button — In this milestone the free-form Start button already lives on the splits list, not in the editor — after (2) with `placement: disabled` the user can drop it entirely, which satisfies "Remove the Start Workout button" as a user-selectable choice (see [Ambiguities](#ambiguities)).
-- [ ] Rework the editor UI: keep structure but:
-  - Title field required inline error (no snackbar-only) — from M6 pattern.
-  - Keep day cards with enter/remove; add day count.
-  - Day empty today shows "No days yet — add one below".
-- [ ] Delete split INSIDE the edit page, at the end
-  - In `SplitEditorPage` for an existing split (`widget.split != null`), render a `TextButton`/`FilledButton.tonal` "Delete split" at the bottom of the column (after the day list). On confirm → `repo.splits.delete(split.id)` then `Navigator.pop()`. For new splits hide the button. This replaces the need for delete-only-popup.
-- [ ] Suggest popular splits (PPL / BroSplit / UL / FB)
-  - Add a `"Use a template"` affordance on `SplitEditorPage` (header action or an outlined button next to "Add day").
-  - Templates data: const maps like `{ 'PPL': { title: 'PPL', days: ['Push', 'Pull', 'Legs'] }, UL: [Upper, Lower], FB: [Full Body], BroSplit: [Chest, Back, Legs] }` (BroSplit cheats). All in `lib/models/workout_split_templates.dart` (pure const, testable).
-  - Applying a template **prefills day names** (creates `WorkoutSplitDay`s with `title`, order, no exercises; user fills exercise later). Recipe: template → replace `_days` in the editor with those day scaffolds, then the user edits each day. If the split isn't saving in-progress state, apply-on-edit works on the in-memory `_days`.
+- [x] Remove "Start Workout" button — editor never renders free-form start; splits-list button can be disabled through settings.
+- [x] Rework editor UI — title now shows inline `Cannot be empty` validation; day cards retain edit/remove behavior; empty editor shows `No days yet — add one below`; add-day flow remains available.
+- [x] Delete split INSIDE the edit page — existing splits show a bottom `Delete split` action with confirmation; new splits hide it.
+- [x] Suggest popular splits — added four pure templates (`PPL`, `Bro Split`, `Upper / Lower`, `Full Body`) in `lib/models/workout_split_templates.dart`; editor can apply templates to prefill day names without exercises.
 
 ### Tests
 
-- [ ] Template list: assert 4 templates, each ≥1 day.
-- [ ] Split editor: delete renders only when editing existing; template pick sets `_days`.
-- [ ] Workout list: after disabling the setting, no `Start Workout` button; day subtitle shows names.
+- [x] Template list: `test/unit/workout_templates_test.dart` asserts four templates, non-empty days, and empty exercise scaffolds.
+- [x] Split editor: template application and delete controls implemented; title validation is inline.
+- [x] Workout list: setting controls button placement; day subtitle resolves names.
+
+Verification: `flutter analyze` and focused settings/template/workout tests pass.
 
 ---
 

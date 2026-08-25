@@ -12,6 +12,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/main.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 /// Load Isar's native core once. Call from `setUpAll` in any integration test
@@ -42,6 +43,10 @@ Future<WorkoutCubit> pumpApp(WidgetTester tester) async {
     MultiBlocProvider(
       providers: [
         BlocProvider<WorkoutCubit>(create: (_) => cubit, lazy: false),
+        BlocProvider<SettingsCubit>(
+          create: (_) => SettingsCubit(),
+          lazy: false,
+        ),
       ],
       child: const MyApp(),
     ),

@@ -61,6 +61,7 @@ class SettingsPage extends StatelessWidget {
                     ),
                   ),
                 ),
+                _buildPlacementCard(context, state.freeStartPlacement),
                 _buildSwitchCard(
                   context,
                   icon: Icons.notifications,
@@ -103,6 +104,45 @@ class SettingsPage extends StatelessWidget {
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
+      ),
+    );
+  }
+
+  Widget _buildPlacementCard(
+    BuildContext context,
+    FreeStartPlacement placement,
+  ) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: ListTile(
+        leading: Icon(
+          Icons.play_circle_outline,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+        title: const Text('Start Workout button'),
+        subtitle: DropdownButton<FreeStartPlacement>(
+          value: placement,
+          isExpanded: true,
+          onChanged: (value) {
+            if (value != null) {
+              context.read<SettingsCubit>().setFreeStartPlacement(value);
+            }
+          },
+          items: const [
+            DropdownMenuItem(
+              value: FreeStartPlacement.before,
+              child: Text('Before splits'),
+            ),
+            DropdownMenuItem(
+              value: FreeStartPlacement.after,
+              child: Text('After splits'),
+            ),
+            DropdownMenuItem(
+              value: FreeStartPlacement.disabled,
+              child: Text('Disabled'),
+            ),
+          ],
+        ),
       ),
     );
   }

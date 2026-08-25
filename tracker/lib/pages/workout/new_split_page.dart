@@ -4,6 +4,7 @@ import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
 
+import '../../models/workout_split_templates.dart';
 import 'split_day_editor_page.dart';
 
 /// Split CRUD editor (Plan.md §1.3.1). Handles both creating a new split and
@@ -27,6 +28,9 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
   bool _saving = false;
 
   bool get _isNew => widget.split == null;
+
+  String? get _titleError =>
+      _title.text.trim().isEmpty ? 'Cannot be empty' : null;
 
   @override
   void initState() {
@@ -86,11 +90,60 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
         order: order,
       );
 
+  Future<void> _chooseTemplate() async {
+    final template = await showModalBottomSheet<WorkoutSplitTemplate>(
+      context: context,
+      builder: (context) => ListView(
+        shrinkWrap: true,
+        children: [
+          const ListTile(title: Text('Use a template')),
+          for (final template in workoutSplitTemplates)
+            ListTile(
+              title: Text(template.title),
+              subtitle: Text('${template.days.length} days'),
+              onTap: () => Navigator.of(context).pop(template),
+            ),
+        ],
+      ),
+    );
+    if (template != null && mounted) {
+      setState(() {
+        _title.text = template.title;
+        _days = template.createDays();
+      });
+    }
+  }
+
+  Future<void> _deleteSplit() async {
+    final split = widget.split;
+    final repo = RepositoryScope.maybeOf(context);
+    if (split == null || repo == null) return;
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Delete split?'),
+        content: Text('Remove "${split.title}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true && mounted) {
+      await repo.splits.delete(split.id);
+      if (mounted) Navigator.of(context).pop();
+    }
+  }
+
   Future<void> _save() async {
-    if (_title.text.trim().isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('Give the split a name.')));
+    if (_titleError != null) {
+      setState(() {});
       return;
     }
 
@@ -141,10 +194,18 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
               children: <Widget>[
                 TextField(
                   controller: _title,
-                  decoration: const InputDecoration(
+                  onChanged: (_) => setState(() {}),
+                  decoration: InputDecoration(
                     labelText: 'Split name',
-                    border: OutlineInputBorder(),
+                    errorText: _titleError,
+                    border: const OutlineInputBorder(),
                   ),
+                ),
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: _chooseTemplate,
+                  icon: const Icon(Icons.auto_awesome),
+                  label: const Text('Use a template'),
                 ),
                 const SizedBox(height: 16),
                 TextField(
@@ -182,6 +243,12 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                   icon: const Icon(Icons.add_sharp),
                   label: const Text('Add day'),
                 ),
+                const SizedBox(height: 16),
+                if (!_isNew)
+                  FilledButton.tonal(
+                    onPressed: _deleteSplit,
+                    child: const Text('Delete split'),
+                  ),
               ],
             ),
           ),
