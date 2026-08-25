@@ -34,6 +34,13 @@ const GymSchema = CollectionSchema(
     ),
     r'name': PropertySchema(id: 3, name: r'name', type: IsarType.string),
     r'order': PropertySchema(id: 4, name: r'order', type: IsarType.long),
+    r'perExerciseMultipliers': PropertySchema(
+      id: 5,
+      name: r'perExerciseMultipliers',
+      type: IsarType.objectList,
+
+      target: r'GymExerciseMultiplier',
+    ),
   },
 
   estimateSize: _gymEstimateSize,
@@ -43,7 +50,7 @@ const GymSchema = CollectionSchema(
   idName: r'id',
   indexes: {},
   links: {},
-  embeddedSchemas: {},
+  embeddedSchemas: {r'GymExerciseMultiplier': GymExerciseMultiplierSchema},
 
   getId: _gymGetId,
   getLinks: _gymGetLinks,
@@ -64,6 +71,18 @@ int _gymEstimateSize(
     }
   }
   bytesCount += 3 + object.name.length * 3;
+  bytesCount += 3 + object.perExerciseMultipliers.length * 3;
+  {
+    final offsets = allOffsets[GymExerciseMultiplier]!;
+    for (var i = 0; i < object.perExerciseMultipliers.length; i++) {
+      final value = object.perExerciseMultipliers[i];
+      bytesCount += GymExerciseMultiplierSchema.estimateSize(
+        value,
+        offsets,
+        allOffsets,
+      );
+    }
+  }
   return bytesCount;
 }
 
@@ -78,6 +97,12 @@ void _gymSerialize(
   writer.writeDouble(offsets[2], object.multiplier);
   writer.writeString(offsets[3], object.name);
   writer.writeLong(offsets[4], object.order);
+  writer.writeObjectList<GymExerciseMultiplier>(
+    offsets[5],
+    allOffsets,
+    GymExerciseMultiplierSchema.serialize,
+    object.perExerciseMultipliers,
+  );
 }
 
 Gym _gymDeserialize(
@@ -92,6 +117,14 @@ Gym _gymDeserialize(
     multiplier: reader.readDoubleOrNull(offsets[2]) ?? 1.0,
     name: reader.readString(offsets[3]),
     order: reader.readLongOrNull(offsets[4]) ?? -1,
+    perExerciseMultipliers:
+        reader.readObjectList<GymExerciseMultiplier>(
+          offsets[5],
+          GymExerciseMultiplierSchema.deserialize,
+          allOffsets,
+          GymExerciseMultiplier(),
+        ) ??
+        const [],
   );
   object.id = id;
   return object;
@@ -114,6 +147,15 @@ P _gymDeserializeProp<P>(
       return (reader.readString(offset)) as P;
     case 4:
       return (reader.readLongOrNull(offset) ?? -1) as P;
+    case 5:
+      return (reader.readObjectList<GymExerciseMultiplier>(
+                offset,
+                GymExerciseMultiplierSchema.deserialize,
+                allOffsets,
+                GymExerciseMultiplier(),
+              ) ??
+              const [])
+          as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
@@ -713,9 +755,94 @@ extension GymQueryFilter on QueryBuilder<Gym, Gym, QFilterCondition> {
       );
     });
   }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersLengthEqualTo(int length) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'perExerciseMultipliers',
+        length,
+        true,
+        length,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersIsEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(r'perExerciseMultipliers', 0, true, 0, true);
+    });
+  }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersIsNotEmpty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'perExerciseMultipliers',
+        0,
+        false,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersLengthLessThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'perExerciseMultipliers',
+        0,
+        true,
+        length,
+        include,
+      );
+    });
+  }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersLengthGreaterThan(int length, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'perExerciseMultipliers',
+        length,
+        include,
+        999999,
+        true,
+      );
+    });
+  }
+
+  QueryBuilder<Gym, Gym, QAfterFilterCondition>
+  perExerciseMultipliersLengthBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.listLength(
+        r'perExerciseMultipliers',
+        lower,
+        includeLower,
+        upper,
+        includeUpper,
+      );
+    });
+  }
 }
 
-extension GymQueryObject on QueryBuilder<Gym, Gym, QFilterCondition> {}
+extension GymQueryObject on QueryBuilder<Gym, Gym, QFilterCondition> {
+  QueryBuilder<Gym, Gym, QAfterFilterCondition> perExerciseMultipliersElement(
+    FilterQuery<GymExerciseMultiplier> q,
+  ) {
+    return QueryBuilder.apply(this, (query) {
+      return query.object(q, r'perExerciseMultipliers');
+    });
+  }
+}
 
 extension GymQueryLinks on QueryBuilder<Gym, Gym, QFilterCondition> {}
 
@@ -927,4 +1054,266 @@ extension GymQueryProperty on QueryBuilder<Gym, Gym, QQueryProperty> {
       return query.addPropertyName(r'order');
     });
   }
+
+  QueryBuilder<Gym, List<GymExerciseMultiplier>, QQueryOperations>
+  perExerciseMultipliersProperty() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addPropertyName(r'perExerciseMultipliers');
+    });
+  }
 }
+
+// **************************************************************************
+// IsarEmbeddedGenerator
+// **************************************************************************
+
+// coverage:ignore-file
+// ignore_for_file: duplicate_ignore, non_constant_identifier_names, constant_identifier_names, invalid_use_of_protected_member, unnecessary_cast, prefer_const_constructors, lines_longer_than_80_chars, require_trailing_commas, inference_failure_on_function_invocation, unnecessary_parenthesis, unnecessary_raw_strings, unnecessary_null_checks, join_return_with_assignment, prefer_final_locals, avoid_js_rounded_ints, avoid_positional_boolean_parameters, always_specify_types
+
+const GymExerciseMultiplierSchema = Schema(
+  name: r'GymExerciseMultiplier',
+  id: -385993913356006671,
+  properties: {
+    r'exerciseId': PropertySchema(
+      id: 0,
+      name: r'exerciseId',
+      type: IsarType.long,
+    ),
+    r'multiplier': PropertySchema(
+      id: 1,
+      name: r'multiplier',
+      type: IsarType.double,
+    ),
+  },
+
+  estimateSize: _gymExerciseMultiplierEstimateSize,
+  serialize: _gymExerciseMultiplierSerialize,
+  deserialize: _gymExerciseMultiplierDeserialize,
+  deserializeProp: _gymExerciseMultiplierDeserializeProp,
+);
+
+int _gymExerciseMultiplierEstimateSize(
+  GymExerciseMultiplier object,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  var bytesCount = offsets.last;
+  return bytesCount;
+}
+
+void _gymExerciseMultiplierSerialize(
+  GymExerciseMultiplier object,
+  IsarWriter writer,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  writer.writeLong(offsets[0], object.exerciseId);
+  writer.writeDouble(offsets[1], object.multiplier);
+}
+
+GymExerciseMultiplier _gymExerciseMultiplierDeserialize(
+  Id id,
+  IsarReader reader,
+  List<int> offsets,
+  Map<Type, List<int>> allOffsets,
+) {
+  final object = GymExerciseMultiplier(
+    exerciseId: reader.readLongOrNull(offsets[0]) ?? 0,
+    multiplier: reader.readDoubleOrNull(offsets[1]) ?? 1.0,
+  );
+  return object;
+}
+
+P _gymExerciseMultiplierDeserializeProp<P>(
+  IsarReader reader,
+  int propertyId,
+  int offset,
+  Map<Type, List<int>> allOffsets,
+) {
+  switch (propertyId) {
+    case 0:
+      return (reader.readLongOrNull(offset) ?? 0) as P;
+    case 1:
+      return (reader.readDoubleOrNull(offset) ?? 1.0) as P;
+    default:
+      throw IsarError('Unknown property with id $propertyId');
+  }
+}
+
+extension GymExerciseMultiplierQueryFilter
+    on
+        QueryBuilder<
+          GymExerciseMultiplier,
+          GymExerciseMultiplier,
+          QFilterCondition
+        > {
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  exerciseIdEqualTo(int value) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(property: r'exerciseId', value: value),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  exerciseIdGreaterThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'exerciseId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  exerciseIdLessThan(int value, {bool include = false}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'exerciseId',
+          value: value,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  exerciseIdBetween(
+    int lower,
+    int upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'exerciseId',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  multiplierEqualTo(double value, {double epsilon = Query.epsilon}) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.equalTo(
+          property: r'multiplier',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  multiplierGreaterThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.greaterThan(
+          include: include,
+          property: r'multiplier',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  multiplierLessThan(
+    double value, {
+    bool include = false,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.lessThan(
+          include: include,
+          property: r'multiplier',
+          value: value,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+
+  QueryBuilder<
+    GymExerciseMultiplier,
+    GymExerciseMultiplier,
+    QAfterFilterCondition
+  >
+  multiplierBetween(
+    double lower,
+    double upper, {
+    bool includeLower = true,
+    bool includeUpper = true,
+    double epsilon = Query.epsilon,
+  }) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(
+        FilterCondition.between(
+          property: r'multiplier',
+          lower: lower,
+          includeLower: includeLower,
+          upper: upper,
+          includeUpper: includeUpper,
+
+          epsilon: epsilon,
+        ),
+      );
+    });
+  }
+}
+
+extension GymExerciseMultiplierQueryObject
+    on
+        QueryBuilder<
+          GymExerciseMultiplier,
+          GymExerciseMultiplier,
+          QFilterCondition
+        > {}

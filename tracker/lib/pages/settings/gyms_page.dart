@@ -97,13 +97,34 @@ class _GymsPageState extends State<GymsPage> {
       _snack('Mark a gym as primary first.');
       return;
     }
-    final estimate = estimateGymMultiplier(_sessions, primary.id, gym.id);
+    final estimates = estimateGymExerciseMultipliers(
+      _sessions,
+      primary.id,
+      gym.id,
+      halfLife: const Duration(days: 180),
+    );
+    final estimate = estimateGymMultiplier(
+      _sessions,
+      primary.id,
+      gym.id,
+      halfLife: const Duration(days: 180),
+    );
     if (estimate == null) {
       _snack('No shared exercise logs to estimate from.');
       return;
     }
-    await repo.gyms.put(gym..multiplier = estimate);
-    _snack('Estimated multiplier ×${_fmt(estimate)}.');
+    await repo.gyms.put(
+      gym
+        ..multiplier = estimate
+        ..perExerciseMultipliers = [
+          for (final entry in estimates.entries)
+            GymExerciseMultiplier(
+              exerciseId: entry.key,
+              multiplier: entry.value,
+            ),
+        ],
+    );
+    _snack('Estimated ${estimates.length} movement multipliers.');
   }
 
   Future<void> _deleteGym(Gym gym) async {
@@ -201,9 +222,6 @@ class _GymsPageState extends State<GymsPage> {
       ],
     );
   }
-
-  String _fmt(double v) =>
-      v == v.roundToDouble() ? v.toStringAsFixed(1) : v.toStringAsFixed(2);
 }
 
 /// Shows an add/edit dialog; returns the [Gym] to persist or null on cancel.
@@ -345,7 +363,8 @@ class _GymTile extends StatelessWidget {
         subtitle: Text(
           primary
               ? 'Primary · baseline ×1.0'
-              : 'Multiplier ×${_fmtGym(gym.multiplier)}',
+              : 'Multiplier ×${_fmtGym(gym.multiplier)} · '
+                    '${gym.perExerciseMultipliers.length} movement overrides',
         ),
         trailing: PopupMenuButton<String>(
           onSelected: (action) => switch (action) {

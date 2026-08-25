@@ -49,9 +49,17 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
     if (!mounted) return;
     setState(() {
       _multipliers = {for (final g in gyms) g.id: g.multiplier};
+      final exerciseMultipliers = <int, Map<int, double>>{
+        for (final gym in gyms)
+          gym.id: {
+            for (final value in gym.perExerciseMultipliers)
+              value.exerciseId: value.multiplier,
+          },
+      };
       _snapshot = _analytics.snapshot(
         sessions: sessions,
         multipliers: _multipliers,
+        exerciseMultipliers: exerciseMultipliers,
         exerciseId: widget.exercise.id,
         revision: sessions.length,
       );

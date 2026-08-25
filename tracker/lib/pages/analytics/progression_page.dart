@@ -62,9 +62,17 @@ class _ProgressionPageState extends State<ProgressionPage> {
       setState(() {
         _sessions = sessions;
         _multipliers = {for (final gym in gyms) gym.id: gym.multiplier};
+        final exerciseMultipliers = <int, Map<int, double>>{
+          for (final gym in gyms)
+            gym.id: {
+              for (final value in gym.perExerciseMultipliers)
+                value.exerciseId: value.multiplier,
+            },
+        };
         _snapshot = _analytics.snapshot(
           sessions: sessions,
           multipliers: _multipliers,
+          exerciseMultipliers: exerciseMultipliers,
           exerciseId: null,
           revision: sessions.length,
         );
