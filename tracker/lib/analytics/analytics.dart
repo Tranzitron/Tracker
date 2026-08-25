@@ -3,6 +3,96 @@ library;
 
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
+
+/// Returns the beginning of the requested graph range, relative to the newest
+/// session. The all-time range returns null.
+DateTime? graphRangeStart(GraphTimeframe timeframe, DateTime newest) {
+  switch (timeframe) {
+    case GraphTimeframe.all:
+      return null;
+    case GraphTimeframe.last30Days:
+      return newest.subtract(const Duration(days: 30));
+    case GraphTimeframe.last90Days:
+      return newest.subtract(const Duration(days: 90));
+    case GraphTimeframe.lastYear:
+      return newest.subtract(const Duration(days: 365));
+  }
+}
+
+String graphMetricLabel(GraphMetric metric) {
+  switch (metric) {
+    case GraphMetric.best1rm:
+      return 'Best 1RM';
+    case GraphMetric.peakWeight:
+      return 'Peak weight';
+    case GraphMetric.volume:
+      return 'Volume';
+  }
+}
+
+String graphTimeframeLabel(GraphTimeframe timeframe) {
+  switch (timeframe) {
+    case GraphTimeframe.all:
+      return 'All time';
+    case GraphTimeframe.last30Days:
+      return 'Last 30 days';
+    case GraphTimeframe.last90Days:
+      return 'Last 90 days';
+    case GraphTimeframe.lastYear:
+      return 'Last year';
+  }
+}
+
+List<WorkoutSession> sessionsForTimeframe(
+  List<WorkoutSession> sessions,
+  GraphTimeframe timeframe,
+) {
+  if (sessions.isEmpty || timeframe == GraphTimeframe.all) return sessions;
+  final newest = sessions
+      .map((session) => session.startTime)
+      .reduce((a, b) => a.isAfter(b) ? a : b);
+  final start = graphRangeStart(timeframe, newest)!;
+  return sessions
+      .where((session) => !session.startTime.isBefore(start))
+      .toList();
+}
+
+List<ProgressionPoint> graphSeries({
+  required List<WorkoutSession> sessions,
+  required Map<int, double> multipliers,
+  required GraphMetric metric,
+  int? exerciseId,
+  GraphTimeframe timeframe = GraphTimeframe.all,
+}) {
+  final filtered = sessionsForTimeframe(sessions, timeframe);
+  switch (metric) {
+    case GraphMetric.best1rm:
+      return exerciseBest1rm(filtered, multipliers, exerciseId);
+    case GraphMetric.peakWeight:
+      return exercisePeakWeight(filtered, multipliers, exerciseId);
+    case GraphMetric.volume:
+      return volumeTrend(filtered, multipliers, exerciseId);
+  }
+}
+
+String graphMetricUnit(GraphMetric metric) =>
+    metric == GraphMetric.volume ? 'kg·reps' : 'kg';
+
+String graphMetricTitle(GraphConfig config) => config.title.trim();
+
+/// A graph-ready series for a persisted configuration.
+List<ProgressionPoint> graphPoints({
+  required GraphConfig config,
+  required List<WorkoutSession> sessions,
+  required Map<int, double> multipliers,
+}) => graphSeries(
+  sessions: sessions,
+  multipliers: multipliers,
+  metric: config.metric,
+  exerciseId: config.exerciseId,
+  timeframe: config.timeframe,
+);
 
 /// Scales a raw logged weight by its gym's multiplier (default 1.0).
 double normalizedWeight(double raw, Map<int, double> multipliers, int? gymId) =>
@@ -207,11 +297,13 @@ List<ProgressionPoint> exercisePeakWeight(
 
 List<ProgressionPoint> volumeTrend(
   List<WorkoutSession> sessions,
-  Map<int, double> multipliers,
-) {
+  Map<int, double> multipliers, [
+  int? exerciseId,
+]) {
   final points = <ProgressionPoint>[];
   for (final session in sessions) {
-    final sets = _workingSets(session);
+    final sets = _workingSets(session)
+        .where((set) => exerciseId == null || set.exerciseId == exerciseId);
     if (sets.isEmpty) continue;
     points.add(
       ProgressionPoint(

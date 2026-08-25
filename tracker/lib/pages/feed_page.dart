@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/home_page.dart';
+import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/pages/analytics/graph_editor.dart';
+import 'package:tracker/pages/feed_page_graph_card.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
@@ -22,7 +25,93 @@ class FeedPage extends StatefulWidget {
 class _FeedPageState extends State<FeedPage> {
   Stream<List<WorkoutSession>>? _stream;
   Map<int, String> _gymNames = const {};
+  List<WorkoutSession> _allSessions = const [];
+  List<Exercise> _exercises = const [];
+  Map<int, double> _multipliers = const {};
   bool _didLoad = false;
+
+  SettingsCubit? get _settings => SettingsCubit.maybeOf(context);
+
+  Future<void> _loadAnalyticsData() async {
+    final repo = RepositoryScope.maybeOf(context);
+    if (repo == null) return;
+    final results = await Future.wait([
+      repo.sessions.getAll(),
+      repo.exercises.getAll(),
+      repo.gyms.getAll(),
+    ]);
+    if (!mounted) return;
+    setState(() {
+      _allSessions = results[0] as List<WorkoutSession>;
+      _exercises = results[1] as List<Exercise>;
+      final gyms = results[2] as List<dynamic>;
+      _multipliers = {
+        for (final gym in gyms) gym.id as int: gym.multiplier as double,
+      };
+      _gymNames = {for (final gym in gyms) gym.id as int: gym.name as String};
+    });
+  }
+
+  Future<void> _editGraph({int? index}) async {
+    final settings = _settings;
+    if (settings == null) return;
+    final result = await showDialog<GraphConfig>(
+      context: context,
+      builder: (_) => GraphEditor(
+        initial: index == null ? null : settings.state.graphs[index],
+        exercises: _exercises,
+      ),
+    );
+    if (!mounted || result == null) return;
+    if (index == null) {
+      settings.addGraph(result);
+    } else {
+      settings.updateGraph(index, result);
+    }
+  }
+
+  Widget _analyticsSection(BuildContext context) {
+    final settings = _settings;
+    final graphs = settings?.state.graphs ?? const <GraphConfig>[];
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  'Analytics',
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: _editGraph,
+                icon: const Icon(Icons.add),
+                label: const Text('Add graph'),
+              ),
+            ],
+          ),
+          for (var i = 0; i < graphs.length; i++)
+            FeedGraphCard(
+              config: graphs[i],
+              sessions: _allSessions,
+              multipliers: _multipliers,
+              exerciseName: graphs[i].exerciseId == null
+                  ? 'All exercises'
+                  : _exercises
+                            .where((e) => e.id == graphs[i].exerciseId)
+                            .map((e) => e.title)
+                            .firstOrNull ??
+                        'Exercise',
+              onEdit: () => _editGraph(index: i),
+              onDelete: () => settings?.removeGraph(i),
+            ),
+        ],
+      ),
+    );
+  }
 
   @override
   void didChangeDependencies() {
@@ -32,6 +121,7 @@ class _FeedPageState extends State<FeedPage> {
       final repo = RepositoryScope.maybeOf(context);
       _stream = repo?.sessions.watchRecent(limit: 5);
       _loadGyms();
+      _loadAnalyticsData();
     }
   }
 
@@ -128,24 +218,21 @@ class _FeedPageState extends State<FeedPage> {
             },
           ),
         );
+        slivers.add(SliverToBoxAdapter(child: _analyticsSection(context)));
         slivers.add(
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-              child: Column(
-                children: [
-                  Card(
-                    child: ListTile(
-                      leading: const Icon(Icons.show_chart_sharp),
-                      title: const Text('Progression'),
-                      subtitle: const Text(
-                        'Strength and volume trends across all exercises',
-                      ),
-                      trailing: const Icon(Icons.chevron_right_sharp),
-                      onTap: () => pushTo(context, const ProgressionPage()),
-                    ),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+              child: Card(
+                child: ListTile(
+                  leading: const Icon(Icons.show_chart_sharp),
+                  title: const Text('Progression'),
+                  subtitle: const Text(
+                    'Strength and volume trends across all exercises',
                   ),
-                ],
+                  trailing: const Icon(Icons.chevron_right_sharp),
+                  onTap: () => pushTo(context, const ProgressionPage()),
+                ),
               ),
             ),
           ),

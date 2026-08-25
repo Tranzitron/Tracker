@@ -26,5 +26,32 @@ void main() {
       expect(restored.notificationsEnabled, isFalse);
       expect(restored.analyticsEnabled, isFalse);
     });
+
+    test('persists graph configurations and ignores malformed entries', () {
+      const graph = GraphConfig(
+        title: 'Bench progress',
+        exerciseId: 7,
+        metric: GraphMetric.peakWeight,
+        timeframe: GraphTimeframe.last90Days,
+      );
+      final state = const SettingsState(graphs: [graph]);
+      final restored = SettingsState.fromJson({
+        ...state.toJson(),
+        'graphs': [
+          ...state.toJson()['graphs'] as List<dynamic>,
+          {'title': ''},
+        ],
+      });
+      expect(restored.graphs, hasLength(1));
+      expect(restored.graphs.single.title, 'Bench progress');
+      expect(restored.graphs.single.metric, GraphMetric.peakWeight);
+      expect(restored.graphs.single.timeframe, GraphTimeframe.last90Days);
+    });
+
+    test('graph config supports clearing exercise filter', () {
+      const graph = GraphConfig(title: 'x', exerciseId: 2);
+      expect(graph.copyWith(exerciseId: null).exerciseId, isNull);
+      expect(GraphConfig.fromJson(graph.toJson()).exerciseId, 2);
+    });
   });
 }

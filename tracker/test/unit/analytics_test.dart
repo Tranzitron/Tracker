@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/analytics/analytics.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/pages/settings/settings_cubit.dart';
 
 WorkoutSet _set(int exerciseId, double weight, int reps, SetType type) =>
     WorkoutSet(exerciseId: exerciseId, weight: weight, reps: reps, type: type);
@@ -178,6 +179,36 @@ void main() {
         ),
         isFalse,
       );
+    });
+  });
+
+  group('user graph series', () {
+    test('filters timeframe and exercise volume', () {
+      final sessions = [
+        _session(DateTime(2025, 12, 1), 1, [_set(7, 10, 5, SetType.working)]),
+        _session(DateTime(2026, 4, 1), 1, [_set(8, 20, 3, SetType.working)]),
+      ];
+      final points = graphSeries(
+        sessions: sessions,
+        multipliers: const {1: 1.0},
+        metric: GraphMetric.volume,
+        exerciseId: 7,
+        timeframe: GraphTimeframe.last90Days,
+      );
+      expect(points, hasLength(0));
+      expect(graphMetricLabel(GraphMetric.best1rm), 'Best 1RM');
+      expect(graphTimeframeLabel(GraphTimeframe.last30Days), 'Last 30 days');
+    });
+
+    test('all-time graph returns selected metric', () {
+      final points = graphSeries(
+        sessions: [
+          _session(DateTime(2026, 1, 1), 1, [_set(7, 10, 5, SetType.working)]),
+        ],
+        multipliers: const {1: 1.0},
+        metric: GraphMetric.volume,
+      );
+      expect(points.single.value, 50);
     });
   });
 
