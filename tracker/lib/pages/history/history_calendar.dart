@@ -79,7 +79,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
           onPrev: () => _goMonth(-1),
           onNext: () => _goMonth(1),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         Row(
           children: <Widget>[
             for (final label in _weekdayLabels)
@@ -95,18 +95,18 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
               ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 2),
         _dayGrid(grid, theme),
-        const SizedBox(height: 12),
+        const SizedBox(height: 6),
         _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
-        const Divider(height: 32),
+        const SizedBox(height: 6),
         Text(
           _selectedDay == null
               ? 'Workouts'
               : 'Workouts · ${_dateLabel(_selectedDay!)}',
-          style: theme.textTheme.titleMedium,
+          style: theme.textTheme.titleSmall,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 4),
         _dayList(_selectedDay),
       ],
     );
@@ -115,6 +115,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   Widget _dayGrid(CalendarGrid grid, ThemeData theme) {
     return GridView.count(
       crossAxisCount: 7,
+      childAspectRatio: 2.1,
+      mainAxisSpacing: 0,
+      crossAxisSpacing: 0,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: <Widget>[
@@ -142,7 +145,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
       onTap: () => setState(() => _selectedDay = date),
       borderRadius: BorderRadius.circular(8),
       child: Container(
-        margin: const EdgeInsets.all(2),
+        margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
           color: selected ? theme.colorScheme.primary : null,
           borderRadius: BorderRadius.circular(8),
@@ -153,12 +156,12 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
           children: <Widget>[
             Text(
               dayVal.toString(),
-              style: theme.textTheme.bodyMedium?.copyWith(color: foreground),
+              style: theme.textTheme.bodySmall?.copyWith(color: foreground),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 0),
             Container(
-              width: 5,
-              height: 5,
+              width: 4,
+              height: 4,
               decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
             ),
           ],
@@ -175,12 +178,16 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     if (sessions.isEmpty) {
       return const Text('No workouts on this day.');
     }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        for (final session in sessions)
-          Card(
+    return SizedBox(
+      height: 128,
+      child: ListView.builder(
+        itemCount: sessions.length,
+        itemBuilder: (context, index) {
+          final session = sessions[index];
+          return Card(
+            margin: const EdgeInsets.only(bottom: 4),
             child: ListTile(
+              dense: true,
               leading: const Icon(Icons.directions_run_sharp),
               title: Text(session.title),
               subtitle: Text('${session.sets.length} set(s)'),
@@ -195,8 +202,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                 ),
               ),
             ),
-          ),
-      ],
+          );
+        },
+      ),
     );
   }
 
@@ -272,13 +280,10 @@ class _MetricsStrip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
-        Expanded(
-          child: _Metric(label: 'Workout days', value: '$monthWorkoutDays'),
-        ),
-        Expanded(
-          child: _Metric(label: 'day streak', value: '$streak'),
-        ),
+        _Metric(label: 'workout days', value: '$monthWorkoutDays'),
+        _Metric(label: 'day streak', value: '$streak'),
       ],
     );
   }
@@ -294,13 +299,14 @@ class _Metric extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 4),
+      margin: const EdgeInsets.symmetric(horizontal: 2),
       child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(value, style: theme.textTheme.titleLarge),
-            const SizedBox(height: 4),
+            Text(value, style: theme.textTheme.titleSmall),
+            const SizedBox(width: 4),
             Text(
               label,
               style: theme.textTheme.bodySmall?.copyWith(
