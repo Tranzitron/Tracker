@@ -125,7 +125,10 @@ class _InProgressView extends StatelessWidget {
   Future<void> _confirmEnd(BuildContext context, int setCount) async {
     // Zero sets: prompt directly to discard
     if (setCount == 0) {
-      final confirmDiscard = await _showDiscardConfirmation(context);
+      final confirmDiscard = await _showDiscardConfirmation(
+        context,
+        noSets: true,
+      );
       if (confirmDiscard && context.mounted) {
         await onEnd();
       }
@@ -137,7 +140,10 @@ class _InProgressView extends StatelessWidget {
     if (!context.mounted || action == _WorkoutAction.cancel) return;
 
     if (action == _WorkoutAction.discard) {
-      final confirmDiscard = await _showDiscardConfirmation(context);
+      final confirmDiscard = await _showDiscardConfirmation(
+        context,
+        noSets: false,
+      );
       if (confirmDiscard && context.mounted) {
         await onEnd();
       }
@@ -186,13 +192,18 @@ class _InProgressView extends StatelessWidget {
         _WorkoutAction.cancel;
   }
 
-  Future<bool> _showDiscardConfirmation(BuildContext context) async {
+  Future<bool> _showDiscardConfirmation(
+    BuildContext context, {
+    bool noSets = false,
+  }) async {
     return await showDialog<bool>(
           context: context,
           builder: (dialogContext) => AlertDialog(
             title: const Text('Discard workout?'),
-            content: const Text(
-              'This will delete all progress for this session.',
+            content: Text(
+              noSets
+                  ? 'No sets have been logged. Do you want to discard this session?'
+                  : 'This will delete all progress for this session.',
             ),
             actions: <Widget>[
               TextButton(
