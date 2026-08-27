@@ -113,11 +113,13 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   }
 
   Widget _dayGrid(CalendarGrid grid, ThemeData theme) {
+    const double cellSpacing = 4;
     return GridView.count(
+      padding: EdgeInsets.only(top: 4),
       crossAxisCount: 7,
-      childAspectRatio: 2.1,
-      mainAxisSpacing: 0,
-      crossAxisSpacing: 0,
+      childAspectRatio: 1.75,
+      mainAxisSpacing: cellSpacing,
+      crossAxisSpacing: cellSpacing,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: <Widget>[
