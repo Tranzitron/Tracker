@@ -77,6 +77,8 @@ class _IdleView extends StatelessWidget {
   }
 }
 
+enum _WorkoutAction { save, discard, cancel }
+
 class _InProgressView extends StatelessWidget {
   const _InProgressView({required this.onEnd});
 
@@ -121,84 +123,90 @@ class _InProgressView extends StatelessWidget {
   }
 
   Future<void> _confirmEnd(BuildContext context, int setCount) async {
-    final bool isDiscarding = setCount == 0;
+    // Zero sets: prompt directly to discard
+    if (setCount == 0) {
+      final confirmDiscard = await _showDiscardConfirmation(context);
+      if (confirmDiscard && context.mounted) {
+        await onEnd();
+      }
+      return;
+    }
 
-    final confirmed = await showDialog<bool>(
-      context: context,
-      builder: (dialogContext) {
-        if (isDiscarding) {
-          return AlertDialog(
+    // Has sets: prompt to Save or Discard
+    final action = await _showEndOptionsDialog(context, setCount);
+    if (!context.mounted || action == _WorkoutAction.cancel) return;
+
+    if (action == _WorkoutAction.discard) {
+      final confirmDiscard = await _showDiscardConfirmation(context);
+      if (confirmDiscard && context.mounted) {
+        await onEnd();
+      }
+    } else if (action == _WorkoutAction.save) {
+      await onEnd();
+    }
+  }
+
+  Future<_WorkoutAction> _showEndOptionsDialog(
+    BuildContext context,
+    int setCount,
+  ) async {
+    return await showDialog<_WorkoutAction>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: const Text('End workout?'),
+            content: Text(
+              'Log $setCount set(s) and save this workout to history.',
+            ),
+            actions: <Widget>[
+              Row(
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.delete_outline),
+                    color: Theme.of(dialogContext).colorScheme.error,
+                    tooltip: 'Discard workout',
+                    onPressed: () =>
+                        Navigator.pop(dialogContext, _WorkoutAction.discard),
+                  ),
+                  const Spacer(),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pop(dialogContext, _WorkoutAction.cancel),
+                    child: const Text('Keep going'),
+                  ),
+                  FilledButton(
+                    onPressed: () =>
+                        Navigator.pop(dialogContext, _WorkoutAction.save),
+                    child: const Text('End & save'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ) ??
+        _WorkoutAction.cancel;
+  }
+
+  Future<bool> _showDiscardConfirmation(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
             title: const Text('Discard workout?'),
             content: const Text(
-              'No sets have been logged. Do you want to discard this session?',
+              'This will delete all progress for this session.',
             ),
             actions: <Widget>[
               TextButton(
-                onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Keep going'),
+                onPressed: () => Navigator.pop(dialogContext, false),
+                child: const Text('Cancel'),
               ),
               FilledButton(
-                onPressed: () => Navigator.of(dialogContext).pop(true),
+                onPressed: () => Navigator.pop(dialogContext, true),
                 child: const Text('Discard'),
               ),
             ],
-          );
-        }
-
-        return AlertDialog(
-          title: const Text('End workout?'),
-          content: Text(
-            'Log $setCount set(s) and save this workout to history.',
           ),
-          actions: <Widget>[
-            Row(
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  color: Theme.of(context).colorScheme.error,
-                  tooltip: 'Discard workout',
-                  onPressed: () async {
-                    final discard = await showDialog<bool>(
-                      context: dialogContext,
-                      builder: (innerContext) => AlertDialog(
-                        title: const Text('Discard workout?'),
-                        content: const Text('This will delete all progress.'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(innerContext, false),
-                            child: const Text('Cancel'),
-                          ),
-                          TextButton(
-                            onPressed: () => Navigator.pop(innerContext, true),
-                            child: const Text('Discard'),
-                          ),
-                        ],
-                      ),
-                    );
-                    if (discard == true && context.mounted) {
-                      Navigator.of(dialogContext).pop(true);
-                    }
-                  },
-                ),
-                const Spacer(),
-                TextButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                  child: const Text('Keep going'),
-                ),
-                FilledButton(
-                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                  child: const Text('End & save'),
-                ),
-              ],
-            ),
-          ],
-        );
-      },
-    );
-
-    if (confirmed ?? false) {
-      await onEnd();
-    }
+        ) ??
+        false;
   }
 }
 
