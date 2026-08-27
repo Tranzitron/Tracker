@@ -30,7 +30,7 @@ class SettingsPage extends StatelessWidget {
                   context,
                   icon: Icons.scale,
                   title: 'Units',
-                  subtitle: '',
+                  subtitle: 'Set your preferred weight unit',
                   value: state.unit,
                   onChanged: (unit) {
                     context.read<SettingsCubit>().setUnit(unit);
@@ -73,25 +73,20 @@ class SettingsPage extends StatelessWidget {
   }) {
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-        child: Row(
-          children: [
-            Icon(icon, color: Theme.of(context).colorScheme.primary),
-            const SizedBox(width: 16),
-            Expanded(child: Text(title)),
-            DropdownButton<WeightUnit>(
-              value: value,
-              onChanged: (unit) {
-                if (unit != null) {
-                  context.read<SettingsCubit>().setUnit(unit);
-                }
-              },
-              items: [
-                for (final unit in WeightUnit.values)
-                  DropdownMenuItem(value: unit, child: Text(unit.symbol)),
-              ],
-            ),
+      child: ListTile(
+        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
+        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
+        subtitle: Text(subtitle),
+        trailing: DropdownButton<WeightUnit>(
+          value: value,
+          onChanged: (unit) {
+            if (unit != null) {
+              context.read<SettingsCubit>().setUnit(unit);
+            }
+          },
+          items: [
+            for (final unit in WeightUnit.values)
+              DropdownMenuItem(value: unit, child: Text(unit.symbol)),
           ],
         ),
       ),
