@@ -6,7 +6,6 @@ import 'custom/custom_route.dart';
 import 'settings/gyms_page.dart';
 import 'settings/settings_cubit.dart';
 
-/// Application preferences and user-facing settings.
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
 
@@ -20,48 +19,23 @@ class SettingsPage extends StatelessWidget {
             builder: (context, state) => ListView(
               padding: const EdgeInsets.symmetric(vertical: 12),
               children: <Widget>[
-                _buildSettingsCard(
+                _buildSettingsMenuCard(
                   context,
                   icon: Icons.fitness_center,
                   title: 'Gyms',
                   subtitle: 'Manage gyms and weight multipliers',
                   onTap: () => pushTo(context, const GymsPage()),
                 ),
-                Card(
-                  margin: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 6,
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.scale,
-                          color: Theme.of(context).colorScheme.primary,
-                        ),
-                        const SizedBox(width: 16),
-                        const Expanded(child: Text('Units')),
-                        DropdownButton<WeightUnit>(
-                          value: state.unit,
-                          onChanged: (unit) {
-                            if (unit != null) {
-                              context.read<SettingsCubit>().setUnit(unit);
-                            }
-                          },
-                          items: [
-                            for (final unit in WeightUnit.values)
-                              DropdownMenuItem(
-                                value: unit,
-                                child: Text(unit.symbol),
-                              ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+                _buildSettingsDropdownCard(
+                  context,
+                  icon: Icons.scale,
+                  title: 'Units',
+                  subtitle: '',
+                  value: state.unit,
+                  onChanged: (unit) {
+                    context.read<SettingsCubit>().setUnit(unit);
+                  },
                 ),
-                _buildPlacementCard(context, state.freeStartPlacement),
                 _buildSwitchCard(
                   context,
                   icon: Icons.notifications,
@@ -89,7 +63,42 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsCard(
+  Widget _buildSettingsDropdownCard(
+    BuildContext context, {
+    required IconData icon,
+    required String title,
+    required String subtitle,
+    required WeightUnit value,
+    required ValueChanged<WeightUnit> onChanged,
+  }) {
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 8, 8),
+        child: Row(
+          children: [
+            Icon(icon, color: Theme.of(context).colorScheme.primary),
+            const SizedBox(width: 16),
+            Expanded(child: Text(title)),
+            DropdownButton<WeightUnit>(
+              value: value,
+              onChanged: (unit) {
+                if (unit != null) {
+                  context.read<SettingsCubit>().setUnit(unit);
+                }
+              },
+              items: [
+                for (final unit in WeightUnit.values)
+                  DropdownMenuItem(value: unit, child: Text(unit.symbol)),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSettingsMenuCard(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -104,45 +113,6 @@ class SettingsPage extends StatelessWidget {
         subtitle: Text(subtitle),
         trailing: const Icon(Icons.arrow_forward_ios, size: 16),
         onTap: onTap,
-      ),
-    );
-  }
-
-  Widget _buildPlacementCard(
-    BuildContext context,
-    FreeStartPlacement placement,
-  ) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        leading: Icon(
-          Icons.play_circle_outline,
-          color: Theme.of(context).colorScheme.primary,
-        ),
-        title: const Text('Start Workout button'),
-        subtitle: DropdownButton<FreeStartPlacement>(
-          value: placement,
-          isExpanded: true,
-          onChanged: (value) {
-            if (value != null) {
-              context.read<SettingsCubit>().setFreeStartPlacement(value);
-            }
-          },
-          items: const [
-            DropdownMenuItem(
-              value: FreeStartPlacement.before,
-              child: Text('Before splits'),
-            ),
-            DropdownMenuItem(
-              value: FreeStartPlacement.after,
-              child: Text('After splits'),
-            ),
-            DropdownMenuItem(
-              value: FreeStartPlacement.disabled,
-              child: Text('Disabled'),
-            ),
-          ],
-        ),
       ),
     );
   }

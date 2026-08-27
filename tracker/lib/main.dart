@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -11,6 +12,7 @@ import 'package:tracker/data/seed.dart';
 import 'package:tracker/home_page.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:window_size/window_size.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,6 +27,11 @@ Future<void> main() async {
   // the initial UI or prevent startup when seeding fails.
   final isar = await DbInstance.getIsar();
   final repository = TrackerRepository(isar);
+
+  if (Platform.isWindows || Platform.isLinux || Platform.isMacOS) {
+    setWindowTitle("Tracker");
+    setWindowMinSize(Size(320, 568));
+  }
 
   runApp(
     RepositoryProvider<TrackerRepository>.value(

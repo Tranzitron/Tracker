@@ -1,103 +1,45 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tracker/data/repository_scope.dart';
+import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/gym.dart';
-import 'package:tracker/models/workout_split.dart';
+import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/custom_route.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
+import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'gym_picker.dart';
-import 'new_split_page.dart';
-import 'split_day_page.dart';
 
-class WorkoutPage extends StatefulWidget {
+/// The "Current Workout" tab: drives the active session from [WorkoutCubit].
+///
+/// Idle → a Start button (with gym selection). In progress → the session's
+/// exercises (from the split plan, or free-form) with inline weight/reps set
+/// logging, warmup flags, and an End button that writes a [WorkoutSession].
+class WorkoutPage extends StatelessWidget {
   const WorkoutPage({super.key});
-
-  @override
-  State<WorkoutPage> createState() => _WorkoutPageState();
-}
-
-class _WorkoutPageState extends State<WorkoutPage> {
-  Stream<List<WorkoutSplit>>? _stream;
-  Map<int, String> _exerciseNames = const {};
-  bool _didLoad = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (!_didLoad) {
-      _didLoad = true;
-      final repo = RepositoryScope.maybeOf(context);
-      _stream = repo?.splits.watchAll();
-      repo?.exercises.getAll().then((exercises) {
-        if (mounted) {
-          setState(
-            () => _exerciseNames = {
-              for (final exercise in exercises) exercise.id: exercise.title,
-            },
-          );
-        }
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
       slivers: <Widget>[
-        CustomAppBar(context, title: 'Workout'),
+        CustomAppBar(context, title: 'Current Workout'),
         SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: StreamBuilder<List<WorkoutSplit>>(
-              stream: _stream,
-              initialData: const <WorkoutSplit>[],
-              builder: (context, snapshot) {
-                final splits = snapshot.data ?? const <WorkoutSplit>[];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    if (context
-                            .watch<SettingsCubit>()
-                            .state
-                            .freeStartPlacement ==
-                        FreeStartPlacement.before)
-                      const BuildStartWorkoutButton(),
-                    if (splits.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text('No splits yet. Create one below.'),
-                      )
-                    else
-                      for (final split in splits)
-                        BuildMaterialSplit(
-                          split,
-                          exerciseNames: _exerciseNames,
-                        ),
-                    if (context
-                            .watch<SettingsCubit>()
-                            .state
-                            .freeStartPlacement ==
-                        FreeStartPlacement.after)
-                      const BuildStartWorkoutButton(),
-                    const BuildNewSplitButton(),
-                  ],
-                );
-              },
-            ),
+          child: BlocSelector<WorkoutCubit, WorkoutState, bool>(
+            selector: (state) => state.isInProgress,
+            builder: (context, isInProgress) {
+              final cubit = context.read<WorkoutCubit>();
+              return isInProgress
+                  ? _InProgressView(onEnd: cubit.endWorkout)
+                  : _IdleView(onStart: () => _startWorkout(context));
+            },
           ),
         ),
       ],
     );
   }
-}
 
-class BuildStartWorkoutButton extends StatelessWidget {
-  const BuildStartWorkoutButton({super.key});
-
-  Future<void> _start(BuildContext context) async {
+  Future<void> _startWorkout(BuildContext context) async {
     final cubit = context.read<WorkoutCubit>();
     final repo = RepositoryScope.maybeOf(context);
     final gyms = (await repo?.gyms.getAll()) ?? const <Gym>[];
@@ -105,99 +47,255 @@ class BuildStartWorkoutButton extends StatelessWidget {
     final gym = await promptGym(context, gyms);
     cubit.startWorkout(gym: gym);
   }
-
-  @override
-  Widget build(BuildContext context) {
-    return FilledButton(
-      style: ButtonStyle(
-        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-          const EdgeInsets.symmetric(vertical: 16),
-        ),
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-      onPressed: () => _start(context),
-      child: const Text('Start Workout', style: TextStyle(fontSize: 16)),
-    );
-  }
 }
 
-class BuildNewSplitButton extends StatelessWidget {
-  const BuildNewSplitButton({super.key});
+class _IdleView extends StatelessWidget {
+  const _IdleView({required this.onStart});
+
+  final VoidCallback onStart;
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: () => pushTo(context, const SplitEditorPage()),
-      style: ButtonStyle(
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-      child: const Row(
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(Icons.add_sharp, size: 16),
-          SizedBox(width: 4),
-          Text('New Split', overflow: TextOverflow.ellipsis),
+          const SizedBox(height: 64),
+          const Icon(Icons.fitness_center_sharp, size: 48),
+          const SizedBox(height: 12),
+          const Text('No workout in progress'),
+          const SizedBox(height: 16),
+          FilledButton.icon(
+            onPressed: onStart,
+            icon: const Icon(Icons.play_arrow),
+            label: const Text('Start Workout'),
+          ),
         ],
       ),
     );
   }
 }
 
-class BuildMaterialSplit extends StatelessWidget {
-  const BuildMaterialSplit(
-    this.split, {
-    required this.exerciseNames,
-    super.key,
-  });
+class _InProgressView extends StatelessWidget {
+  const _InProgressView({required this.onEnd});
 
-  final WorkoutSplit split;
-  final Map<int, String> exerciseNames;
+  final Future<void> Function() onEnd;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      child: Material(
-        color: const Color.fromARGB(25, 127, 127, 127),
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: Colors.transparent),
-        ),
-        child: ListBody(
+    return BlocSelector<WorkoutCubit, WorkoutState, _WorkoutPresentation>(
+      selector: _WorkoutPresentation.fromState,
+      builder: (context, presentation) => Padding(
+        padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            WorkoutListTile(
-              key: ValueKey<String>('split-header-${split.id}'),
-              titleText: split.title,
-              isSplitDay: false,
-              trailing: const Icon(Icons.edit_outlined, size: 20),
-              onTap: () => pushTo(context, SplitEditorPage(split: split)),
+            _WorkoutHeader(presentation: presentation.header),
+            const SizedBox(height: 16),
+            if (presentation.plan.isEmpty)
+              const _FreeFormPanel()
+            else
+              for (final exercise in presentation.plan)
+                _PlanExerciseCard(
+                  key: ValueKey('plan-${exercise.exercise.order}'),
+                  exercise: exercise.exercise,
+                  sets: exercise.sets,
+                  order: exercise.exercise.order,
+                ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: () => _confirmEnd(context, presentation.setCount),
+              style: FilledButton.styleFrom(
+                backgroundColor: Theme.of(context).colorScheme.error,
+                foregroundColor: Theme.of(context).colorScheme.onError,
+                padding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              icon: const Icon(Icons.stop),
+              label: const Text('End Workout'),
             ),
-            for (var index = 0; index < split.splitDays.length; index++)
-              InkWell(
-                key: ValueKey<String>('split-day-${split.id}-$index'),
-                onTap: () => pushTo(
-                  context,
-                  SplitDayPage(
-                    splitTitle: split.title,
-                    day: split.splitDays[index],
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _confirmEnd(BuildContext context, int setCount) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('End workout?'),
+        content: Text('Log $setCount set(s) and save this workout to history.'),
+        actions: <Widget>[
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: const Text('Keep going'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: const Text('End & save'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed ?? false) {
+      await onEnd();
+    }
+  }
+}
+
+class _WorkoutPresentation {
+  const _WorkoutPresentation({
+    required this.header,
+    required this.plan,
+    required this.setCount,
+  });
+
+  final _WorkoutHeaderData header;
+  final List<({PlanExercise exercise, List<ActiveSet> sets})> plan;
+  final int setCount;
+
+  static _WorkoutPresentation fromState(WorkoutState state) {
+    return _WorkoutPresentation(
+      header: _WorkoutHeaderData.fromState(state),
+      plan: [
+        for (final exercise in state.plan)
+          (
+            exercise: exercise,
+            sets: state.setsByExercise[exercise.exerciseId] ?? const [],
+          ),
+      ],
+      setCount: state.sets.length,
+    );
+  }
+}
+
+class _WorkoutHeaderData {
+  const _WorkoutHeaderData({
+    this.planTitle,
+    this.gymName,
+    this.startTime,
+    required this.setCount,
+    required this.workingVolume,
+  });
+
+  final String? planTitle;
+  final String? gymName;
+  final DateTime? startTime;
+  final int setCount;
+  final double workingVolume;
+
+  static _WorkoutHeaderData fromState(WorkoutState state) => _WorkoutHeaderData(
+    planTitle: state.planTitle,
+    gymName: state.gymName,
+    startTime: state.startTime,
+    setCount: state.sets.length,
+    workingVolume: state.workingVolume,
+  );
+}
+
+class _WorkoutHeader extends StatelessWidget {
+  const _WorkoutHeader({required this.presentation});
+
+  final _WorkoutHeaderData presentation;
+
+  @override
+  Widget build(BuildContext context) {
+    final started = presentation.startTime;
+    final working = presentation.workingVolume;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(
+                  Icons.directions_run_sharp,
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    presentation.planTitle ?? 'Free workout',
+                    style: Theme.of(context).textTheme.titleLarge,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ),
-                child: Column(
-                  children: <Widget>[
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    WorkoutListTile(
-                      isSplitDay: true,
-                      titleText: split.splitDays[index].title,
-                      exercises: split.splitDays[index].exercises,
-                      exerciseNames: exerciseNames,
-                    ),
-                  ],
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (presentation.gymName != null)
+              Text('${presentation.gymName} · ${_fmtTime(started)}')
+            else
+              Text(_fmtTime(started)),
+            const SizedBox(height: 8),
+            Text(
+              '${presentation.setCount} set(s) · ${formatWeight(context, working)} working volume',
+              style: Theme.of(context).textTheme.bodyMedium,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _fmtTime(DateTime? dt) {
+    if (dt == null) return '';
+    final t = dt.toLocal();
+    final hh = t.hour.toString().padLeft(2, '0');
+    final mm = t.minute.toString().padLeft(2, '0');
+    return 'Started at $hh:$mm';
+  }
+}
+
+/// One exercise from the plan: its logged sets plus an inline add-set form.
+class _PlanExerciseCard extends StatelessWidget {
+  const _PlanExerciseCard({
+    super.key,
+    required this.exercise,
+    required this.sets,
+    required this.order,
+  });
+
+  final PlanExercise exercise;
+  final List<ActiveSet> sets;
+  final int order;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Text(
+                  '${order + 1}. ',
+                  style: Theme.of(context).textTheme.titleMedium,
                 ),
-              ),
+                Expanded(
+                  child: Text(
+                    exercise.name,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            if (sets.isEmpty)
+              Text('No sets yet', style: Theme.of(context).textTheme.bodySmall)
+            else
+              for (final set in sets) _SetTile(set: set),
+            const Divider(height: 16),
+            _AddSetForm(
+              exerciseId: exercise.exerciseId,
+              exerciseName: exercise.name,
+            ),
           ],
         ),
       ),
@@ -205,48 +303,269 @@ class BuildMaterialSplit extends StatelessWidget {
   }
 }
 
-class WorkoutListTile extends StatelessWidget {
-  const WorkoutListTile({
-    super.key,
-    required this.titleText,
-    required this.isSplitDay,
-    this.exercises,
-    this.exerciseNames = const {},
-    this.onTap,
-    this.trailing,
-  });
+/// Free-form logging (no split plan): a single editor with an exercise
+/// dropdown (loaded from the repository) plus all sets logged so far.
+class _FreeFormPanel extends StatefulWidget {
+  const _FreeFormPanel();
 
-  final String titleText;
-  final bool isSplitDay;
-  final List<ExerciseItem>? exercises;
-  final Map<int, String> exerciseNames;
-  final void Function()? onTap;
-  final Widget? trailing;
+  @override
+  State<_FreeFormPanel> createState() => _FreeFormPanelState();
+}
+
+class _FreeFormPanelState extends State<_FreeFormPanel> {
+  List<Exercise> _exercises = const [];
+  bool _didLoad = false;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // RepositoryScope is an inherited widget, so read it here (after initState)
+    // rather than in initState.
+    if (!_didLoad) {
+      _didLoad = true;
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final repo = RepositoryScope.maybeOf(context);
+    final list = await repo?.exercises.getAll() ?? const <Exercise>[];
+    if (!mounted) return;
+    setState(() => _exercises = list);
+  }
 
   @override
   Widget build(BuildContext context) {
-    return ListTile(
-      minTileHeight: 40,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        titleText,
-        style: TextStyle(color: isSplitDay ? Colors.blueAccent : Colors.white),
-        overflow: TextOverflow.ellipsis,
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: <Widget>[
+            Text('Log a set', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            _AddSetForm(exercises: _exercises),
+            const SizedBox(height: 8),
+            BlocBuilder<WorkoutCubit, WorkoutState>(
+              builder: (context, state) {
+                final sets = state.sets;
+                if (sets.isEmpty) {
+                  return const Text('No sets yet');
+                }
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [for (final set in sets) _SetTile(set: set)],
+                );
+              },
+            ),
+          ],
+        ),
       ),
-      trailing: trailing,
-      subtitle: exercises != null
-          ? Text(
-              exercises!
-                  .map(
-                    (e) =>
-                        exerciseNames[e.exerciseId] ??
-                        'Exercise ${e.exerciseId}',
-                  )
-                  .join(', '),
-              overflow: TextOverflow.ellipsis,
-            )
-          : const SizedBox.shrink(),
-      onTap: onTap,
     );
+  }
+}
+
+/// A rendered set row with a warmup indicator and a delete action.
+class _SetTile extends StatelessWidget {
+  const _SetTile({required this.set});
+
+  final ActiveSet set;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return ListTile(
+      dense: true,
+      contentPadding: EdgeInsets.zero,
+      leading: _WarmupBadge(isWarmup: set.isWarmup),
+      title: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
+      subtitle: set.isWarmup
+          ? Text('Warm-up', style: theme.textTheme.bodySmall)
+          : null,
+      trailing: IconButton(
+        icon: const Icon(Icons.delete_outline, size: 20),
+        tooltip: 'Remove set',
+        onPressed: () => context.read<WorkoutCubit>().removeSet(set.order),
+      ),
+    );
+  }
+}
+
+/// A compact color/number badge distinguishing warm-up from working sets.
+class _WarmupBadge extends StatelessWidget {
+  const _WarmupBadge({required this.isWarmup});
+
+  final bool isWarmup;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = isWarmup
+        ? Theme.of(context).colorScheme.tertiary
+        : Theme.of(context).colorScheme.primary;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        isWarmup ? 'W' : 'S',
+        style: TextStyle(
+          color: color,
+          fontWeight: FontWeight.bold,
+          fontSize: 12,
+        ),
+      ),
+    );
+  }
+}
+
+/// Inline editor: pick an exercise (either fixed by the plan or via a dropdown
+/// over [_ExerciseRepository]) and enter weight + reps with a warm-up toggle.
+class _AddSetForm extends StatefulWidget {
+  const _AddSetForm({this.exerciseId, this.exerciseName, this.exercises});
+
+  /// When set, the exercise is fixed (plan-driven) and no dropdown is shown.
+  final int? exerciseId;
+  final String? exerciseName;
+
+  /// When provided with [exerciseId] null, a dropdown of [Exercise] is shown
+  /// instead (free-form logging).
+  final List<Exercise>? exercises;
+
+  @override
+  State<_AddSetForm> createState() => _AddSetFormState();
+}
+
+class _AddSetFormState extends State<_AddSetForm> {
+  final _weight = TextEditingController();
+  final _reps = TextEditingController();
+  bool _warmup = false;
+  int? _selectedId;
+  String? _weightError;
+  String? _repsError;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedId = widget.exerciseId;
+    _weight.addListener(() => setState(() => _weightError = null));
+    _reps.addListener(() => setState(() => _repsError = null));
+  }
+
+  @override
+  void dispose() {
+    _weight.dispose();
+    _reps.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        if (widget.exerciseId == null) ...[
+          _exerciseDropdown(),
+          const SizedBox(height: 8),
+        ],
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: TextField(
+                controller: _weight,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Weight (${weightUnitOf(context).symbol})',
+                  border: const OutlineInputBorder(),
+                  errorText: _weightError,
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: TextField(
+                controller: _reps,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Reps',
+                  border: const OutlineInputBorder(),
+                  errorText: _repsError,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Row(
+          children: <Widget>[
+            FilterChip(
+              label: const Text('Warm-up'),
+              selected: _warmup,
+              onSelected: (v) => setState(() => _warmup = v),
+            ),
+            const Spacer(),
+            FilledButton(onPressed: _add, child: const Text('Add set')),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _exerciseDropdown() {
+    final exercises = widget.exercises ?? const <Exercise>[];
+    return DropdownButtonFormField<int>(
+      initialValue: _selectedId,
+      decoration: const InputDecoration(
+        labelText: 'Exercise',
+        border: OutlineInputBorder(),
+      ),
+      items: [
+        for (final e in exercises)
+          DropdownMenuItem(value: e.id, child: Text(e.title)),
+      ],
+      onChanged: (v) => setState(() => _selectedId = v),
+    );
+  }
+
+  void _add() {
+    final weightError = requiredDouble(_weight.text);
+    final repsError = requiredDouble(_reps.text);
+    final reps = int.tryParse(_reps.text);
+    if (weightError != null || repsError != null || reps == null) {
+      setState(() {
+        _weightError = weightError;
+        _repsError = repsError;
+      });
+      return;
+    }
+    final id = _selectedId;
+    if (id == null || id <= 0) return;
+
+    // Resolve the display name: fixed by the plan, or looked up from the
+    // dropdown's exercise list.
+    String name = widget.exerciseName ?? '';
+    if (name.isEmpty && widget.exercises != null) {
+      for (final e in widget.exercises!) {
+        if (e.id == id) {
+          name = e.title;
+          break;
+        }
+      }
+    }
+    final displayedWeight = double.tryParse(_weight.text) ?? 0.0;
+    final weight = kilogramsFromDisplay(context, displayedWeight);
+    context.read<WorkoutCubit>().logSet(
+      exerciseId: id,
+      exerciseName: name,
+      weight: weight,
+      reps: reps,
+      type: _warmup ? SetType.warmup : SetType.working,
+    );
+    _reps.clear();
+    _warmup = false;
+    setState(() {});
   }
 }

@@ -10,13 +10,13 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.9
   isar_community: ^3.3.2
   isar_community_flutter_libs: ^3.3.2
   path_provider: ^2.1.6
   quiver: ^3.2.2
   hydrated_bloc: ^11.0.0
   flutter_bloc: ^9.1.1
+  window_size: ^0.2.0
 
 dev_dependencies:
   flutter_test:

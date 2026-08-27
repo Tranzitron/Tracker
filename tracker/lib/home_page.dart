@@ -6,7 +6,7 @@ import 'package:tracker/pages/workout/workout_cubit.dart';
 import 'pages/exercises_page.dart';
 import 'pages/feed_page.dart';
 import 'pages/history_page.dart';
-import 'pages/workout/current_workout_page.dart';
+import 'pages/workout/editor_page.dart';
 import 'pages/workout/workout_page.dart';
 
 class HomePage extends StatefulWidget {
@@ -78,8 +78,8 @@ class _HomePageState extends State<HomePage> {
   Widget _pageFor(int index) => switch (index) {
     0 => const FeedPage(),
     1 => const HistoryPage(),
-    2 => const CurrentWorkoutPage(),
-    3 => const WorkoutPage(),
+    2 => const WorkoutPage(),
+    3 => const EditorPage(),
     4 => const ExercisesPage(),
     _ => const SizedBox.shrink(),
   };

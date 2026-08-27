@@ -15,8 +15,8 @@ import 'package:tracker/data/repositories.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
-import 'package:tracker/pages/workout/current_workout_page.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/pages/workout/workout_page.dart';
 
 import '../helpers/test_helpers.dart';
 
@@ -177,7 +177,7 @@ void main() {
         MaterialApp(
           home: MultiBlocProvider(
             providers: [BlocProvider.value(value: cubit)],
-            child: const CurrentWorkoutPage(),
+            child: const WorkoutPage(),
           ),
         ),
       );
