@@ -135,6 +135,69 @@ void main() {
       expect(() => first.best1rm.clear(), throwsA(anything));
     });
 
+    test('snapshot matches standalone metrics for selected exercise', () {
+      final sessions = [
+        _session(DateTime(2026, 1, 1), 1, [
+          _set(7, 100, 5, SetType.working),
+          _set(8, 200, 2, SetType.working),
+          _set(7, 60, 8, SetType.warmup),
+        ]),
+        _session(DateTime(2026, 1, 2), 2, [_set(7, 110, 5, SetType.working)]),
+      ];
+      const multipliers = {1: 1.0, 2: 0.9};
+      final exerciseMultipliers = <int, Map<int, double>>{
+        2: {7: 0.8},
+      };
+      final service = AnalyticsService();
+      final snapshot = service.snapshot(
+        sessions: sessions,
+        multipliers: multipliers,
+        exerciseMultipliers: exerciseMultipliers,
+        exerciseId: 7,
+      );
+
+      final best = exerciseBest1rm(
+        sessions,
+        multipliers,
+        7,
+        exerciseMultipliers,
+      );
+      final peak = exercisePeakWeight(
+        sessions,
+        multipliers,
+        7,
+        exerciseMultipliers,
+      );
+      final allVolume = volumeTrend(
+        sessions,
+        multipliers,
+        null,
+        exerciseMultipliers,
+      );
+      final summary = exerciseSummary(
+        sessions,
+        multipliers,
+        7,
+        exerciseMultipliers,
+      );
+
+      expect(
+        snapshot.best1rm.map((point) => point.value),
+        best.map((point) => point.value),
+      );
+      expect(
+        snapshot.peakWeight.map((point) => point.value),
+        peak.map((point) => point.value),
+      );
+      expect(
+        snapshot.volume.map((point) => point.value),
+        allVolume.map((point) => point.value),
+      );
+      expect(snapshot.summary.best1rm, summary.best1rm);
+      expect(snapshot.summary.peakVolume, summary.peakVolume);
+      expect(snapshot.summary.sessionCount, summary.sessionCount);
+    });
+
     test('recomputes when revision, filter, or multiplier changes', () {
       final sessions = [
         _session(DateTime(2026, 1, 1), 1, [_set(7, 100, 5, SetType.working)]),

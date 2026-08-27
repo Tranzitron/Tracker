@@ -43,6 +43,17 @@ class GraphConfig {
     'timeframe': timeframe.name,
   };
 
+  @override
+  bool operator ==(Object other) =>
+      other is GraphConfig &&
+      title == other.title &&
+      exerciseId == other.exerciseId &&
+      metric == other.metric &&
+      timeframe == other.timeframe;
+
+  @override
+  int get hashCode => Object.hash(title, exerciseId, metric, timeframe);
+
   static const _unset = Object();
 
   // ignore: sort_constructors_first
@@ -68,33 +79,44 @@ class GraphConfig {
 enum FreeStartPlacement { before, after, disabled }
 
 class SettingsState {
-  factory SettingsState.fromJson(Map<String, dynamic> json) => SettingsState(
-    unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
-    notificationsEnabled: json['notificationsEnabled'] as bool? ?? true,
-    analyticsEnabled: json['analyticsEnabled'] as bool? ?? true,
-    freeStartPlacement:
-        FreeStartPlacement.values.asNameMap()[json['freeStartPlacement']] ??
-        FreeStartPlacement.before,
-    graphs: (json['graphs'] as List<dynamic>? ?? const [])
-        .whereType<Map>()
-        .map((entry) {
-          try {
-            return GraphConfig.fromJson(Map<String, dynamic>.from(entry));
-          } on FormatException {
-            return null;
-          }
-        })
-        .whereType<GraphConfig>()
-        .toList(growable: false),
-  );
+  factory SettingsState.fromJson(Map<String, dynamic> json) {
+    final rawGraphs = json['graphs'];
+    return SettingsState(
+      unit: WeightUnit.values.asNameMap()[json['unit']] ?? WeightUnit.kilograms,
+      notificationsEnabled: json['notificationsEnabled'] is bool
+          ? json['notificationsEnabled'] as bool
+          : true,
+      analyticsEnabled: json['analyticsEnabled'] is bool
+          ? json['analyticsEnabled'] as bool
+          : true,
+      freeStartPlacement:
+          FreeStartPlacement.values.asNameMap()[json['freeStartPlacement']] ??
+          FreeStartPlacement.before,
+      graphs: rawGraphs is List
+          ? rawGraphs
+                .whereType<Map>()
+                .map((entry) {
+                  try {
+                    return GraphConfig.fromJson(
+                      Map<String, dynamic>.from(entry),
+                    );
+                  } catch (_) {
+                    return null;
+                  }
+                })
+                .whereType<GraphConfig>()
+                .toList()
+          : const [],
+    );
+  }
 
-  const SettingsState({
+  SettingsState({
     this.unit = WeightUnit.kilograms,
     this.notificationsEnabled = true,
     this.analyticsEnabled = true,
     this.freeStartPlacement = FreeStartPlacement.before,
-    this.graphs = const [],
-  });
+    List<GraphConfig> graphs = const [],
+  }) : graphs = List.unmodifiable(graphs);
 
   final WeightUnit unit;
   final bool notificationsEnabled;
@@ -116,6 +138,32 @@ class SettingsState {
       freeStartPlacement: freeStartPlacement ?? this.freeStartPlacement,
       graphs: graphs ?? this.graphs,
     );
+  }
+
+  @override
+  bool operator ==(Object other) =>
+      other is SettingsState &&
+      unit == other.unit &&
+      notificationsEnabled == other.notificationsEnabled &&
+      analyticsEnabled == other.analyticsEnabled &&
+      freeStartPlacement == other.freeStartPlacement &&
+      _listEquals(graphs, other.graphs);
+
+  @override
+  int get hashCode => Object.hash(
+    unit,
+    notificationsEnabled,
+    analyticsEnabled,
+    freeStartPlacement,
+    Object.hashAll(graphs),
+  );
+
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 
   Map<String, dynamic> toJson() => {
@@ -143,7 +191,7 @@ extension WeightUnitLabel on WeightUnit {
 }
 
 class SettingsCubit extends HydratedCubit<SettingsState> {
-  SettingsCubit() : super(const SettingsState());
+  SettingsCubit() : super(SettingsState());
 
   void setUnit(WeightUnit unit) => emit(state.copyWith(unit: unit));
 

@@ -171,6 +171,83 @@ class AnalyticsSnapshot {
 class AnalyticsService {
   final Map<_AnalyticsKey, AnalyticsSnapshot> _cache = {};
 
+  /// Computes all snapshot metrics in one pass over each session's sets.
+  AnalyticsSnapshot _computeSnapshot({
+    required List<WorkoutSession> sessions,
+    required Map<int, double> multipliers,
+    required int? exerciseId,
+    required Object? revision,
+    required PerGymExerciseMultipliers exerciseMultipliers,
+  }) {
+    final best1rm = <ProgressionPoint>[];
+    final peakWeight = <ProgressionPoint>[];
+    final volume = <ProgressionPoint>[];
+    var best = 0.0;
+    var peakVolume = 0.0;
+    var sessionCount = 0;
+
+    for (final session in sessions) {
+      var sessionBest = 0.0;
+      var sessionVolume = 0.0;
+      var selectedVolume = 0.0;
+      var hasSelectedSets = false;
+      var selectedPeakWeight = 0.0;
+      var hasWorkingSets = false;
+
+      for (final set in session.sets) {
+        if (set.isWarmup) continue;
+        final weight = normalizedWeight(
+          set.weight,
+          multipliers,
+          session.gymId,
+          set.exerciseId,
+          exerciseMultipliers,
+        );
+        sessionVolume += weight * set.reps;
+        hasWorkingSets = true;
+        if (exerciseId != null && set.exerciseId != exerciseId) continue;
+        hasSelectedSets = true;
+        selectedVolume += weight * set.reps;
+        if (weight > selectedPeakWeight) selectedPeakWeight = weight;
+        final oneRm = epley1rm(weight: weight, reps: set.reps);
+        if (oneRm > sessionBest) sessionBest = oneRm;
+      }
+
+      if (hasWorkingSets) {
+        volume.add(
+          ProgressionPoint(date: session.startTime, value: sessionVolume),
+        );
+      }
+      if (!hasSelectedSets) continue;
+
+      sessionCount++;
+      best1rm.add(
+        ProgressionPoint(date: session.startTime, value: sessionBest),
+      );
+      peakWeight.add(
+        ProgressionPoint(date: session.startTime, value: selectedPeakWeight),
+      );
+      if (sessionBest > best) best = sessionBest;
+      if (selectedVolume > peakVolume) peakVolume = selectedVolume;
+    }
+
+    best1rm.sort((a, b) => a.date.compareTo(b.date));
+    peakWeight.sort((a, b) => a.date.compareTo(b.date));
+    volume.sort((a, b) => a.date.compareTo(b.date));
+    return AnalyticsSnapshot(
+      best1rm: best1rm,
+      peakWeight: peakWeight,
+      volume: volume,
+      summary: ExerciseSummary(
+        best1rm: best,
+        peakVolume: peakVolume,
+        sessionCount: sessionCount,
+      ),
+      exerciseId: exerciseId,
+      revision: revision,
+    );
+  }
+
   AnalyticsSnapshot snapshot({
     required List<WorkoutSession> sessions,
     required Map<int, double> multipliers,
@@ -187,30 +264,20 @@ class AnalyticsService {
       exerciseId,
       revision,
     );
-    return _cache[key] ??= AnalyticsSnapshot(
-      best1rm: exerciseBest1rm(
-        sessions,
-        multipliers,
-        exerciseId,
-        exerciseMultipliers,
-      ),
-      peakWeight: exercisePeakWeight(
-        sessions,
-        multipliers,
-        exerciseId,
-        exerciseMultipliers,
-      ),
-      volume: volumeTrend(sessions, multipliers, null, exerciseMultipliers),
-      summary: exerciseSummary(
-        sessions,
-        multipliers,
-        exerciseId,
-        exerciseMultipliers,
-      ),
+    return _cache[key] ??= _computeSnapshot(
+      sessions: sessions,
+      multipliers: multipliers,
       exerciseId: exerciseId,
       revision: revision,
+      exerciseMultipliers: exerciseMultipliers,
     );
   }
+
+  /// Removes cached snapshots, allowing retained session data to be released.
+  void clear() => _cache.clear();
+
+  /// Number of cached snapshots, exposed for diagnostics and tests.
+  int get cacheSize => _cache.length;
 
   /// Alias useful at call sites that treat this as a computation service.
   AnalyticsSnapshot compute({
@@ -226,8 +293,6 @@ class AnalyticsService {
     revision: revision,
     exerciseMultipliers: exerciseMultipliers,
   );
-
-  void clear() => _cache.clear();
 }
 
 class _AnalyticsKey {

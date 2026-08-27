@@ -251,7 +251,7 @@ Future<Gym?> _editGymDialog(
     text: initial.isPrimary ? '1.0' : _fmtGym(initial.multiplier),
   );
 
-  return showDialog<Gym>(
+  final dialog = showDialog<Gym>(
     context: context,
     builder: (context) {
       return StatefulBuilder(
@@ -354,6 +354,11 @@ Future<Gym?> _editGymDialog(
       );
     },
   );
+  return dialog.whenComplete(() {
+    name.dispose();
+    description.dispose();
+    multiplier.dispose();
+  });
 }
 
 class _GymTile extends StatelessWidget {

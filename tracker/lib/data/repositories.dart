@@ -27,6 +27,13 @@ class ExerciseRepository {
 
   Future<int> count() => _isar.exercises.count();
 
+  /// Atomically seeds collection only when it is empty.
+  Future<void> putAllIfEmpty(List<Exercise> exercises) =>
+      _isar.writeTxn(() async {
+        if (await _isar.exercises.count() != 0) return;
+        await _isar.exercises.putAll(exercises);
+      });
+
   /// Emits the current list and every later change (for UI subscribes).
   Stream<List<Exercise>> watchAll() =>
       _isar.exercises.where().watch(fireImmediately: true);
@@ -150,18 +157,20 @@ class WorkoutSessionRepository {
 /// Facade bundling every repository for easy construction and injection.
 class TrackerRepository {
   TrackerRepository(Isar isar)
-    : isar = isar,
+    : _isar = isar,
       exercises = ExerciseRepository(isar),
       gyms = GymRepository(isar),
       splits = WorkoutSplitRepository(isar),
       sessions = WorkoutSessionRepository(isar);
 
-  /// Raw [Isar] kept for seeding and one-off queries; business code should
-  /// prefer the typed repositories above.
-  final Isar isar;
+  /// Raw Isar stays private; business code uses typed repositories above.
+  final Isar _isar;
 
   final ExerciseRepository exercises;
   final GymRepository gyms;
   final WorkoutSplitRepository splits;
   final WorkoutSessionRepository sessions;
+
+  /// Closes owned database resources during app shutdown or test teardown.
+  Future<bool> close() => _isar.close();
 }

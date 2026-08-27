@@ -7,11 +7,8 @@ import 'repositories.dart';
 /// The check and insert share one Isar write transaction so concurrent startup
 /// attempts cannot duplicate the seed. An empty collection remains retryable if
 /// the transaction fails.
-Future<void> seedExercisesIfNeeded(TrackerRepository repository) async {
-  await repository.isar.writeTxn(() async {
-    if (await repository.isar.exercises.count() != 0) return;
-    await repository.isar.exercises.putAll(seedExercises());
-  });
+Future<void> seedExercisesIfNeeded(TrackerRepository repository) {
+  return repository.exercises.putAllIfEmpty(seedExercises());
 }
 
 /// The seed is the initial cast of the exercise library. `dart run build_runner

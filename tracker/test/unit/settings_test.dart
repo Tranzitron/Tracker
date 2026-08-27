@@ -14,7 +14,7 @@ void main() {
     });
 
     test('settings state round-trips persisted preferences', () {
-      const state = SettingsState(
+      final state = SettingsState(
         unit: WeightUnit.pounds,
         notificationsEnabled: false,
         analyticsEnabled: false,
@@ -27,6 +27,25 @@ void main() {
       expect(restored.analyticsEnabled, isFalse);
     });
 
+    test('malformed settings values use safe defaults', () {
+      final state = SettingsState.fromJson({
+        'unit': Object(),
+        'notificationsEnabled': 'bad',
+        'analyticsEnabled': null,
+        'freeStartPlacement': Object(),
+        'graphs': [
+          null,
+          'bad',
+          {'title': ''},
+        ],
+      });
+      expect(state, SettingsState());
+      expect(
+        () => state.graphs.add(const GraphConfig(title: 'x')),
+        throwsUnsupportedError,
+      );
+    });
+
     test('persists graph configurations and ignores malformed entries', () {
       const graph = GraphConfig(
         title: 'Bench progress',
@@ -34,7 +53,7 @@ void main() {
         metric: GraphMetric.peakWeight,
         timeframe: GraphTimeframe.last90Days,
       );
-      final state = const SettingsState(graphs: [graph]);
+      final state = SettingsState(graphs: [graph]);
       final restored = SettingsState.fromJson({
         ...state.toJson(),
         'graphs': [
@@ -52,6 +71,15 @@ void main() {
       const graph = GraphConfig(title: 'x', exerciseId: 2);
       expect(graph.copyWith(exerciseId: null).exerciseId, isNull);
       expect(GraphConfig.fromJson(graph.toJson()).exerciseId, 2);
+    });
+
+    test('collections and values have structural equality', () {
+      const graph = GraphConfig(title: 'x');
+      expect(SettingsState(graphs: [graph]), SettingsState(graphs: [graph]));
+      expect(
+        () => SettingsState(graphs: [graph]).graphs.add(graph),
+        throwsUnsupportedError,
+      );
     });
   });
 }

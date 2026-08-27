@@ -27,20 +27,23 @@ Future<void> main() async {
   final repository = TrackerRepository(isar);
 
   runApp(
-    RepositoryScope(
-      repository: repository,
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider<WorkoutCubit>(
-            create: (_) => WorkoutCubit(repository: repository),
-            lazy: false,
-          ),
-          BlocProvider<SettingsCubit>(
-            create: (_) => SettingsCubit(),
-            lazy: false,
-          ),
-        ],
-        child: const MyApp(),
+    RepositoryProvider<TrackerRepository>.value(
+      value: repository,
+      child: RepositoryScope(
+        repository: repository,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider<WorkoutCubit>(
+              create: (_) => WorkoutCubit(repository: repository),
+              lazy: false,
+            ),
+            BlocProvider<SettingsCubit>(
+              create: (_) => SettingsCubit(),
+              lazy: false,
+            ),
+          ],
+          child: const MyApp(),
+        ),
       ),
     ),
   );

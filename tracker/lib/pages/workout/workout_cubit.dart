@@ -1,3 +1,5 @@
+import 'dart:collection';
+
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../../analytics/analytics.dart';
@@ -32,6 +34,20 @@ class ActiveSet {
     type: SetType.values.asNameMap()[json['type']] ?? SetType.working,
     order: _intValue(json['order']),
   );
+
+  @override
+  bool operator ==(Object other) =>
+      other is ActiveSet &&
+      exerciseId == other.exerciseId &&
+      exerciseName == other.exerciseName &&
+      weight == other.weight &&
+      reps == other.reps &&
+      type == other.type &&
+      order == other.order;
+
+  @override
+  int get hashCode =>
+      Object.hash(exerciseId, exerciseName, weight, reps, type, order);
   final int exerciseId;
   final String exerciseName;
   final double weight;
@@ -68,12 +84,23 @@ class PlanExercise {
   });
 
   factory PlanExercise.fromJson(Map<String, dynamic> json) => PlanExercise(
-    exerciseId: json['exerciseId'] is num
-        ? (json['exerciseId'] as num).toInt()
-        : 0,
+    exerciseId: _intValue(json['exerciseId']),
     name: json['name'] is String ? json['name'] as String : '',
-    order: json['order'] is num ? (json['order'] as num).toInt() : 0,
+    order: _intValue(json['order']),
   );
+
+  static int _intValue(Object? value) =>
+      value is num ? value.toInt() : int.tryParse('$value') ?? 0;
+
+  @override
+  bool operator ==(Object other) =>
+      other is PlanExercise &&
+      exerciseId == other.exerciseId &&
+      name == other.name &&
+      order == other.order;
+
+  @override
+  int get hashCode => Object.hash(exerciseId, name, order);
   final int exerciseId;
   final String name;
   final int order;
@@ -97,35 +124,76 @@ final _setsByExerciseCache = Expando<Map<int, List<ActiveSet>>>();
 final _workingVolumeCache = Expando<double>();
 
 class WorkoutState {
-  const WorkoutState({
+  WorkoutState({
     required this.isInProgress,
     this.startTime,
     this.gymId,
     this.gymName,
     this.planTitle,
-    this.plan = const [],
-    this.sets = const [],
-  });
+    List<PlanExercise> plan = const [],
+    List<ActiveSet> sets = const [],
+  }) : _plan = List.unmodifiable(plan),
+       _sets = List.unmodifiable(sets);
 
-  factory WorkoutState.fromJson(Map<String, dynamic> json) => WorkoutState(
-    isInProgress: json['isInProgress'] as bool? ?? false,
-    startTime: json['startTime'] != null
-        ? DateTime.tryParse(json['startTime'] as String)
-        : null,
-    gymId: json['gymId'] as int?,
-    gymName: json['gymName'] as String?,
-    planTitle: json['planTitle'] as String?,
-    plan:
-        (json['plan'] as List?)
-            ?.map((e) => PlanExercise.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-    sets:
-        (json['sets'] as List?)
-            ?.map((e) => ActiveSet.fromJson(e as Map<String, dynamic>))
-            .toList() ??
-        const [],
-  );
+  factory WorkoutState.fromJson(Map<String, dynamic> json) {
+    final rawPlan = json['plan'];
+    final rawSets = json['sets'];
+    return WorkoutState(
+      isInProgress: json['isInProgress'] is bool
+          ? json['isInProgress'] as bool
+          : false,
+      startTime: json['startTime'] is String
+          ? DateTime.tryParse(json['startTime'] as String)
+          : null,
+      gymId: _nullableInt(json['gymId']),
+      gymName: json['gymName'] is String ? json['gymName'] as String : null,
+      planTitle: json['planTitle'] is String
+          ? json['planTitle'] as String
+          : null,
+      plan: rawPlan is List
+          ? rawPlan
+                .whereType<Map>()
+                .map((entry) {
+                  try {
+                    return PlanExercise.fromJson(
+                      Map<String, dynamic>.from(entry),
+                    );
+                  } catch (_) {
+                    return null;
+                  }
+                })
+                .whereType<PlanExercise>()
+                .toList(growable: false)
+          : const [],
+      sets: rawSets is List
+          ? rawSets
+                .whereType<Map>()
+                .map((entry) {
+                  try {
+                    return ActiveSet.fromJson(Map<String, dynamic>.from(entry));
+                  } catch (_) {
+                    return null;
+                  }
+                })
+                .whereType<ActiveSet>()
+                .toList(growable: false)
+          : const [],
+    );
+  }
+
+  static int? _nullableInt(Object? value) => value is num
+      ? value.toInt()
+      : value is String
+      ? int.tryParse(value)
+      : null;
+
+  final List<PlanExercise> _plan;
+  final List<ActiveSet> _sets;
+
+  List<PlanExercise> get plan => _plan;
+
+  List<ActiveSet> get sets => _sets;
+
   final bool isInProgress;
   final DateTime? startTime;
 
@@ -136,10 +204,8 @@ class WorkoutState {
 
   /// Title + ordered exercise plan if this session follows a split day.
   final String? planTitle;
-  final List<PlanExercise> plan;
 
   /// Sets logged so far this session, in [ActiveSet.order] sequence.
-  final List<ActiveSet> sets;
 
   /// Lazily groups the active sets for the presentation layer.
   ///
@@ -147,7 +213,40 @@ class WorkoutState {
   /// does not repeatedly scan all sets once per exercise card. This is derived
   /// state only; it is intentionally not included in hydration serialization.
   Map<int, List<ActiveSet>> get setsByExercise =>
-      _setsByExerciseCache[this] ??= _groupSets(sets);
+      _setsByExerciseCache[this] ??= UnmodifiableMapView(
+        _groupSets(sets)
+            .map((key, value) => MapEntry(key, List.unmodifiable(value))),
+      );
+
+  @override
+  bool operator ==(Object other) =>
+      other is WorkoutState &&
+      isInProgress == other.isInProgress &&
+      startTime == other.startTime &&
+      gymId == other.gymId &&
+      gymName == other.gymName &&
+      planTitle == other.planTitle &&
+      _listEquals(plan, other.plan) &&
+      _listEquals(sets, other.sets);
+
+  @override
+  int get hashCode => Object.hash(
+    isInProgress,
+    startTime,
+    gymId,
+    gymName,
+    planTitle,
+    Object.hashAll(plan),
+    Object.hashAll(sets),
+  );
+
+  static bool _listEquals<T>(List<T> a, List<T> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
 
   /// Working-set volume for the live workout summary (warm-ups excluded).
   double get workingVolume => _workingVolumeCache[this] ??= sets
@@ -155,7 +254,7 @@ class WorkoutState {
       .fold<double>(0, (total, set) => total + set.weight * set.reps);
 
   /// The resting (no workout) state — the app does not boot into a session.
-  static WorkoutState initial() => const WorkoutState(isInProgress: false);
+  static WorkoutState initial() => WorkoutState(isInProgress: false);
 
   Map<String, dynamic> toJson() => {
     'isInProgress': isInProgress,
@@ -169,23 +268,29 @@ class WorkoutState {
 
   WorkoutState copyWith({
     bool? isInProgress,
-    DateTime? startTime,
-    int? gymId,
-    String? gymName,
-    String? planTitle,
+    Object? startTime = _unset,
+    Object? gymId = _unset,
+    Object? gymName = _unset,
+    Object? planTitle = _unset,
     List<PlanExercise>? plan,
     List<ActiveSet>? sets,
   }) {
     return WorkoutState(
       isInProgress: isInProgress ?? this.isInProgress,
-      startTime: startTime ?? this.startTime,
-      gymId: gymId ?? this.gymId,
-      gymName: gymName ?? this.gymName,
-      planTitle: planTitle ?? this.planTitle,
+      startTime: identical(startTime, _unset)
+          ? this.startTime
+          : startTime as DateTime?,
+      gymId: identical(gymId, _unset) ? this.gymId : gymId as int?,
+      gymName: identical(gymName, _unset) ? this.gymName : gymName as String?,
+      planTitle: identical(planTitle, _unset)
+          ? this.planTitle
+          : planTitle as String?,
       plan: plan ?? this.plan,
       sets: sets ?? this.sets,
     );
   }
+
+  static const _unset = Object();
 }
 
 class WorkoutCubit extends HydratedCubit<WorkoutState> {
