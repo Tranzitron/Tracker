@@ -5,10 +5,10 @@ import 'package:tracker/home_page.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/analytics/graph_editor.dart';
-import 'package:tracker/pages/feed_page_graph_card.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/feed_page_graph_card.dart';
 import 'package:tracker/pages/history/session_detail_page.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/settings_page.dart';
@@ -119,7 +119,7 @@ class _FeedPageState extends State<FeedPage> {
     if (!_didLoad) {
       _didLoad = true;
       final repo = RepositoryScope.maybeOf(context);
-      _stream = repo?.sessions.watchRecent(limit: 5);
+      _stream = repo?.sessions.watchRecent(limit: 3);
       _loadGyms();
       _loadAnalyticsData();
     }

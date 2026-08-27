@@ -239,126 +239,166 @@ bool sameGymName(Gym first, Gym second) =>
     _normalizeGymField(first.description ?? '') ==
         _normalizeGymField(second.description ?? '');
 
+class EditGymDialog extends StatefulWidget {
+  const EditGymDialog({
+    super.key,
+    required this.title,
+    required this.initial,
+    this.getExistingGyms,
+  });
+
+  final String title;
+  final Gym initial;
+  final Future<List<Gym>> Function()? getExistingGyms;
+
+  @override
+  State<EditGymDialog> createState() => _EditGymDialogState();
+}
+
+class _EditGymDialogState extends State<EditGymDialog> {
+  late final TextEditingController _name;
+  late final TextEditingController _description;
+  late final TextEditingController _multiplier;
+
+  @override
+  void initState() {
+    super.initState();
+    _name = TextEditingController(text: widget.initial.name);
+    _description = TextEditingController(
+      text: widget.initial.description ?? '',
+    );
+    _multiplier = TextEditingController(
+      text: widget.initial.isPrimary
+          ? '1.0'
+          : _fmtGym(widget.initial.multiplier),
+    );
+  }
+
+  @override
+  void dispose() {
+    _name.dispose();
+    _description.dispose();
+    _multiplier.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: <Widget>[
+            TextField(
+              controller: _name,
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: 'Gym name',
+                errorText: _gymNameError(_name.text),
+                border: const OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _description,
+              decoration: const InputDecoration(
+                labelText: 'Description (optional)',
+                border: OutlineInputBorder(),
+              ),
+              minLines: 1,
+              maxLines: null,
+              keyboardType: TextInputType.multiline,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _multiplier,
+              enabled: !widget.initial.isPrimary,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              onChanged: (_) => setState(() {}),
+              decoration: InputDecoration(
+                labelText: widget.initial.isPrimary
+                    ? 'Multiplier (primary = ×1.0)'
+                    : 'Weight multiplier',
+                helperText: widget.initial.isPrimary
+                    ? 'The primary gym is the fixed baseline.'
+                    : 'Scales logged weights to the primary gym.',
+                border: const OutlineInputBorder(),
+                errorText: _gymMultiplierError(
+                  _multiplier.text,
+                  isPrimary: widget.initial.isPrimary,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('Cancel'),
+        ),
+        FilledButton(
+          onPressed: () async {
+            final nameText = _name.text.trim();
+            final multiplierError = _gymMultiplierError(
+              _multiplier.text,
+              isPrimary: widget.initial.isPrimary,
+            );
+            if (_gymNameError(nameText) != null || multiplierError != null) {
+              setState(() {});
+              return;
+            }
+            final candidate = Gym(
+              name: nameText,
+              description: _description.text.trim(),
+              isPrimary: widget.initial.isPrimary,
+              order: widget.initial.order,
+              multiplier: widget.initial.isPrimary
+                  ? 1.0
+                  : double.tryParse(_multiplier.text.trim()) ?? 1.0,
+            )..id = widget.initial.id;
+
+            final existing =
+                await widget.getExistingGyms?.call() ?? const <Gym>[];
+            if (existing.any(
+              (gym) =>
+                  gym.id != widget.initial.id && sameGymName(gym, candidate),
+            )) {
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('A gym with this name already exists'),
+                  ),
+                );
+              }
+              return;
+            }
+            if (context.mounted) Navigator.of(context).pop(candidate);
+          },
+          child: const Text('Save'),
+        ),
+      ],
+    );
+  }
+}
+
 Future<Gym?> _editGymDialog(
   BuildContext context, {
   required String title,
   required Gym initial,
   Future<List<Gym>> Function()? getExistingGyms,
 }) {
-  final name = TextEditingController(text: initial.name);
-  final description = TextEditingController(text: initial.description ?? '');
-  final multiplier = TextEditingController(
-    text: initial.isPrimary ? '1.0' : _fmtGym(initial.multiplier),
-  );
-
-  final dialog = showDialog<Gym>(
+  return showDialog<Gym>(
     context: context,
-    builder: (context) {
-      return StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: <Widget>[
-                TextField(
-                  controller: name,
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    labelText: 'Gym name',
-                    errorText: _gymNameError(name.text),
-                    border: const OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: description,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    border: OutlineInputBorder(),
-                  ),
-                  minLines: 1,
-                  maxLines: null,
-                  keyboardType: TextInputType.multiline,
-                ),
-                const SizedBox(height: 12),
-                TextField(
-                  controller: multiplier,
-                  enabled: !initial.isPrimary,
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    labelText: initial.isPrimary
-                        ? 'Multiplier (primary = ×1.0)'
-                        : 'Weight multiplier',
-                    helperText: initial.isPrimary
-                        ? 'The primary gym is the fixed baseline.'
-                        : 'Scales logged weights to the primary gym.',
-                    border: const OutlineInputBorder(),
-                    errorText: _gymMultiplierError(
-                      multiplier.text,
-                      isPrimary: initial.isPrimary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('Cancel'),
-            ),
-            FilledButton(
-              onPressed: () async {
-                final nameText = name.text.trim();
-                final multiplierError = _gymMultiplierError(
-                  multiplier.text,
-                  isPrimary: initial.isPrimary,
-                );
-                if (_gymNameError(nameText) != null ||
-                    multiplierError != null) {
-                  setState(() {});
-                  return;
-                }
-                final candidate = Gym(
-                  name: nameText,
-                  description: description.text.trim(),
-                  isPrimary: initial.isPrimary,
-                  order: initial.order,
-                  multiplier: initial.isPrimary
-                      ? 1.0
-                      : double.tryParse(multiplier.text.trim()) ?? 1.0,
-                )..id = initial.id;
-                final existing = await getExistingGyms?.call() ?? const <Gym>[];
-                if (existing.any(
-                  (gym) => gym.id != initial.id && sameGymName(gym, candidate),
-                )) {
-                  if (context.mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text('A gym with this name already exists'),
-                      ),
-                    );
-                  }
-                  return;
-                }
-                if (context.mounted) Navigator.of(context).pop(candidate);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
-      );
-    },
+    builder: (context) => EditGymDialog(
+      title: title,
+      initial: initial,
+      getExistingGyms: getExistingGyms,
+    ),
   );
-  return dialog.whenComplete(() {
-    name.dispose();
-    description.dispose();
-    multiplier.dispose();
-  });
 }
 
 class _GymTile extends StatelessWidget {
