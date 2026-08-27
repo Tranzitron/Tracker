@@ -121,23 +121,81 @@ class _InProgressView extends StatelessWidget {
   }
 
   Future<void> _confirmEnd(BuildContext context, int setCount) async {
+    final bool isDiscarding = setCount == 0;
+
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('End workout?'),
-        content: Text('Log $setCount set(s) and save this workout to history.'),
-        actions: <Widget>[
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('Keep going'),
+      builder: (dialogContext) {
+        if (isDiscarding) {
+          return AlertDialog(
+            title: const Text('Discard workout?'),
+            content: const Text(
+              'No sets have been logged. Do you want to discard this session?',
+            ),
+            actions: <Widget>[
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(false),
+                child: const Text('Keep going'),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.of(dialogContext).pop(true),
+                child: const Text('Discard'),
+              ),
+            ],
+          );
+        }
+
+        return AlertDialog(
+          title: const Text('End workout?'),
+          content: Text(
+            'Log $setCount set(s) and save this workout to history.',
           ),
-          FilledButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('End & save'),
-          ),
-        ],
-      ),
+          actions: <Widget>[
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.delete_outline),
+                  color: Theme.of(context).colorScheme.error,
+                  tooltip: 'Discard workout',
+                  onPressed: () async {
+                    final discard = await showDialog<bool>(
+                      context: dialogContext,
+                      builder: (innerContext) => AlertDialog(
+                        title: const Text('Discard workout?'),
+                        content: const Text('This will delete all progress.'),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(innerContext, false),
+                            child: const Text('Cancel'),
+                          ),
+                          TextButton(
+                            onPressed: () => Navigator.pop(innerContext, true),
+                            child: const Text('Discard'),
+                          ),
+                        ],
+                      ),
+                    );
+                    if (discard == true && context.mounted) {
+                      Navigator.of(dialogContext).pop(true);
+                    }
+                  },
+                ),
+                const Spacer(),
+                TextButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Keep going'),
+                ),
+                FilledButton(
+                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('End & save'),
+                ),
+              ],
+            ),
+          ],
+        );
+      },
     );
+
     if (confirmed ?? false) {
       await onEnd();
     }
