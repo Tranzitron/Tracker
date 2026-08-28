@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 
 /// Minimal dependency-free line chart for [ProgressionPoint] series
@@ -19,15 +20,15 @@ class LineChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     if (points.isEmpty) {
       return SizedBox(
         height: height,
         child: Center(
           child: Text(
             'No data yet',
-            style: theme.textTheme.bodySmall?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+            style: theme.typography.body.xs.copyWith(
+              color: theme.colors.mutedForeground,
             ),
           ),
         ),
@@ -39,9 +40,9 @@ class LineChart extends StatelessWidget {
         painter: _LineChartPainter(
           points: points,
           unit: unit,
-          lineColor: theme.colorScheme.primary,
-          dotColor: theme.colorScheme.primary,
-          labelColor: theme.colorScheme.onSurfaceVariant,
+          lineColor: theme.colors.primary,
+          dotColor: theme.colors.primary,
+          labelColor: theme.colors.mutedForeground,
         ),
       ),
     );

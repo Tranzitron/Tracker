@@ -7,7 +7,7 @@ A phase counts done only when committed.
 
 - [x] Phase 0 — Unblock: repair corrupted import in `new_split_page.dart`
 - [x] Phase 1 — Theme bridge: `toApproximateMaterialTheme()` in `main.dart`
-- [ ] Phase 2 — Custom widgets on FTheme (`line_chart`, `custom_route`, `custom_app_bar`)
+- [x] Phase 2 — Custom widgets on FTheme (`line_chart`, `custom_route`, `custom_app_bar`)
 - [ ] Phase 3 — Form controls (`exercise_picker`, `new_exercise`, `split_day_editor`, `new_split`, `gyms_page`, `graph_editor`, `workout_page`)
 - [ ] Phase 4 — Overlays (dialogs → `showFDialog`, snackbars → toasts, sheet, popover menus)
 - [ ] Phase 5 — Structure widgets (cards/items, `FTabs`, `FAccordion`, `FSwitch`, color tokens)
@@ -20,5 +20,6 @@ A phase counts done only when committed.
 
 - Phase 0: the plan's Phase 8 unused-import removal (`forui` in `new_split_page.dart`) done early so the analyze gate is clean. Prior uncommitted conversion work (bottom nav, cards, buttons across ~14 files) landed in the Phase 0 commit per plan risk note "commit uncommitted conversion work first".
 - Phase 1: `FThemeData.toApproximateMaterialTheme()` (forui 0.26) returns `material_ui`'s `ThemeData` — a distinct type from the Flutter SDK `ThemeData` that the SDK `MaterialApp.theme` expects (verified with a minimal probe; forui's own example app roots in `material_ui.MaterialApp`). Switching the app root to `material_ui` was judged out of scope. Instead, `main.dart` adds a `_FThemeMaterialBridge.toSdkMaterialTheme()` extension mapping `FColors` onto the SDK `ColorScheme` (plus scaffold/divider colors), preserving the phase's goal: Material widgets inherit the Forui palette.
+- Phase 2: Forui 0.26 typography is `typography.body.<size>` / `typography.display.<size>` (`FTypeface` scales xs3–xl8), not flat `textTheme.bodySmall` — Material `bodySmall` mapped to `typography.body.xs`. `custom_app_bar.dart` has no `Theme.of` reads (already converted); the explicit ghost back-button `leading:` is deferred to Phase 6 per the plan's "once icons migrate".
 
 ## Blockers
