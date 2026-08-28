@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
@@ -207,24 +208,45 @@ class _GroupSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ExpansionTile(
-        title: Text('$title (${exercises.length})'),
-        children: [
-          for (final exercise in exercises)
-            ListTile(
-              key: ValueKey<String>('exercise-${exercise.id}'),
-              title: Text(exercise.title),
-              subtitle: Text(
-                exercise.equipment.map((eq) => eq.displayName).join(', '),
-                overflow: TextOverflow.ellipsis,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: FCard(
+        child: ExpansionTile(
+          title: Text('$title (${exercises.length})'),
+          children: [
+            for (final exercise in exercises)
+              Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  key: ValueKey<String>('exercise-${exercise.id}'),
+                  onTap: () =>
+                      pushTo(context, ExerciseDetailPage(exercise: exercise)),
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(exercise.title),
+                              Text(
+                                exercise.equipment
+                                    .map((eq) => eq.displayName)
+                                    .join(', '),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_sharp),
+                      ],
+                    ),
+                  ),
+                ),
               ),
-              trailing: const Icon(Icons.chevron_right_sharp),
-              onTap: () =>
-                  pushTo(context, ExerciseDetailPage(exercise: exercise)),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }

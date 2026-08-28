@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_split.dart';
@@ -95,16 +96,8 @@ class BuildStartWorkoutButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      style: ButtonStyle(
-        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(
-          const EdgeInsets.symmetric(vertical: 16),
-        ),
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-      onPressed: () => _start(context),
+    return FButton(
+      onPress: () => _start(context),
       child: const Text('Start Workout', style: TextStyle(fontSize: 16)),
     );
   }
@@ -115,20 +108,10 @@ class BuildNewSplitButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FilledButton(
-      onPressed: () => pushTo(context, const SplitEditorPage()),
-      style: ButtonStyle(
-        shape: WidgetStateProperty.all<RoundedRectangleBorder>(
-          RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        ),
-      ),
-      child: const Row(
-        children: <Widget>[
-          Icon(Icons.add_sharp, size: 16),
-          SizedBox(width: 4),
-          Text('New Split', overflow: TextOverflow.ellipsis),
-        ],
-      ),
+    return FButton(
+      onPress: () => pushTo(context, const SplitEditorPage()),
+      prefix: const Icon(Icons.add_sharp, size: 16),
+      child: const Text('New Split', overflow: TextOverflow.ellipsis),
     );
   }
 }

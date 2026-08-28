@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/home_page.dart';
 import 'package:tracker/models/gym.dart';
@@ -108,23 +109,36 @@ class _SplitDayPageState extends State<SplitDayPage> {
                   const Text('No exercises in this day yet.')
                 else
                   for (final (index, item) in items.indexed)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      leading: Text('${index + 1}'),
-                      title: Text(
-                        _names[item.exerciseId] ??
-                            'Exercise ${item.exerciseId}',
+                    FCard(
+                      child: Padding(
+                        padding: const EdgeInsets.all(12),
+                        child: Row(
+                          children: [
+                            Text('${index + 1}'),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    _names[item.exerciseId] ??
+                                        'Exercise ${item.exerciseId}',
+                                  ),
+                                  ...[_targetSubtitle(item)]
+                                      .whereType<Widget>(),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      subtitle: _targetSubtitle(item),
                     ),
+                const SizedBox(height: 4),
                 const SizedBox(height: 24),
-                FilledButton.icon(
-                  onPressed: () => _startWorkout(context),
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  icon: const Icon(Icons.play_arrow),
-                  label: const Text('Start this workout'),
+                FButton(
+                  onPress: () => _startWorkout(context),
+                  prefix: const Icon(Icons.play_arrow),
+                  child: const Text('Start this workout'),
                 ),
               ],
             ),

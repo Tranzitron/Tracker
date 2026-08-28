@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
@@ -109,7 +110,7 @@ class _HeaderCard extends StatelessWidget {
         ? session.endTime!.difference(session.startTime)
         : Duration.zero;
     final d = session.startTime.toLocal();
-    return Card(
+    return FCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -150,7 +151,7 @@ class _Stat extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Expanded(
-      child: Card(
+      child: FCard(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(

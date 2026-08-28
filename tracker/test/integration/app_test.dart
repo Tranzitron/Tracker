@@ -11,8 +11,8 @@
 // is built (and can throw) even when not selected — the boot test therefore
 // also proves every tab resolves to a buildable screen.
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import '../helpers/test_helpers.dart';
@@ -27,10 +27,10 @@ void main() {
     (WidgetTester tester) async {
       final cubit = await pumpApp(tester);
 
-      // The app's root shell is a bottom NavigationBar with the five pluggable
+      // The app's root shell is a bottom navigation bar with five pluggable
       // tab destinations (Feed, History, Workout, Editor, Exercises).
-      expect(find.byType(NavigationBar), findsOneWidget);
-      expect(find.byType(NavigationDestination), findsNWidgets(5));
+      expect(find.byType(FBottomNavigationBar), findsOneWidget);
+      expect(find.byType(FBottomNavigationBarItem), findsNWidgets(5));
       expect(find.text('Workout'), findsOneWidget);
       expect(find.text('CurrentWorkout'), findsNothing);
 
@@ -45,18 +45,17 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.text('Go to Current Workout'), findsNothing);
 
-      // Drive tab switches through onDestinationSelected (the same callback the
-      // NavigationBar wires to _selectTab) rather than hit-testing, which is
+      // Drive tab switches through onChange rather than hit-testing, which is
       // brittle under the Offstage navigators.
       for (final index in {2, 3, 4, 1, 0}) {
         tester
-            .widget<NavigationBar>(find.byType(NavigationBar))
-            .onDestinationSelected!(index);
+            .widget<FBottomNavigationBar>(find.byType(FBottomNavigationBar))
+            .onChange!(index);
         await tester.pump();
         expect(
           tester
-              .widget<NavigationBar>(find.byType(NavigationBar))
-              .selectedIndex,
+              .widget<FBottomNavigationBar>(find.byType(FBottomNavigationBar))
+              .index,
           index,
           reason: 'selecting index $index did not update the nav bar',
         );

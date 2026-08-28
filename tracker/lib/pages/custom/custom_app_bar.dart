@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 class CustomAppBar extends StatelessWidget {
   const CustomAppBar(
@@ -32,8 +33,9 @@ class CustomAppBar extends StatelessWidget {
               children: [
                 Spacer(),
                 if (actionButton != null)
-                  TextButton(
-                    onPressed: actionButton!.onPressed,
+                  FButton(
+                    variant: .ghost,
+                    onPress: actionButton!.onPressed,
                     child: Text(actionButton!.title),
                   ),
               ],

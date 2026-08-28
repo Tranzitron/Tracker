@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -149,16 +150,18 @@ class _HistoryMessage extends StatelessWidget {
   final String message;
 
   @override
-  Widget build(BuildContext context) => Card(
-    margin: const EdgeInsets.all(16),
-    child: Padding(
-      padding: const EdgeInsets.all(16),
-      child: Row(
-        children: [
-          const Icon(Icons.error_outline),
-          const SizedBox(width: 12),
-          Expanded(child: Text(message)),
-        ],
+  Widget build(BuildContext context) => Padding(
+    padding: const EdgeInsets.all(16),
+    child: FCard(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.error_outline),
+            const SizedBox(width: 12),
+            Expanded(child: Text(message)),
+          ],
+        ),
       ),
     ),
   );
@@ -194,20 +197,31 @@ class _SessionTile extends StatelessWidget {
     final duration = session.endTime != null
         ? session.endTime!.difference(session.startTime)
         : Duration.zero;
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.directions_run_sharp),
-        title: Text(session.title),
-        subtitle: Text(
-          '${_date(session.startTime)}'
-          '${gymName != null ? ' · $gymName' : ''}'
-          '\n${session.sets.length} set(s) · ${_dur(duration)}',
-        ),
-        isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () => pushTo(
-          context,
-          SessionDetailPage(session: session, gymName: gymName),
+    return FCard(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: () => pushTo(
+            context,
+            SessionDetailPage(session: session, gymName: gymName),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.directions_run_sharp),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${session.title}\n${_date(session.startTime)}'
+                    '${gymName != null ? ' · $gymName' : ''}'
+                    '\n${session.sets.length} set(s) · ${_dur(duration)}',
+                  ),
+                ),
+                const Icon(Icons.chevron_right_sharp),
+              ],
+            ),
+          ),
         ),
       ),
     );

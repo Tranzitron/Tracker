@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
 
@@ -70,45 +71,47 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     final monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
     final streak = _dateIndex.currentStreak();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        _BuildMonthHeader(
-          year: _year,
-          monthName: _monthName(_month),
-          onPrev: () => _goMonth(-1),
-          onNext: () => _goMonth(1),
-        ),
-        const SizedBox(height: 4),
-        Row(
-          children: <Widget>[
-            for (final label in _weekdayLabels)
-              Expanded(
-                child: Center(
-                  child: Text(
-                    label,
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
+    return SingleChildScrollView(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          _BuildMonthHeader(
+            year: _year,
+            monthName: _monthName(_month),
+            onPrev: () => _goMonth(-1),
+            onNext: () => _goMonth(1),
+          ),
+          const SizedBox(height: 4),
+          Row(
+            children: <Widget>[
+              for (final label in _weekdayLabels)
+                Expanded(
+                  child: Center(
+                    child: Text(
+                      label,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
-        ),
-        const SizedBox(height: 2),
-        _dayGrid(grid, theme),
-        const SizedBox(height: 6),
-        _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
-        const SizedBox(height: 6),
-        Text(
-          _selectedDay == null
-              ? 'Workouts'
-              : 'Workouts · ${_dateLabel(_selectedDay!)}',
-          style: theme.textTheme.titleSmall,
-        ),
-        const SizedBox(height: 4),
-        _dayList(_selectedDay),
-      ],
+            ],
+          ),
+          const SizedBox(height: 2),
+          _dayGrid(grid, theme),
+          const SizedBox(height: 6),
+          _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
+          const SizedBox(height: 6),
+          Text(
+            _selectedDay == null
+                ? 'Workouts'
+                : 'Workouts · ${_dateLabel(_selectedDay!)}',
+            style: theme.textTheme.titleSmall,
+          ),
+          const SizedBox(height: 4),
+          _dayList(_selectedDay),
+        ],
+      ),
     );
   }
 
@@ -186,21 +189,40 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
         itemCount: sessions.length,
         itemBuilder: (context, index) {
           final session = sessions[index];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 4),
-            child: ListTile(
-              dense: true,
-              leading: const Icon(Icons.directions_run_sharp),
-              title: Text(session.title),
-              subtitle: Text('${session.sets.length} set(s)'),
-              trailing: const Icon(Icons.chevron_right_sharp),
-              onTap: () => pushTo(
-                context,
-                SessionDetailPage(
-                  session: session,
-                  gymName: session.gymId == null
-                      ? null
-                      : widget.gymNames[session.gymId],
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: FCard(
+              child: Material(
+                type: MaterialType.transparency,
+                child: InkWell(
+                  onTap: () => pushTo(
+                    context,
+                    SessionDetailPage(
+                      session: session,
+                      gymName: session.gymId == null
+                          ? null
+                          : widget.gymNames[session.gymId],
+                    ),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.directions_run_sharp),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(session.title),
+                              Text('${session.sets.length} set(s)'),
+                            ],
+                          ),
+                        ),
+                        const Icon(Icons.chevron_right_sharp),
+                      ],
+                    ),
+                  ),
                 ),
               ),
             ),

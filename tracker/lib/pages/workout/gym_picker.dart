@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/models/gym.dart';
 
 /// Resolves which [Gym] a workout should be logged at (Plan.md §2.2).
@@ -15,23 +16,27 @@ Future<Gym?> promptGym(BuildContext context, List<Gym> gyms) async {
 }
 
 Future<Gym?> _showGymPicker(BuildContext context, List<Gym> gyms) {
-  return showModalBottomSheet<Gym>(
+  return showFSheet<Gym>(
     context: context,
+    side: FLayout.btt,
+    useSafeArea: true,
+    mainAxisMaxRatio: null,
     builder: (sheetContext) {
-      return SafeArea(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Text(
-                'Where are you training?',
-                style: Theme.of(sheetContext).textTheme.titleMedium,
-              ),
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+            child: Text(
+              'Where are you training?',
+              style: Theme.of(sheetContext).textTheme.titleMedium,
             ),
-            for (final gym in gyms)
-              ListTile(
+          ),
+          for (final gym in gyms)
+            Material(
+              type: MaterialType.transparency,
+              child: ListTile(
                 leading: Icon(
                   gym.isPrimary ? Icons.home_sharp : Icons.fitness_center_sharp,
                 ),
@@ -39,9 +44,9 @@ Future<Gym?> _showGymPicker(BuildContext context, List<Gym> gyms) {
                 subtitle: gym.isPrimary ? const Text('Primary gym') : null,
                 onTap: () => Navigator.of(sheetContext).pop(gym),
               ),
-            const SizedBox(height: 8),
-          ],
-        ),
+            ),
+          const SizedBox(height: 8),
+        ],
       );
     },
   );

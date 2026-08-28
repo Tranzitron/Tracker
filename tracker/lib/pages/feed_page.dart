@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/home_page.dart';
 import 'package:tracker/models/exercise.dart';
@@ -207,11 +208,11 @@ class _FeedPageState extends State<FeedPage> {
               return SliverToBoxAdapter(
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-                  child: FilledButton.icon(
-                    onPressed: () =>
+                  child: FButton(
+                    onPress: () =>
                         HomePageSingleton().changeTab(TabName.currentWorkout),
-                    icon: const Icon(Icons.fitness_center_sharp),
-                    label: const Text('Go to Current Workout'),
+                    prefix: const Icon(Icons.fitness_center_sharp),
+                    child: const Text('Go to Current Workout'),
                   ),
                 ),
               );
@@ -223,15 +224,33 @@ class _FeedPageState extends State<FeedPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-              child: Card(
-                child: ListTile(
-                  leading: const Icon(Icons.show_chart_sharp),
-                  title: const Text('Progression'),
-                  subtitle: const Text(
-                    'Strength and volume trends across all exercises',
+              child: FCard(
+                child: Material(
+                  type: MaterialType.transparency,
+                  child: InkWell(
+                    onTap: () => pushTo(context, const ProgressionPage()),
+                    child: const Padding(
+                      padding: EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Icon(Icons.show_chart_sharp),
+                          SizedBox(width: 12),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text('Progression'),
+                                Text(
+                                  'Strength and volume trends across all exercises',
+                                ),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.chevron_right_sharp),
+                        ],
+                      ),
+                    ),
                   ),
-                  trailing: const Icon(Icons.chevron_right_sharp),
-                  onTap: () => pushTo(context, const ProgressionPage()),
                 ),
               ),
             ),
@@ -247,11 +266,11 @@ class _FeedEmpty extends StatelessWidget {
   const _FeedEmpty();
 
   @override
-  Widget build(BuildContext context) => const Card(
+  Widget build(BuildContext context) => FCard(
     child: Padding(
-      padding: EdgeInsets.all(20),
+      padding: const EdgeInsets.all(20),
       child: Column(
-        children: [
+        children: const [
           Icon(Icons.fitness_center, size: 40),
           SizedBox(height: 8),
           Text('No workouts logged yet.'),
@@ -302,19 +321,30 @@ class _ActivityCard extends StatelessWidget {
     final duration = session.endTime == null
         ? Duration.zero
         : session.endTime!.difference(session.startTime);
-    return Card(
-      child: ListTile(
-        leading: const Icon(Icons.check_circle_outline),
-        title: Text(session.title),
-        subtitle: Text(
-          '${_date(session.startTime)}${gymName == null ? '' : ' · $gymName'}\n'
-          '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
-        ),
-        isThreeLine: true,
-        trailing: const Icon(Icons.chevron_right_sharp),
-        onTap: () => pushTo(
-          context,
-          SessionDetailPage(session: session, gymName: gymName),
+    return FCard(
+      child: Material(
+        type: MaterialType.transparency,
+        child: InkWell(
+          onTap: () => pushTo(
+            context,
+            SessionDetailPage(session: session, gymName: gymName),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                const Icon(Icons.check_circle_outline),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Text(
+                    '${session.title}\n${_date(session.startTime)}${gymName == null ? '' : ' · $gymName'}\n'
+                    '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
+                  ),
+                ),
+                const Icon(Icons.chevron_right_sharp),
+              ],
+            ),
+          ),
         ),
       ),
     );

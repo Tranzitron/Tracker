@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_session.dart';
@@ -104,7 +105,11 @@ class _ProgressionPageState extends State<ProgressionPage> {
             const Icon(Icons.error_outline),
             const SizedBox(height: 8),
             const Text('Could not load progression data.'),
-            TextButton(onPressed: _load, child: const Text('Retry')),
+            FButton(
+              variant: .outline,
+              onPress: _load,
+              child: const Text('Retry'),
+            ),
           ],
         ),
       );

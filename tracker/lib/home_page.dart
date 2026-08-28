@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 import 'package:quiver/collection.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
@@ -94,67 +95,46 @@ class _HomePageState extends State<HomePage> {
             _buildOffstageNavigator(index, _pageFor(index)),
         ],
       ),
-      bottomNavigationBar: NavigationBar(
-        animationDuration: Duration.zero,
-        indicatorColor: Colors.transparent,
-        shadowColor: Colors.transparent,
-        backgroundColor: Colors.transparent,
-        surfaceTintColor: Colors.transparent,
-        selectedIndex: _currentIndex,
-        labelBehavior: NavigationDestinationLabelBehavior.alwaysShow,
-        onDestinationSelected: _selectTab,
-        destinations: <Widget>[
-          const NavigationDestination(
+      bottomNavigationBar: FBottomNavigationBar(
+        index: _currentIndex,
+        onChange: _selectTab,
+        children: <Widget>[
+          const FBottomNavigationBarItem(
+            key: ValueKey('feed-tab'),
             icon: Icon(Icons.house_sharp),
-            selectedIcon: Icon(Icons.house_sharp, color: Colors.blueAccent),
-            label: 'Feed',
-            tooltip: '',
+            label: Text('Feed'),
+            semanticsLabel: 'Feed',
           ),
-          const NavigationDestination(
+          const FBottomNavigationBarItem(
+            key: ValueKey('history-tab'),
             icon: Icon(Icons.access_time_filled_sharp),
-            selectedIcon: Icon(
-              Icons.access_time_filled_sharp,
-              color: Colors.blueAccent,
-            ),
-            label: 'History',
-            tooltip: '',
+            label: Text('History'),
+            semanticsLabel: 'History',
           ),
           BlocBuilder<WorkoutCubit, WorkoutState>(
-            builder: (context, state) => NavigationDestination(
+            builder: (context, state) => FBottomNavigationBarItem(
+              key: const ValueKey('workout-tab'),
               icon: Transform.translate(
                 offset: const Offset(0, -6),
                 child: const Icon(Icons.fitness_center_sharp),
               ),
-              selectedIcon: Transform.translate(
-                offset: const Offset(0, -6),
-                child: Icon(
-                  Icons.fitness_center_sharp,
-                  color: state.isInProgress
-                      ? Colors.blueAccent
-                      : Colors.redAccent,
-                ),
-              ),
-              label: 'Workout',
-              tooltip: '',
+              label: const Text('Workout'),
+              semanticsLabel: state.isInProgress
+                  ? 'Workout in progress'
+                  : 'Workout',
             ),
           ),
-          const NavigationDestination(
+          const FBottomNavigationBarItem(
+            key: ValueKey('editor-tab'),
             icon: Icon(Icons.assignment_sharp),
-            selectedIcon: Icon(
-              Icons.assignment_sharp,
-              color: Colors.blueAccent,
-            ),
-            label: 'Editor',
-            tooltip: '',
+            label: Text('Editor'),
+            semanticsLabel: 'Editor',
           ),
-          const NavigationDestination(
+          const FBottomNavigationBarItem(
+            key: ValueKey('exercises-tab'),
             icon: Icon(Icons.sports_gymnastics_sharp),
-            selectedIcon: Icon(
-              Icons.sports_gymnastics_sharp,
-              color: Colors.blueAccent,
-            ),
-            label: 'Exercises',
-            tooltip: '',
+            label: Text('Exercises'),
+            semanticsLabel: 'Exercises',
           ),
         ],
       ),
