@@ -88,6 +88,42 @@ Future<void> _seedExercises(
   }
 }
 
+/// Approximate SDK [ThemeData] from a Forui [FThemeData].
+///
+/// Forui 0.26's `FThemeData.toApproximateMaterialTheme()` returns
+/// `material_ui`'s `ThemeData`, which is a distinct type from Flutter SDK's
+/// `ThemeData` and cannot be passed to the SDK `MaterialApp` used here
+/// (switching the app root to `material_ui`'s `MaterialApp` is out of scope).
+/// This bridge maps the Forui palette onto the SDK `ColorScheme` so the
+/// remaining Material widgets (SliverAppBar, ExpansionTile,
+/// CircularProgressIndicator, …) inherit the Forui palette.
+extension _FThemeMaterialBridge on FThemeData {
+  ThemeData toSdkMaterialTheme() {
+    final c = colors;
+    return ThemeData(
+      brightness: c.brightness,
+      useMaterial3: true,
+      colorScheme: ColorScheme(
+        brightness: c.brightness,
+        primary: c.primary,
+        onPrimary: c.primaryForeground,
+        secondary: c.secondary,
+        onSecondary: c.secondaryForeground,
+        error: c.error,
+        onError: c.errorForeground,
+        surface: c.card,
+        onSurface: c.foreground,
+        onSurfaceVariant: c.mutedForeground,
+        surfaceContainerHighest: c.muted,
+        outline: c.border,
+        outlineVariant: c.border,
+      ),
+      scaffoldBackgroundColor: c.background,
+      dividerColor: c.border,
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -113,10 +149,12 @@ class MyApp extends StatelessWidget {
       localizationsDelegates: const [...FLocalizations.localizationsDelegates],
       home: const FScaffold(child: HomePage()),
       // ForUI 0.26 targets `material_ui` ThemeData, while MaterialApp uses
-      // Flutter's ThemeData. Keep Flutter themes here and apply ForUI through
-      // FTheme below.
-      theme: ThemeData(brightness: Brightness.light),
-      darkTheme: ThemeData(brightness: Brightness.dark),
+      // Flutter's ThemeData. Bridge the Forui-selected FThemeData into the
+      // Material theme so remaining Material widgets (SliverAppBar,
+      // ExpansionTile, CircularProgressIndicator, …) inherit the Forui
+      // palette; FTheme below keeps Forui widgets themed.
+      theme: lightTheme.toSdkMaterialTheme(),
+      darkTheme: darkTheme.toSdkMaterialTheme(),
       builder: (context, child) => FTheme(
         data: Theme.brightnessOf(context) == .light ? lightTheme : darkTheme,
         child: FToaster(child: FTooltipGroup(child: child!)),
