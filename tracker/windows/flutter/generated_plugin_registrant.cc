@@ -13,5 +13,5 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
   IsarFlutterLibsPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("IsarFlutterLibsPlugin"));
   WindowSizePluginRegisterWithRegistrar(
-          registry->GetRegistrarForPlugin("WindowSizePlugin"));
+      registry->GetRegistrarForPlugin("WindowSizePlugin"));
 }

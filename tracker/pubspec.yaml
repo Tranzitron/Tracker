@@ -17,6 +17,7 @@ dependencies:
   hydrated_bloc: ^11.0.0
   flutter_bloc: ^9.1.1
   window_size: ^0.2.0
+  forui: ^0.26.0
 
 dev_dependencies:
   flutter_test:

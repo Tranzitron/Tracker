@@ -445,11 +445,11 @@ class _GymTile extends StatelessWidget {
             _ => null,
           },
           itemBuilder: (context) => [
-            if (!primary)
-              const PopupMenuItem(
-                value: 'primary',
-                child: Text('Set as primary'),
-              ),
+            PopupMenuItem(
+              value: 'primary',
+              enabled: !primary,
+              child: Text('Set as primary'),
+            ),
             if (!primary && canEstimate)
               const PopupMenuItem(
                 value: 'estimate',

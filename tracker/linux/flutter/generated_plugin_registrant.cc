@@ -13,8 +13,7 @@ void fl_register_plugins(FlPluginRegistry* registry) {
   g_autoptr(FlPluginRegistrar) isar_community_flutter_libs_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "IsarFlutterLibsPlugin");
   isar_flutter_libs_plugin_register_with_registrar(isar_community_flutter_libs_registrar);
-  g_autoptr(FlPluginRegistrar)
-  window_size_registrar =
-          fl_plugin_registry_get_registrar_for_plugin(registry, "WindowSizePlugin");
+  g_autoptr(FlPluginRegistrar) window_size_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "WindowSizePlugin");
   window_size_plugin_register_with_registrar(window_size_registrar);
 }
