@@ -101,13 +101,13 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           const FBottomNavigationBarItem(
             key: ValueKey('feed-tab'),
-            icon: Icon(Icons.house_sharp),
+            icon: Icon(FLucideIcons.house),
             label: Text('Feed'),
             semanticsLabel: 'Feed',
           ),
           const FBottomNavigationBarItem(
             key: ValueKey('history-tab'),
-            icon: Icon(Icons.access_time_filled_sharp),
+            icon: Icon(FLucideIcons.history),
             label: Text('History'),
             semanticsLabel: 'History',
           ),
@@ -116,7 +116,7 @@ class _HomePageState extends State<HomePage> {
               key: const ValueKey('workout-tab'),
               icon: Transform.translate(
                 offset: const Offset(0, -6),
-                child: const Icon(Icons.fitness_center_sharp),
+                child: const Icon(FLucideIcons.dumbbell),
               ),
               label: const Text('Workout'),
               semanticsLabel: state.isInProgress
@@ -126,13 +126,13 @@ class _HomePageState extends State<HomePage> {
           ),
           const FBottomNavigationBarItem(
             key: ValueKey('editor-tab'),
-            icon: Icon(Icons.assignment_sharp),
+            icon: Icon(FLucideIcons.notebookText),
             label: Text('Editor'),
             semanticsLabel: 'Editor',
           ),
           const FBottomNavigationBarItem(
             key: ValueKey('exercises-tab'),
-            icon: Icon(Icons.sports_gymnastics_sharp),
+            icon: Icon(FLucideIcons.personStanding),
             label: Text('Exercises'),
             semanticsLabel: 'Exercises',
           ),

@@ -249,7 +249,7 @@ packages:
     source: hosted
     version: "0.26.0"
   forui_lucide:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: forui_lucide
       sha256: "5c797b7455b4c491504fc0f76c3d2d6eebe7cb49aeac1d5c02026f06ae1d2607"

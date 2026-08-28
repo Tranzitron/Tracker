@@ -31,7 +31,17 @@ class CustomAppBar extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.end,
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Spacer(),
+                // Explicit ghost back-button (Phase 6): tab-root pages sit at
+                // the bottom of their nested Navigator, so canPop() is false
+                // there and no leading is shown.
+                if (Navigator.of(context).canPop())
+                  FButton(
+                    variant: .ghost,
+                    onPress: () => Navigator.of(context).maybePop(),
+                    child: const Icon(FLucideIcons.chevronLeft),
+                  )
+                else
+                  const Spacer(),
                 if (actionButton != null)
                   FButton(
                     variant: .ghost,

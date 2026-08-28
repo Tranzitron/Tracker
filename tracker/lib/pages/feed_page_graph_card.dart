@@ -62,7 +62,7 @@ class FeedGraphCard extends StatelessWidget {
                     builder: (_, controller, _) => FButton(
                       variant: .ghost,
                       onPress: controller.toggle,
-                      child: const Icon(Icons.more_vert),
+                      child: const Icon(FLucideIcons.ellipsisVertical),
                     ),
                   ),
                 ],

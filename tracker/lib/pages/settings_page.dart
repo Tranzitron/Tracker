@@ -22,14 +22,14 @@ class SettingsPage extends StatelessWidget {
               children: <Widget>[
                 _buildSettingsMenuItem(
                   context,
-                  icon: Icons.fitness_center,
+                  icon: FLucideIcons.dumbbell,
                   title: 'Gyms',
                   subtitle: 'Manage gyms and weight multipliers',
                   onTap: () => pushTo(context, const GymsPage()),
                 ),
                 _buildSettingsDropdownRow(
                   context,
-                  icon: Icons.scale,
+                  icon: FLucideIcons.scale,
                   title: 'Units',
                   subtitle: 'Set your preferred weight unit',
                   value: state.unit,
@@ -39,7 +39,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 _buildSwitchRow(
                   context,
-                  icon: Icons.notifications,
+                  icon: FLucideIcons.bell,
                   title: 'Notifications',
                   subtitle:
                       'Allow workout reminders and progress notifications',
@@ -50,7 +50,7 @@ class SettingsPage extends StatelessWidget {
                 ),
                 _buildSwitchRow(
                   context,
-                  icon: Icons.security,
+                  icon: FLucideIcons.shield,
                   title: 'Privacy & Security',
                   subtitle: 'Allow anonymous analytics to improve the app',
                   value: state.analyticsEnabled,
@@ -131,7 +131,7 @@ class SettingsPage extends StatelessWidget {
           prefix: Icon(icon, color: context.theme.colors.primary),
           title: Text(title),
           subtitle: Text(subtitle),
-          suffix: const Icon(Icons.arrow_forward_ios, size: 16),
+          suffix: const Icon(FLucideIcons.chevronRight, size: 16),
           onPress: onTap,
         ),
       ),

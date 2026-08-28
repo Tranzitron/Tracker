@@ -38,7 +38,7 @@ Future<Gym?> _showGymPicker(BuildContext context, List<Gym> gyms) {
           for (final gym in gyms)
             FItem(
               prefix: Icon(
-                gym.isPrimary ? Icons.home_sharp : Icons.fitness_center_sharp,
+                gym.isPrimary ? FLucideIcons.house : FLucideIcons.dumbbell,
               ),
               title: Text(gym.name),
               subtitle: gym.isPrimary ? const Text('Primary gym') : null,

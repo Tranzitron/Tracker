@@ -139,7 +139,7 @@ class _SplitDayPageState extends State<SplitDayPage> {
                 const SizedBox(height: 24),
                 FButton(
                   onPress: () => _startWorkout(context),
-                  prefix: const Icon(Icons.play_arrow),
+                  prefix: const Icon(FLucideIcons.play),
                   child: const Text('Start this workout'),
                 ),
               ],

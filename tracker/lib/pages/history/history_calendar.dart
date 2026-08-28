@@ -207,7 +207,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                 padding: const EdgeInsets.all(12),
                 child: Row(
                   children: [
-                    const Icon(Icons.directions_run_sharp),
+                    const Icon(FLucideIcons.footprints),
                     const SizedBox(width: 12),
                     Expanded(
                       child: Column(
@@ -218,7 +218,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                         ],
                       ),
                     ),
-                    const Icon(Icons.chevron_right_sharp),
+                    const Icon(FLucideIcons.chevronRight),
                   ],
                 ),
               ),
@@ -271,7 +271,7 @@ class _BuildMonthHeader extends StatelessWidget {
     return Row(
       children: <Widget>[
         IconButton(
-          icon: const Icon(Icons.chevron_left_sharp),
+          icon: const Icon(FLucideIcons.chevronLeft),
           onPressed: onPrev,
           tooltip: 'Previous month',
         ),
@@ -285,7 +285,7 @@ class _BuildMonthHeader extends StatelessWidget {
           ),
         ),
         IconButton(
-          icon: const Icon(Icons.chevron_right_sharp),
+          icon: const Icon(FLucideIcons.chevronRight),
           onPressed: onNext,
           tooltip: 'Next month',
         ),

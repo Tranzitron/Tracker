@@ -110,7 +110,7 @@ class BuildNewSplitButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return FButton(
       onPress: () => pushTo(context, const SplitEditorPage()),
-      prefix: const Icon(Icons.add_sharp, size: 16),
+      prefix: const Icon(FLucideIcons.plus, size: 16),
       child: const Text('New Split', overflow: TextOverflow.ellipsis),
     );
   }
@@ -137,7 +137,7 @@ class BuildMaterialSplit extends StatelessWidget {
             FItem(
               key: ValueKey<String>('split-header-${split.id}'),
               title: Text(split.title, overflow: TextOverflow.ellipsis),
-              suffix: const Icon(Icons.edit_outlined, size: 20),
+              suffix: const Icon(FLucideIcons.pen, size: 20),
               onPress: () => pushTo(context, SplitEditorPage(split: split)),
             ),
             for (var index = 0; index < split.splitDays.length; index++)

@@ -137,7 +137,7 @@ class _HistoryMessage extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Icon(Icons.error_outline),
+            const Icon(FLucideIcons.circleAlert),
             const SizedBox(width: 12),
             Expanded(child: Text(message)),
           ],
@@ -157,7 +157,7 @@ class _EmptyHistory extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          Icon(Icons.history, size: 48),
+          Icon(FLucideIcons.history, size: 48),
           SizedBox(height: 12),
           Text('No workouts logged yet'),
         ],
@@ -186,7 +186,7 @@ class _SessionTile extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Icon(Icons.directions_run_sharp),
+            const Icon(FLucideIcons.footprints),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -195,7 +195,7 @@ class _SessionTile extends StatelessWidget {
                 '\n${session.sets.length} set(s) · ${_dur(duration)}',
               ),
             ),
-            const Icon(Icons.chevron_right_sharp),
+            const Icon(FLucideIcons.chevronRight),
           ],
         ),
       ),

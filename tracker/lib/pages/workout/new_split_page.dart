@@ -217,7 +217,7 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
                   onPressed: _chooseTemplate,
-                  icon: const Icon(Icons.auto_awesome),
+                  icon: const Icon(FLucideIcons.sparkles),
                   label: const Text('Use a template'),
                 ),
                 const SizedBox(height: 16),
@@ -241,7 +241,7 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                         '${_days[i].exercises.length} exercise(s)',
                       ),
                       suffix: IconButton(
-                        icon: const Icon(Icons.delete_outline),
+                        icon: const Icon(FLucideIcons.trash2),
                         tooltip: 'Remove day',
                         onPressed: () => setState(() => _days.removeAt(i)),
                       ),
@@ -250,7 +250,7 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                 const SizedBox(height: 12),
                 OutlinedButton.icon(
                   onPressed: _addDay,
-                  icon: const Icon(Icons.add_sharp),
+                  icon: const Icon(FLucideIcons.plus),
                   label: const Text('Add day'),
                 ),
                 const SizedBox(height: 16),

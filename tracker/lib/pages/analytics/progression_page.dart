@@ -102,7 +102,7 @@ class _ProgressionPageState extends State<ProgressionPage> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline),
+            const Icon(FLucideIcons.circleAlert),
             const SizedBox(height: 8),
             const Text('Could not load progression data.'),
             FButton(

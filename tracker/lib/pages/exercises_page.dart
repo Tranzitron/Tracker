@@ -206,7 +206,7 @@ class _GroupSection extends StatelessWidget {
                       exercise.equipment.map((eq) => eq.displayName).join(', '),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    suffix: const Icon(Icons.chevron_right_sharp),
+                    suffix: const Icon(FLucideIcons.chevronRight),
                     onPress: () =>
                         pushTo(context, ExerciseDetailPage(exercise: exercise)),
                   ),

@@ -91,7 +91,7 @@ class _FeedPageState extends State<FeedPage> {
               ),
               TextButton.icon(
                 onPressed: _editGraph,
-                icon: const Icon(Icons.add),
+                icon: const Icon(FLucideIcons.plus),
                 label: const Text('Add graph'),
               ),
             ],
@@ -167,7 +167,7 @@ class _FeedPageState extends State<FeedPage> {
           slivers.add(
             SliverToBoxAdapter(
               child: _FeedMessage(
-                icon: Icons.error_outline,
+                icon: FLucideIcons.circleAlert,
                 message: 'Could not load recent activity.',
                 action: TextButton(
                   onPressed: () => setState(() {}),
@@ -215,7 +215,7 @@ class _FeedPageState extends State<FeedPage> {
                   child: FButton(
                     onPress: () =>
                         HomePageSingleton().changeTab(TabName.currentWorkout),
-                    prefix: const Icon(Icons.fitness_center_sharp),
+                    prefix: const Icon(FLucideIcons.dumbbell),
                     child: const Text('Go to Current Workout'),
                   ),
                 ),
@@ -229,12 +229,12 @@ class _FeedPageState extends State<FeedPage> {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
               child: FItem(
-                prefix: const Icon(Icons.show_chart_sharp),
+                prefix: const Icon(FLucideIcons.chartLine),
                 title: const Text('Progression'),
                 subtitle: const Text(
                   'Strength and volume trends across all exercises',
                 ),
-                suffix: const Icon(Icons.chevron_right_sharp),
+                suffix: const Icon(FLucideIcons.chevronRight),
                 onPress: () => pushTo(context, const ProgressionPage()),
               ),
             ),
@@ -255,7 +255,7 @@ class _FeedEmpty extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       child: Column(
         children: const [
-          Icon(Icons.fitness_center, size: 40),
+          Icon(FLucideIcons.dumbbell, size: 40),
           SizedBox(height: 8),
           Text('No workouts logged yet.'),
           SizedBox(height: 4),
@@ -314,7 +314,7 @@ class _ActivityCard extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
-            const Icon(Icons.check_circle_outline),
+            const Icon(FLucideIcons.circleCheck),
             const SizedBox(width: 12),
             Expanded(
               child: Text(
@@ -322,7 +322,7 @@ class _ActivityCard extends StatelessWidget {
                 '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
               ),
             ),
-            const Icon(Icons.chevron_right_sharp),
+            const Icon(FLucideIcons.chevronRight),
           ],
         ),
       ),

@@ -63,13 +63,13 @@ class _IdleView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
           const SizedBox(height: 64),
-          const Icon(Icons.fitness_center_sharp, size: 48),
+          const Icon(FLucideIcons.dumbbell, size: 48),
           const SizedBox(height: 12),
           const Text('No workout in progress'),
           const SizedBox(height: 16),
           FilledButton.icon(
             onPressed: onStart,
-            icon: const Icon(Icons.play_arrow),
+            icon: const Icon(FLucideIcons.play),
             label: const Text('Start Workout'),
           ),
         ],
@@ -114,7 +114,7 @@ class _InProgressView extends StatelessWidget {
                 foregroundColor: context.theme.colors.errorForeground,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
-              icon: const Icon(Icons.stop),
+              icon: const Icon(FLucideIcons.squareStop),
               label: const Text('End Workout'),
             ),
           ],
@@ -174,7 +174,7 @@ class _InProgressView extends StatelessWidget {
                 Row(
                   children: [
                     IconButton(
-                      icon: const Icon(Icons.delete_outline),
+                      icon: const Icon(FLucideIcons.trash2),
                       color: dialogContext.theme.colors.error,
                       tooltip: 'Discard workout',
                       onPressed: () =>
@@ -313,7 +313,7 @@ class _WorkoutHeader extends StatelessWidget {
             Row(
               children: <Widget>[
                 Icon(
-                  Icons.directions_run_sharp,
+                  FLucideIcons.footprints,
                   color: context.theme.colors.primary,
                 ),
                 const SizedBox(width: 8),
@@ -505,7 +505,7 @@ class _SetTile extends StatelessWidget {
             )
           : null,
       suffix: IconButton(
-        icon: const Icon(Icons.delete_outline, size: 20),
+        icon: const Icon(FLucideIcons.trash2, size: 20),
         tooltip: 'Remove set',
         onPressed: () => context.read<WorkoutCubit>().removeSet(set.order),
       ),

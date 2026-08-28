@@ -132,7 +132,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
                     const Spacer(),
                     OutlinedButton.icon(
                       onPressed: _addExercise,
-                      icon: const Icon(Icons.add_sharp, size: 18),
+                      icon: const Icon(FLucideIcons.plus, size: 18),
                       label: const Text('Add'),
                     ),
                   ],
@@ -199,11 +199,11 @@ class _ExerciseRow extends StatelessWidget {
     return FItem(
       prefix: ReorderableDragStartListener(
         index: index,
-        child: const Icon(Icons.drag_handle),
+        child: const Icon(FLucideIcons.gripHorizontal),
       ),
       title: Text('$orderLabel. $name'),
       suffix: IconButton(
-        icon: const Icon(Icons.delete_outline),
+        icon: const Icon(FLucideIcons.trash2),
         onPressed: onDelete,
       ),
     );

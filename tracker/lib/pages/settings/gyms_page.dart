@@ -470,7 +470,7 @@ class _GymTile extends StatelessWidget {
         child: FItem(
           onPress: onEdit,
           prefix: Icon(
-            primary ? Icons.home_sharp : Icons.fitness_center_sharp,
+            primary ? FLucideIcons.house : FLucideIcons.dumbbell,
             color: primary ? theme.colors.primary : null,
           ),
           title: Text(gym.name),
@@ -501,7 +501,7 @@ class _GymTile extends StatelessWidget {
               ),
             ],
             builder: (_, controller, _) => IconButton(
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(FLucideIcons.ellipsisVertical),
               tooltip: 'Gym actions',
               onPressed: controller.toggle,
             ),
