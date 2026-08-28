@@ -30,20 +30,19 @@ Future<Gym?> _showGymPicker(BuildContext context, List<Gym> gyms) {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
             child: Text(
               'Where are you training?',
-              style: Theme.of(sheetContext).textTheme.titleMedium,
+              style: sheetContext.theme.typography.body.md.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           for (final gym in gyms)
-            Material(
-              type: MaterialType.transparency,
-              child: ListTile(
-                leading: Icon(
-                  gym.isPrimary ? Icons.home_sharp : Icons.fitness_center_sharp,
-                ),
-                title: Text(gym.name),
-                subtitle: gym.isPrimary ? const Text('Primary gym') : null,
-                onTap: () => Navigator.of(sheetContext).pop(gym),
+            FItem(
+              prefix: Icon(
+                gym.isPrimary ? Icons.home_sharp : Icons.fitness_center_sharp,
               ),
+              title: Text(gym.name),
+              subtitle: gym.isPrimary ? const Text('Primary gym') : null,
+              onPress: () => Navigator.of(sheetContext).pop(gym),
             ),
           const SizedBox(height: 8),
         ],

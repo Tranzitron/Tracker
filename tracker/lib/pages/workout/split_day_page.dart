@@ -90,13 +90,15 @@ class _SplitDayPageState extends State<SplitDayPage> {
               children: <Widget>[
                 Text(
                   '${widget.splitTitle} · ${widget.day.title}',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: context.theme.typography.body.xl.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 if (widget.day.description.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
                     widget.day.description,
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    style: context.theme.typography.body.sm,
                   ),
                 ],
                 const SizedBox(height: 16),

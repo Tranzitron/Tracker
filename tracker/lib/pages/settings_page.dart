@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 
 import 'custom/custom_app_bar.dart';
 import 'custom/custom_route.dart';
@@ -19,14 +20,14 @@ class SettingsPage extends StatelessWidget {
             builder: (context, state) => ListView(
               padding: const EdgeInsets.symmetric(vertical: 12),
               children: <Widget>[
-                _buildSettingsMenuCard(
+                _buildSettingsMenuItem(
                   context,
                   icon: Icons.fitness_center,
                   title: 'Gyms',
                   subtitle: 'Manage gyms and weight multipliers',
                   onTap: () => pushTo(context, const GymsPage()),
                 ),
-                _buildSettingsDropdownCard(
+                _buildSettingsDropdownRow(
                   context,
                   icon: Icons.scale,
                   title: 'Units',
@@ -36,7 +37,7 @@ class SettingsPage extends StatelessWidget {
                     context.read<SettingsCubit>().setUnit(unit);
                   },
                 ),
-                _buildSwitchCard(
+                _buildSwitchRow(
                   context,
                   icon: Icons.notifications,
                   title: 'Notifications',
@@ -47,7 +48,7 @@ class SettingsPage extends StatelessWidget {
                       .read<SettingsCubit>()
                       .setNotificationsEnabled,
                 ),
-                _buildSwitchCard(
+                _buildSwitchRow(
                   context,
                   icon: Icons.security,
                   title: 'Privacy & Security',
@@ -63,7 +64,7 @@ class SettingsPage extends StatelessWidget {
     );
   }
 
-  Widget _buildSettingsDropdownCard(
+  Widget _buildSettingsDropdownRow(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -71,48 +72,73 @@ class SettingsPage extends StatelessWidget {
     required WeightUnit value,
     required ValueChanged<WeightUnit> onChanged,
   }) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        trailing: DropdownButton<WeightUnit>(
-          value: value,
-          onChanged: (unit) {
-            if (unit != null) {
-              context.read<SettingsCubit>().setUnit(unit);
-            }
-          },
-          items: [
-            for (final unit in WeightUnit.values)
-              DropdownMenuItem(value: unit, child: Text(unit.symbol)),
-          ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: FCard(
+        child: FItem.raw(
+          child: Row(
+            children: [
+              Icon(icon, color: context.theme.colors.primary),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: context.theme.typography.body.md),
+                    Text(
+                      subtitle,
+                      style: context.theme.typography.body.xs.copyWith(
+                        color: context.theme.colors.mutedForeground,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              SizedBox(
+                width: 120,
+                child: FSelect<WeightUnit>(
+                  items: {
+                    for (final unit in WeightUnit.values) unit.symbol: unit,
+                  },
+                  control: FSelectControl<WeightUnit>.lifted(
+                    value: value,
+                    onChange: (unit) {
+                      if (unit != null) {
+                        onChanged(unit);
+                      }
+                    },
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildSettingsMenuCard(
+  Widget _buildSettingsMenuItem(
     BuildContext context, {
     required IconData icon,
     required String title,
     required String subtitle,
     required VoidCallback onTap,
   }) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: ListTile(
-        leading: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 16),
-        onTap: onTap,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: FCard(
+        child: FItem(
+          prefix: Icon(icon, color: context.theme.colors.primary),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          suffix: const Icon(Icons.arrow_forward_ios, size: 16),
+          onPress: onTap,
+        ),
       ),
     );
   }
 
-  Widget _buildSwitchCard(
+  Widget _buildSwitchRow(
     BuildContext context, {
     required IconData icon,
     required String title,
@@ -120,14 +146,16 @@ class SettingsPage extends StatelessWidget {
     required bool value,
     required ValueChanged<bool> onChanged,
   }) {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-      child: SwitchListTile(
-        secondary: Icon(icon, color: Theme.of(context).colorScheme.primary),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text(subtitle),
-        value: value,
-        onChanged: onChanged,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+      child: FCard(
+        child: FItem(
+          prefix: Icon(icon, color: context.theme.colors.primary),
+          title: Text(title),
+          subtitle: Text(subtitle),
+          suffix: FSwitch(value: value, onChange: onChanged),
+          onPress: () => onChanged(!value),
+        ),
       ),
     );
   }

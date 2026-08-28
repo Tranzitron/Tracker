@@ -7,8 +7,6 @@ import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/history/history_calendar.dart';
 import 'package:tracker/pages/history/session_detail_page.dart';
 
-enum _HistoryMode { list, calendar }
-
 /// History overview (Plan.md §1.2) + calendar (Plan.md §2.5).
 ///
 /// Toggles between a chronological session list and an interactive month
@@ -25,7 +23,6 @@ class _HistoryPageState extends State<HistoryPage> {
   Map<int, String> _gymNames = const {};
   Stream<List<WorkoutSession>>? _stream;
   bool _didLoad = false;
-  _HistoryMode _mode = _HistoryMode.list;
 
   @override
   void didChangeDependencies() {
@@ -63,29 +60,6 @@ class _HistoryPageState extends State<HistoryPage> {
     AsyncSnapshot<List<WorkoutSession>> snapshot,
   ) {
     final slivers = <Widget>[CustomAppBar(context, title: 'History')];
-    slivers.add(
-      SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: SegmentedButton<_HistoryMode>(
-            segments: const [
-              ButtonSegment(
-                value: _HistoryMode.list,
-                label: Text('List'),
-                icon: Icon(Icons.list_sharp),
-              ),
-              ButtonSegment(
-                value: _HistoryMode.calendar,
-                label: Text('Calendar'),
-                icon: Icon(Icons.calendar_month_sharp),
-              ),
-            ],
-            selected: {_mode},
-            onSelectionChanged: (s) => setState(() => _mode = s.first),
-          ),
-        ),
-      ),
-    );
 
     if (snapshot.hasError) {
       slivers.add(
@@ -102,45 +76,51 @@ class _HistoryPageState extends State<HistoryPage> {
           child: Center(child: CircularProgressIndicator()),
         ),
       );
+    } else if ((snapshot.data ?? const <WorkoutSession>[]).isEmpty) {
+      slivers.add(
+        const SliverFillRemaining(hasScrollBody: false, child: _EmptyHistory()),
+      );
     } else {
       final sessions = snapshot.data ?? const <WorkoutSession>[];
-      if (sessions.isEmpty) {
-        slivers.add(
-          const SliverFillRemaining(
-            hasScrollBody: false,
-            child: _EmptyHistory(),
-          ),
-        );
-      } else if (_mode == _HistoryMode.calendar) {
-        slivers.add(
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            sliver: SliverToBoxAdapter(
-              child: HistoryCalendar(sessions: sessions, gymNames: _gymNames),
+      slivers.add(
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          sliver: SliverToBoxAdapter(
+            child: FTabs(
+              children: [
+                .entry(
+                  label: const Text('List'),
+                  child: _sessionList(context, sessions),
+                ),
+                .entry(
+                  label: const Text('Calendar'),
+                  child: HistoryCalendar(
+                    sessions: sessions,
+                    gymNames: _gymNames,
+                  ),
+                ),
+              ],
             ),
           ),
-        );
-      } else {
-        slivers.add(
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            sliver: SliverList.builder(
-              itemCount: sessions.length,
-              itemBuilder: (context, index) {
-                final session = sessions[index];
-                return _SessionTile(
-                  session: session,
-                  gymName: session.gymId == null
-                      ? null
-                      : _gymNames[session.gymId],
-                );
-              },
-            ),
-          ),
-        );
-      }
+        ),
+      );
     }
     return slivers;
+  }
+
+  Widget _sessionList(BuildContext context, List<WorkoutSession> sessions) {
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sessions.length,
+      itemBuilder: (context, index) {
+        final session = sessions[index];
+        return _SessionTile(
+          session: session,
+          gymName: session.gymId == null ? null : _gymNames[session.gymId],
+        );
+      },
+    );
   }
 }
 
@@ -197,31 +177,26 @@ class _SessionTile extends StatelessWidget {
     final duration = session.endTime != null
         ? session.endTime!.difference(session.startTime)
         : Duration.zero;
-    return FCard(
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () => pushTo(
-            context,
-            SessionDetailPage(session: session, gymName: gymName),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Icon(Icons.directions_run_sharp),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${session.title}\n${_date(session.startTime)}'
-                    '${gymName != null ? ' · $gymName' : ''}'
-                    '\n${session.sets.length} set(s) · ${_dur(duration)}',
-                  ),
-                ),
-                const Icon(Icons.chevron_right_sharp),
-              ],
+    return FItem.raw(
+      onPress: () => pushTo(
+        context,
+        SessionDetailPage(session: session, gymName: gymName),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.directions_run_sharp),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '${session.title}\n${_date(session.startTime)}'
+                '${gymName != null ? ' · $gymName' : ''}'
+                '\n${session.sets.length} set(s) · ${_dur(duration)}',
+              ),
             ),
-          ),
+            const Icon(Icons.chevron_right_sharp),
+          ],
         ),
       ),
     );

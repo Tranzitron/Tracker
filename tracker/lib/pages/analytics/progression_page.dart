@@ -115,7 +115,7 @@ class _ProgressionPageState extends State<ProgressionPage> {
       );
     }
 
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final summary = _snapshot.summary;
     final volume = displayProgressionPoints(context, _snapshot.volume);
     final totalVolume = volume.fold<double>(
@@ -150,13 +150,16 @@ class _ProgressionPageState extends State<ProgressionPage> {
           ],
         ),
         const SizedBox(height: 16),
-        Text('Working volume over time', style: theme.textTheme.titleMedium),
+        Text(
+          'Working volume over time',
+          style: theme.typography.body.md.copyWith(fontWeight: FontWeight.w600),
+        ),
         const SizedBox(height: 8),
         LineChart(points: volume, unit: weightUnitOf(context).symbol),
         const SizedBox(height: 24),
         Text(
           'Best estimated 1RM over time',
-          style: theme.textTheme.titleMedium,
+          style: theme.typography.body.md.copyWith(fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 8),
         LineChart(points: best1rm, unit: weightUnitOf(context).symbol),
@@ -164,8 +167,8 @@ class _ProgressionPageState extends State<ProgressionPage> {
         Text(
           'Warm-up sets are excluded; weights are normalized by each '
           'gym\'s multiplier.',
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: theme.colorScheme.onSurfaceVariant,
+          style: theme.typography.body.xs.copyWith(
+            color: theme.colors.mutedForeground,
           ),
         ),
       ],
@@ -196,20 +199,24 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return Expanded(
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: FCard(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             children: <Widget>[
-              Text(value, style: theme.textTheme.titleMedium),
+              Text(
+                value,
+                style: theme.typography.body.md.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: theme.typography.body.xs.copyWith(
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ],

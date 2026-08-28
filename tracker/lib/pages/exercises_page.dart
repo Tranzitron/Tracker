@@ -12,8 +12,6 @@ import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
 import '../home_page.dart';
 
-enum _BrowseMode { muscle, movement }
-
 Map<MuscleGroup, List<Exercise>> groupExercisesByMuscle(
   List<Exercise> exercises,
 ) {
@@ -37,7 +35,6 @@ class ExercisesPage extends StatefulWidget {
 }
 
 class _ExercisesPageState extends State<ExercisesPage> {
-  _BrowseMode _mode = _BrowseMode.muscle;
   List<Exercise> _exercises = const [];
   StreamSubscription<List<Exercise>>? _sub;
   bool _loaded = false;
@@ -94,9 +91,6 @@ class _ExercisesPageState extends State<ExercisesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final groups = _mode == _BrowseMode.muscle
-        ? _groupsByMuscle(_exercises)
-        : _groupsByMovement(_exercises);
     return CustomScrollView(
       slivers: <Widget>[
         CustomAppBar(
@@ -108,51 +102,38 @@ class _ExercisesPageState extends State<ExercisesPage> {
           ),
         ),
         SliverPadding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          sliver: SliverToBoxAdapter(child: _buildModeSelector()),
-        ),
-        if (_exercises.isEmpty)
-          const SliverPadding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 32),
-            sliver: SliverToBoxAdapter(
-              child: Text('No exercises in the library yet.'),
-            ),
-          )
-        else
-          SliverPadding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
-            sliver: SliverList.builder(
-              itemCount: groups.length,
-              itemBuilder: (context, index) {
-                final group = groups[index];
-                return _GroupSection(
-                  key: ValueKey<String>('exercise-group-${group.id}'),
-                  title: group.title,
-                  exercises: group.exercises,
-                );
-              },
-            ),
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
+          sliver: SliverToBoxAdapter(
+            child: _exercises.isEmpty
+                ? const Text('No exercises in the library yet.')
+                : FTabs(
+                    children: [
+                      .entry(
+                        label: const Text('Muscle group'),
+                        child: _groupList(_groupsByMuscle(_exercises)),
+                      ),
+                      .entry(
+                        label: const Text('Movement'),
+                        child: _groupList(_groupsByMovement(_exercises)),
+                      ),
+                    ],
+                  ),
           ),
+        ),
       ],
     );
   }
 
-  Widget _buildModeSelector() {
-    return SegmentedButton<_BrowseMode>(
-      segments: const [
-        ButtonSegment(
-          value: _BrowseMode.muscle,
-          label: Text('Muscle group'),
-          icon: Icon(Icons.accessibility_new_sharp),
-        ),
-        ButtonSegment(
-          value: _BrowseMode.movement,
-          label: Text('Movement'),
-          icon: Icon(Icons.swap_vert_sharp),
-        ),
+  Widget _groupList(List<_ExerciseGroup> groups) {
+    return Column(
+      children: [
+        for (final group in groups)
+          _GroupSection(
+            key: ValueKey<String>('exercise-group-${group.id}'),
+            title: group.title,
+            exercises: group.exercises,
+          ),
       ],
-      selected: {_mode},
-      onSelectionChanged: (s) => setState(() => _mode = s.first),
     );
   }
 
@@ -210,43 +191,29 @@ class _GroupSection extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: FCard(
-        child: ExpansionTile(
-          title: Text('$title (${exercises.length})'),
-          children: [
-            for (final exercise in exercises)
-              Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  key: ValueKey<String>('exercise-${exercise.id}'),
-                  onTap: () =>
-                      pushTo(context, ExerciseDetailPage(exercise: exercise)),
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(exercise.title),
-                              Text(
-                                exercise.equipment
-                                    .map((eq) => eq.displayName)
-                                    .join(', '),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_sharp),
-                      ],
+      child: FAccordion(
+        children: [
+          FAccordionItem(
+            title: Text('$title (${exercises.length})'),
+            child: FItemGroup(
+              divider: .full,
+              children: [
+                for (final exercise in exercises)
+                  FItem(
+                    key: ValueKey<String>('exercise-${exercise.id}'),
+                    title: Text(exercise.title),
+                    subtitle: Text(
+                      exercise.equipment.map((eq) => eq.displayName).join(', '),
+                      overflow: TextOverflow.ellipsis,
                     ),
+                    suffix: const Icon(Icons.chevron_right_sharp),
+                    onPress: () =>
+                        pushTo(context, ExerciseDetailPage(exercise: exercise)),
                   ),
-                ),
-              ),
-          ],
-        ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

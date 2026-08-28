@@ -128,95 +128,46 @@ class BuildMaterialSplit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(top: 16),
-      child: Material(
-        color: const Color.fromARGB(25, 127, 127, 127),
-        clipBehavior: Clip.antiAlias,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(10),
-          side: const BorderSide(color: Colors.transparent),
-        ),
-        child: ListBody(
-          children: <Widget>[
-            WorkoutListTile(
+    return Padding(
+      padding: const EdgeInsets.only(top: 16),
+      child: FCard(
+        child: FItemGroup(
+          divider: .full,
+          children: <FItem>[
+            FItem(
               key: ValueKey<String>('split-header-${split.id}'),
-              titleText: split.title,
-              isSplitDay: false,
-              trailing: const Icon(Icons.edit_outlined, size: 20),
-              onTap: () => pushTo(context, SplitEditorPage(split: split)),
+              title: Text(split.title, overflow: TextOverflow.ellipsis),
+              suffix: const Icon(Icons.edit_outlined, size: 20),
+              onPress: () => pushTo(context, SplitEditorPage(split: split)),
             ),
             for (var index = 0; index < split.splitDays.length; index++)
-              InkWell(
+              FItem(
                 key: ValueKey<String>('split-day-${split.id}-$index'),
-                onTap: () => pushTo(
+                title: Text(
+                  split.splitDays[index].title,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text(
+                  split.splitDays[index].exercises
+                      .map(
+                        (e) =>
+                            exerciseNames[e.exerciseId] ??
+                            'Exercise ${e.exerciseId}',
+                      )
+                      .join(', '),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPress: () => pushTo(
                   context,
                   SplitDayPage(
                     splitTitle: split.title,
                     day: split.splitDays[index],
                   ),
                 ),
-                child: Column(
-                  children: <Widget>[
-                    const Divider(height: 1, indent: 16, endIndent: 16),
-                    WorkoutListTile(
-                      isSplitDay: true,
-                      titleText: split.splitDays[index].title,
-                      exercises: split.splitDays[index].exercises,
-                      exerciseNames: exerciseNames,
-                    ),
-                  ],
-                ),
               ),
           ],
         ),
       ),
-    );
-  }
-}
-
-class WorkoutListTile extends StatelessWidget {
-  const WorkoutListTile({
-    super.key,
-    required this.titleText,
-    required this.isSplitDay,
-    this.exercises,
-    this.exerciseNames = const {},
-    this.onTap,
-    this.trailing,
-  });
-
-  final String titleText;
-  final bool isSplitDay;
-  final List<ExerciseItem>? exercises;
-  final Map<int, String> exerciseNames;
-  final void Function()? onTap;
-  final Widget? trailing;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListTile(
-      minTileHeight: 40,
-      contentPadding: const EdgeInsets.symmetric(horizontal: 16),
-      title: Text(
-        titleText,
-        style: TextStyle(color: isSplitDay ? Colors.blueAccent : Colors.white),
-        overflow: TextOverflow.ellipsis,
-      ),
-      trailing: trailing,
-      subtitle: exercises != null
-          ? Text(
-              exercises!
-                  .map(
-                    (e) =>
-                        exerciseNames[e.exerciseId] ??
-                        'Exercise ${e.exerciseId}',
-                  )
-                  .join(', '),
-              overflow: TextOverflow.ellipsis,
-            )
-          : const SizedBox.shrink(),
-      onTap: onTap,
     );
   }
 }

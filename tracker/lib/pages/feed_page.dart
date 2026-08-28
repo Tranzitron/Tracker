@@ -84,7 +84,9 @@ class _FeedPageState extends State<FeedPage> {
               Expanded(
                 child: Text(
                   'Analytics',
-                  style: Theme.of(context).textTheme.titleLarge,
+                  style: context.theme.typography.body.xl.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               TextButton.icon(
@@ -152,7 +154,9 @@ class _FeedPageState extends State<FeedPage> {
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               child: Text(
                 'Recent activity',
-                style: Theme.of(context).textTheme.titleLarge,
+                style: context.theme.typography.body.xl.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ),
@@ -224,34 +228,14 @@ class _FeedPageState extends State<FeedPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-              child: FCard(
-                child: Material(
-                  type: MaterialType.transparency,
-                  child: InkWell(
-                    onTap: () => pushTo(context, const ProgressionPage()),
-                    child: const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Row(
-                        children: [
-                          Icon(Icons.show_chart_sharp),
-                          SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Progression'),
-                                Text(
-                                  'Strength and volume trends across all exercises',
-                                ),
-                              ],
-                            ),
-                          ),
-                          Icon(Icons.chevron_right_sharp),
-                        ],
-                      ),
-                    ),
-                  ),
+              child: FItem(
+                prefix: const Icon(Icons.show_chart_sharp),
+                title: const Text('Progression'),
+                subtitle: const Text(
+                  'Strength and volume trends across all exercises',
                 ),
+                suffix: const Icon(Icons.chevron_right_sharp),
+                onPress: () => pushTo(context, const ProgressionPage()),
               ),
             ),
           ),
@@ -290,7 +274,7 @@ class _FeedMessage extends StatelessWidget {
   final Widget? action;
 
   @override
-  Widget build(BuildContext context) => Card(
+  Widget build(BuildContext context) => FCard(
     child: Padding(
       padding: const EdgeInsets.all(16),
       child: Row(
@@ -321,30 +305,25 @@ class _ActivityCard extends StatelessWidget {
     final duration = session.endTime == null
         ? Duration.zero
         : session.endTime!.difference(session.startTime);
-    return FCard(
-      child: Material(
-        type: MaterialType.transparency,
-        child: InkWell(
-          onTap: () => pushTo(
-            context,
-            SessionDetailPage(session: session, gymName: gymName),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                const Icon(Icons.check_circle_outline),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Text(
-                    '${session.title}\n${_date(session.startTime)}${gymName == null ? '' : ' · $gymName'}\n'
-                    '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
-                  ),
-                ),
-                const Icon(Icons.chevron_right_sharp),
-              ],
+    return FItem.raw(
+      onPress: () => pushTo(
+        context,
+        SessionDetailPage(session: session, gymName: gymName),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            const Icon(Icons.check_circle_outline),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                '${session.title}\n${_date(session.startTime)}${gymName == null ? '' : ' · $gymName'}\n'
+                '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
+              ),
             ),
-          ),
+            const Icon(Icons.chevron_right_sharp),
+          ],
         ),
       ),
     );

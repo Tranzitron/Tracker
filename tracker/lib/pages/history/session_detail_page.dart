@@ -47,7 +47,7 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final session = widget.session;
     final workingSets = session.sets.where((s) => !s.isWarmup).toList();
     final workingVolume = workingSets.fold<double>(
@@ -76,7 +76,12 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('Sets', style: theme.textTheme.titleMedium),
+                Text(
+                  'Sets',
+                  style: theme.typography.body.md.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 if (session.sets.isEmpty)
                   const Text('No sets were logged in this session.')
@@ -105,7 +110,7 @@ class _HeaderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final duration = session.endTime != null
         ? session.endTime!.difference(session.startTime)
         : Duration.zero;
@@ -116,12 +121,17 @@ class _HeaderCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(_date(d), style: theme.textTheme.titleMedium),
+            Text(
+              _date(d),
+              style: theme.typography.body.md.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 4),
             Text(
               [?gymName, _duration(duration)].join(' · '),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: theme.typography.body.sm.copyWith(
+                color: theme.colors.mutedForeground,
               ),
             ),
           ],
@@ -149,19 +159,24 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return Expanded(
       child: FCard(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             children: <Widget>[
-              Text(value, style: theme.textTheme.titleLarge),
+              Text(
+                value,
+                style: theme.typography.body.xl.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: theme.typography.body.xs.copyWith(
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ],
@@ -180,11 +195,10 @@ class _SetRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isWarmup = set.isWarmup;
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: _WarmupChip(isWarmup: isWarmup),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: FItem(
+        prefix: _WarmupChip(isWarmup: set.isWarmup),
         title: Text(name),
         subtitle: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
       ),
@@ -201,8 +215,8 @@ class _WarmupChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final color = isWarmup ? Colors.orange : theme.colorScheme.primary;
+    final theme = context.theme;
+    final color = isWarmup ? theme.colors.secondary : theme.colors.primary;
     return Container(
       width: 28,
       height: 28,

@@ -196,17 +196,15 @@ class _ExerciseRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: ListTile(
-        leading: ReorderableDragStartListener(
-          index: index,
-          child: const Icon(Icons.drag_handle),
-        ),
-        title: Text('$orderLabel. $name'),
-        trailing: IconButton(
-          icon: const Icon(Icons.delete_outline),
-          onPressed: onDelete,
-        ),
+    return FItem(
+      prefix: ReorderableDragStartListener(
+        index: index,
+        child: const Icon(Icons.drag_handle),
+      ),
+      title: Text('$orderLabel. $name'),
+      suffix: IconButton(
+        icon: const Icon(Icons.delete_outline),
+        onPressed: onDelete,
       ),
     );
   }

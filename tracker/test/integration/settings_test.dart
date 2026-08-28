@@ -5,6 +5,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/settings_page.dart';
@@ -45,7 +46,12 @@ void main() {
     await tester.pumpWidget(
       BlocProvider(
         create: (_) => SettingsCubit(),
-        child: const MaterialApp(home: SettingsPage()),
+        child: MaterialApp(
+          home: FTheme(
+            data: FTheme.neutral.light.touch,
+            child: const SettingsPage(),
+          ),
+        ),
       ),
     );
     await tester.pump();
@@ -53,22 +59,19 @@ void main() {
     expect(find.text('Units'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);
     expect(find.text('Privacy & Security'), findsOneWidget);
-    expect(find.byType(SwitchListTile), findsNWidgets(2));
+    expect(find.byType(FSwitch), findsNWidgets(2));
     expect(find.byType(AlertDialog), findsNothing);
 
-    await tester.tap(find.byType(SwitchListTile).first);
+    await tester.tap(find.byType(FSwitch).first);
     await tester.pump();
     expect(find.byType(AlertDialog), findsNothing);
-    expect(
-      tester.widget<SwitchListTile>(find.byType(SwitchListTile).first).value,
-      isFalse,
-    );
+    expect(tester.widget<FSwitch>(find.byType(FSwitch).first).value, isFalse);
 
     await tester.tap(find.text('kg'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('lb'), findsOneWidget);
     await tester.tap(find.text('lb'));
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(find.text('lb'), findsOneWidget);
   });
 }

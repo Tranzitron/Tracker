@@ -98,12 +98,11 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
       builder: (context) => ListView(
         shrinkWrap: true,
         children: [
-          const ListTile(title: Text('Use a template')),
           for (final template in workoutSplitTemplates)
-            ListTile(
+            FItem(
               title: Text(template.title),
               subtitle: Text('${template.days.length} days'),
-              onTap: () => Navigator.of(context).pop(template),
+              onPress: () => Navigator.of(context).pop(template),
             ),
         ],
       ),
@@ -236,19 +235,17 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                   const Text('No days yet — add one below.')
                 else
                   for (var i = 0; i < _days.length; i++)
-                    Card(
-                      child: ListTile(
-                        title: Text(_days[i].title),
-                        subtitle: Text(
-                          '${_days[i].exercises.length} exercise(s)',
-                        ),
-                        trailing: IconButton(
-                          icon: const Icon(Icons.delete_outline),
-                          tooltip: 'Remove day',
-                          onPressed: () => setState(() => _days.removeAt(i)),
-                        ),
-                        onTap: () => _openDayEditor(i),
+                    FItem(
+                      title: Text(_days[i].title),
+                      subtitle: Text(
+                        '${_days[i].exercises.length} exercise(s)',
                       ),
+                      suffix: IconButton(
+                        icon: const Icon(Icons.delete_outline),
+                        tooltip: 'Remove day',
+                        onPressed: () => setState(() => _days.removeAt(i)),
+                      ),
+                      onPress: () => _openDayEditor(i),
                     ),
                 const SizedBox(height: 12),
                 OutlinedButton.icon(

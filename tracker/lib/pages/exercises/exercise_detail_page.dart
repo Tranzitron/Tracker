@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
@@ -68,7 +69,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final exercise = widget.exercise;
     final series = displayProgressionPoints(context, _snapshot.best1rm);
     final summary = _snapshot.summary;
@@ -83,7 +84,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 if (exercise.description != null) ...[
-                  Text(exercise.description!, style: theme.textTheme.bodyLarge),
+                  Text(exercise.description!, style: theme.typography.body.lg),
                   const SizedBox(height: 16),
                 ],
                 _InfoRow(
@@ -110,8 +111,15 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                       .map((e) => e.displayName)
                       .join(', '),
                 ),
-                const Divider(height: 32),
-                Text('Performance history', style: theme.textTheme.titleMedium),
+                const SizedBox(height: 16),
+                const FDivider(),
+                const SizedBox(height: 16),
+                Text(
+                  'Performance history',
+                  style: theme.typography.body.md.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
                 const SizedBox(height: 8),
                 Row(
                   children: <Widget>[
@@ -129,7 +137,7 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                 const SizedBox(height: 16),
                 Text(
                   'Best working-set 1RM over time',
-                  style: theme.textTheme.bodyMedium,
+                  style: theme.typography.body.sm,
                 ),
                 const SizedBox(height: 8),
                 LineChart(points: series, unit: weightUnitOf(context).symbol),
@@ -150,20 +158,24 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return Expanded(
-      child: Card(
-        margin: const EdgeInsets.symmetric(horizontal: 4),
+      child: FCard(
         child: Padding(
           padding: const EdgeInsets.all(12),
           child: Column(
             children: <Widget>[
-              Text(value, style: theme.textTheme.titleMedium),
+              Text(
+                value,
+                style: theme.typography.body.md.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
               const SizedBox(height: 4),
               Text(
                 label,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+                style: theme.typography.body.xs.copyWith(
+                  color: theme.colors.mutedForeground,
                 ),
               ),
             ],
@@ -182,7 +194,7 @@ class _InfoRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Row(
@@ -192,12 +204,12 @@ class _InfoRow extends StatelessWidget {
             width: 140,
             child: Text(
               label,
-              style: theme.textTheme.bodyMedium?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: theme.typography.body.sm.copyWith(
+                color: theme.colors.mutedForeground,
               ),
             ),
           ),
-          Expanded(child: Text(value, style: theme.textTheme.bodyMedium)),
+          Expanded(child: Text(value, style: theme.typography.body.sm)),
         ],
       ),
     );

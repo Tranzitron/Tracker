@@ -66,7 +66,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final grid = CalendarGrid(_year, _month);
     final monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
     final streak = _dateIndex.currentStreak();
@@ -89,8 +89,8 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                   child: Center(
                     child: Text(
                       label,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
+                      style: theme.typography.body.xs.copyWith(
+                        color: theme.colors.mutedForeground,
                       ),
                     ),
                   ),
@@ -106,7 +106,9 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
             _selectedDay == null
                 ? 'Workouts'
                 : 'Workouts · ${_dateLabel(_selectedDay!)}',
-            style: theme.textTheme.titleSmall,
+            style: theme.typography.body.sm.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
           const SizedBox(height: 4),
           _dayList(_selectedDay),
@@ -115,7 +117,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     );
   }
 
-  Widget _dayGrid(CalendarGrid grid, ThemeData theme) {
+  Widget _dayGrid(CalendarGrid grid, FThemeData theme) {
     const double cellSpacing = 4;
     return GridView.count(
       padding: EdgeInsets.only(top: 4),
@@ -131,7 +133,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     );
   }
 
-  Widget _dayCell(CalendarGrid grid, int index, ThemeData theme) {
+  Widget _dayCell(CalendarGrid grid, int index, FThemeData theme) {
     final dayVal = grid.days[index];
     if (dayVal == null) return const SizedBox.shrink();
     final date = DateTime(grid.year, grid.month, dayVal);
@@ -140,11 +142,11 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
         _selectedDay != null && _selectedDay!.isAtSameMomentAs(date);
 
     final foreground = selected
-        ? theme.colorScheme.onPrimary
-        : theme.colorScheme.onSurface;
+        ? theme.colors.primaryForeground
+        : theme.colors.foreground;
     final dot = selected
-        ? theme.colorScheme.onPrimary
-        : (hasWorkout ? theme.colorScheme.primary : Colors.transparent);
+        ? theme.colors.primaryForeground
+        : (hasWorkout ? theme.colors.primary : Colors.transparent);
 
     return InkWell(
       onTap: () => setState(() => _selectedDay = date),
@@ -152,7 +154,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
       child: Container(
         margin: const EdgeInsets.all(1),
         decoration: BoxDecoration(
-          color: selected ? theme.colorScheme.primary : null,
+          color: selected ? theme.colors.primary : null,
           borderRadius: BorderRadius.circular(8),
         ),
         alignment: Alignment.center,
@@ -161,7 +163,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
           children: <Widget>[
             Text(
               dayVal.toString(),
-              style: theme.textTheme.bodySmall?.copyWith(color: foreground),
+              style: theme.typography.body.xs.copyWith(color: foreground),
             ),
             const SizedBox(height: 0),
             Container(
@@ -191,38 +193,33 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
           final session = sessions[index];
           return Padding(
             padding: const EdgeInsets.only(bottom: 4),
-            child: FCard(
-              child: Material(
-                type: MaterialType.transparency,
-                child: InkWell(
-                  onTap: () => pushTo(
-                    context,
-                    SessionDetailPage(
-                      session: session,
-                      gymName: session.gymId == null
-                          ? null
-                          : widget.gymNames[session.gymId],
+            child: FItem.raw(
+              onPress: () => pushTo(
+                context,
+                SessionDetailPage(
+                  session: session,
+                  gymName: session.gymId == null
+                      ? null
+                      : widget.gymNames[session.gymId],
+                ),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(12),
+                child: Row(
+                  children: [
+                    const Icon(Icons.directions_run_sharp),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(session.title),
+                          Text('${session.sets.length} set(s)'),
+                        ],
+                      ),
                     ),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.directions_run_sharp),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(session.title),
-                              Text('${session.sets.length} set(s)'),
-                            ],
-                          ),
-                        ),
-                        const Icon(Icons.chevron_right_sharp),
-                      ],
-                    ),
-                  ),
+                    const Icon(Icons.chevron_right_sharp),
+                  ],
                 ),
               ),
             ),
@@ -270,7 +267,7 @@ class _BuildMonthHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return Row(
       children: <Widget>[
         IconButton(
@@ -282,7 +279,9 @@ class _BuildMonthHeader extends StatelessWidget {
           child: Text(
             '$monthName $year',
             textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium,
+            style: theme.typography.body.md.copyWith(
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
         IconButton(
@@ -321,20 +320,24 @@ class _Metric extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 2),
+    final theme = context.theme;
+    return FCard(
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            Text(value, style: theme.textTheme.titleSmall),
+            Text(
+              value,
+              style: theme.typography.body.sm.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(width: 4),
             Text(
               label,
-              style: theme.textTheme.bodySmall?.copyWith(
-                color: theme.colorScheme.onSurfaceVariant,
+              style: theme.typography.body.xs.copyWith(
+                color: theme.colors.mutedForeground,
               ),
             ),
           ],

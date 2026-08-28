@@ -6,6 +6,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/history/history_calendar.dart';
@@ -21,8 +22,11 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp(
-        home: Scaffold(
-          body: HistoryCalendar(sessions: sessions, gymNames: const {}),
+        home: FTheme(
+          data: FTheme.neutral.light.touch,
+          child: Scaffold(
+            body: HistoryCalendar(sessions: sessions, gymNames: const {}),
+          ),
         ),
       ),
     );
@@ -62,7 +66,10 @@ void main() {
 
       await tester.pumpWidget(
         MaterialApp(
-          home: SessionDetailPage(session: session, gymName: 'Home'),
+          home: FTheme(
+            data: FTheme.neutral.light.touch,
+            child: SessionDetailPage(session: session, gymName: 'Home'),
+          ),
         ),
       );
       await tester.pumpAndSettle();
@@ -83,29 +90,32 @@ void main() {
     ) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: SessionDetailPage(
-            session: WorkoutSession(
-              title: 'Push',
-              startTime: DateTime(2026, 1, 2, 9),
-              endTime: DateTime(2026, 1, 2, 10),
-              sets: [
-                WorkoutSet(
-                  exerciseId: 1,
-                  weight: 100,
-                  reps: 5,
-                  type: SetType.working,
-                  order: 0,
-                ),
-                WorkoutSet(
-                  exerciseId: 1,
-                  weight: 60,
-                  reps: 8,
-                  type: SetType.warmup,
-                  order: 1,
-                ),
-              ],
+          home: FTheme(
+            data: FTheme.neutral.light.touch,
+            child: SessionDetailPage(
+              session: WorkoutSession(
+                title: 'Push',
+                startTime: DateTime(2026, 1, 2, 9),
+                endTime: DateTime(2026, 1, 2, 10),
+                sets: [
+                  WorkoutSet(
+                    exerciseId: 1,
+                    weight: 100,
+                    reps: 5,
+                    type: SetType.working,
+                    order: 0,
+                  ),
+                  WorkoutSet(
+                    exerciseId: 1,
+                    weight: 60,
+                    reps: 8,
+                    type: SetType.warmup,
+                    order: 1,
+                  ),
+                ],
+              ),
+              gymName: null,
             ),
-            gymName: null,
           ),
         ),
       );

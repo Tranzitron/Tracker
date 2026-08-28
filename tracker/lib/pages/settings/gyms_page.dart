@@ -464,45 +464,47 @@ class _GymTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = context.theme;
     final primary = gym.isPrimary;
-    return Card(
-      margin: const EdgeInsets.symmetric(vertical: 6),
-      child: ListTile(
-        onTap: onEdit,
-        leading: Icon(
-          primary ? Icons.home_sharp : Icons.fitness_center_sharp,
-          color: primary ? theme.colors.primary : null,
-        ),
-        title: Text(gym.name),
-        subtitle: Text(
-          primary
-              ? 'Primary · baseline ×1.0'
-              : 'Multiplier ×${_fmtGym(gym.multiplier)} · '
-                    '${gym.perExerciseMultipliers.length} movement overrides',
-        ),
-        trailing: FPopoverMenu.tiles(
-          menuAnchor: .topRight,
-          childAnchor: .bottomRight,
-          menu: [
-            .group(
-              children: [
-                .tile(
-                  title: const Text('Set as primary'),
-                  enabled: !primary,
-                  onPress: onPrimary,
-                ),
-                if (!primary && canEstimate)
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: FCard(
+        child: FItem(
+          onPress: onEdit,
+          prefix: Icon(
+            primary ? Icons.home_sharp : Icons.fitness_center_sharp,
+            color: primary ? theme.colors.primary : null,
+          ),
+          title: Text(gym.name),
+          subtitle: Text(
+            primary
+                ? 'Primary · baseline ×1.0'
+                : 'Multiplier ×${_fmtGym(gym.multiplier)} · '
+                      '${gym.perExerciseMultipliers.length} movement overrides',
+          ),
+          suffix: FPopoverMenu.tiles(
+            menuAnchor: .topRight,
+            childAnchor: .bottomRight,
+            menu: [
+              .group(
+                children: [
                   .tile(
-                    title: const Text('Auto-estimate multiplier'),
-                    onPress: onEstimate,
+                    title: const Text('Set as primary'),
+                    enabled: !primary,
+                    onPress: onPrimary,
                   ),
-                .tile(title: const Text('Delete'), onPress: onDelete),
-              ],
+                  if (!primary && canEstimate)
+                    .tile(
+                      title: const Text('Auto-estimate multiplier'),
+                      onPress: onEstimate,
+                    ),
+                  .tile(title: const Text('Delete'), onPress: onDelete),
+                ],
+              ),
+            ],
+            builder: (_, controller, _) => IconButton(
+              icon: const Icon(Icons.more_vert),
+              tooltip: 'Gym actions',
+              onPressed: controller.toggle,
             ),
-          ],
-          builder: (_, controller, _) => IconButton(
-            icon: const Icon(Icons.more_vert),
-            tooltip: 'Gym actions',
-            onPressed: controller.toggle,
           ),
         ),
       ),

@@ -304,7 +304,7 @@ class _WorkoutHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final started = presentation.startTime;
     final working = presentation.workingVolume;
-    return Card(
+    return FCard(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -368,47 +368,49 @@ class _PlanExerciseCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Text(
-                  '${order + 1}. ',
-                  style: context.theme.typography.body.md.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                Expanded(
-                  child: Text(
-                    exercise.name,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: FCard(
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Text(
+                    '${order + 1}. ',
                     style: context.theme.typography.body.md.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            if (sets.isEmpty)
-              Text(
-                'No sets yet',
-                style: context.theme.typography.body.xs.copyWith(
-                  color: context.theme.colors.mutedForeground,
-                ),
-              )
-            else
-              for (final set in sets) _SetTile(set: set),
-            const Divider(height: 16),
-            _AddSetForm(
-              exerciseId: exercise.exerciseId,
-              exerciseName: exercise.name,
-            ),
-          ],
+                  Expanded(
+                    child: Text(
+                      exercise.name,
+                      style: context.theme.typography.body.md.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              if (sets.isEmpty)
+                Text(
+                  'No sets yet',
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: context.theme.colors.mutedForeground,
+                  ),
+                )
+              else
+                for (final set in sets) _SetTile(set: set),
+              const FDivider(),
+              _AddSetForm(
+                exerciseId: exercise.exerciseId,
+                exerciseName: exercise.name,
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -448,7 +450,7 @@ class _FreeFormPanelState extends State<_FreeFormPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return FCard(
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -491,10 +493,8 @@ class _SetTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
-    return ListTile(
-      dense: true,
-      contentPadding: EdgeInsets.zero,
-      leading: _WarmupBadge(isWarmup: set.isWarmup),
+    return FItem(
+      prefix: _WarmupBadge(isWarmup: set.isWarmup),
       title: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
       subtitle: set.isWarmup
           ? Text(
@@ -504,7 +504,7 @@ class _SetTile extends StatelessWidget {
               ),
             )
           : null,
-      trailing: IconButton(
+      suffix: IconButton(
         icon: const Icon(Icons.delete_outline, size: 20),
         tooltip: 'Remove set',
         onPressed: () => context.read<WorkoutCubit>().removeSet(set.order),
