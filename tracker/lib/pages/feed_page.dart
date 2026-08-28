@@ -56,9 +56,9 @@ class _FeedPageState extends State<FeedPage> {
   Future<void> _editGraph({int? index}) async {
     final settings = _settings;
     if (settings == null) return;
-    final result = await showDialog<GraphConfig>(
+    final result = await showFDialog<GraphConfig>(
       context: context,
-      builder: (_) => GraphEditor(
+      builder: (_, _, _) => GraphEditor(
         initial: index == null ? null : settings.state.graphs[index],
         exercises: _exercises,
       ),

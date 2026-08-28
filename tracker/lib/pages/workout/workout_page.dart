@@ -157,37 +157,46 @@ class _InProgressView extends StatelessWidget {
     BuildContext context,
     int setCount,
   ) async {
-    return await showDialog<_WorkoutAction>(
+    return await showFDialog<_WorkoutAction>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('End workout?'),
-            content: Text(
-              'Log $setCount set(s) and save this workout to history.',
+          builder: (dialogContext, _, _) => FDialog(
+            builder: (context, style) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('End workout?', style: style.titleTextStyle),
+                const SizedBox(height: 8),
+                Text(
+                  'Log $setCount set(s) and save this workout to history.',
+                  style: style.bodyTextStyle,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.delete_outline),
+                      color: dialogContext.theme.colors.error,
+                      tooltip: 'Discard workout',
+                      onPressed: () =>
+                          Navigator.pop(dialogContext, _WorkoutAction.discard),
+                    ),
+                    const Spacer(),
+                    FButton(
+                      variant: .outline,
+                      onPress: () =>
+                          Navigator.pop(dialogContext, _WorkoutAction.cancel),
+                      child: const Text('Keep going'),
+                    ),
+                    const SizedBox(width: 8),
+                    FButton(
+                      onPress: () =>
+                          Navigator.pop(dialogContext, _WorkoutAction.save),
+                      child: const Text('End & save'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            actions: <Widget>[
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.delete_outline),
-                    color: dialogContext.theme.colors.error,
-                    tooltip: 'Discard workout',
-                    onPressed: () =>
-                        Navigator.pop(dialogContext, _WorkoutAction.discard),
-                  ),
-                  const Spacer(),
-                  TextButton(
-                    onPressed: () =>
-                        Navigator.pop(dialogContext, _WorkoutAction.cancel),
-                    child: const Text('Keep going'),
-                  ),
-                  FilledButton(
-                    onPressed: () =>
-                        Navigator.pop(dialogContext, _WorkoutAction.save),
-                    child: const Text('End & save'),
-                  ),
-                ],
-              ),
-            ],
           ),
         ) ??
         _WorkoutAction.cancel;
@@ -197,25 +206,39 @@ class _InProgressView extends StatelessWidget {
     BuildContext context, {
     bool noSets = false,
   }) async {
-    return await showDialog<bool>(
+    return await showFDialog<bool>(
           context: context,
-          builder: (dialogContext) => AlertDialog(
-            title: const Text('Discard workout?'),
-            content: Text(
-              noSets
-                  ? 'No sets have been logged. Do you want to discard this session?'
-                  : 'This will delete all progress for this session.',
+          builder: (dialogContext, _, _) => FDialog(
+            builder: (context, style) => Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Text('Discard workout?', style: style.titleTextStyle),
+                const SizedBox(height: 8),
+                Text(
+                  noSets
+                      ? 'No sets have been logged. Do you want to discard this session?'
+                      : 'This will delete all progress for this session.',
+                  style: style.bodyTextStyle,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    FButton(
+                      variant: .outline,
+                      onPress: () => Navigator.pop(dialogContext, false),
+                      child: const Text('Cancel'),
+                    ),
+                    const SizedBox(width: 8),
+                    FButton(
+                      onPress: () => Navigator.pop(dialogContext, true),
+                      child: const Text('Discard'),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            actions: <Widget>[
-              TextButton(
-                onPressed: () => Navigator.pop(dialogContext, false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(dialogContext, true),
-                child: const Text('Discard'),
-              ),
-            ],
           ),
         ) ??
         false;

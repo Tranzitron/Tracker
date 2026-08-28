@@ -43,24 +43,35 @@ class FeedGraphCard extends StatelessWidget {
                   Expanded(
                     child: Text(
                       config.title,
-                      style: Theme.of(context).textTheme.titleMedium,
+                      style: context.theme.typography.body.md.copyWith(
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ),
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'edit') onEdit();
-                      if (value == 'delete') onDelete();
-                    },
-                    itemBuilder: (_) => const [
-                      PopupMenuItem(value: 'edit', child: Text('Edit')),
-                      PopupMenuItem(value: 'delete', child: Text('Delete')),
+                  FPopoverMenu.tiles(
+                    menuAnchor: .topRight,
+                    childAnchor: .bottomRight,
+                    menu: [
+                      .group(
+                        children: [
+                          .tile(title: const Text('Edit'), onPress: onEdit),
+                          .tile(title: const Text('Delete'), onPress: onDelete),
+                        ],
+                      ),
                     ],
+                    builder: (_, controller, _) => FButton(
+                      variant: .ghost,
+                      onPress: controller.toggle,
+                      child: const Icon(Icons.more_vert),
+                    ),
                   ),
                 ],
               ),
               Text(
                 '$exerciseName · ${graphMetricLabel(config.metric)} · ${graphTimeframeLabel(config.timeframe)}',
-                style: Theme.of(context).textTheme.bodySmall,
+                style: context.theme.typography.body.xs.copyWith(
+                  color: context.theme.colors.mutedForeground,
+                ),
               ),
               const SizedBox(height: 4),
               LineChart(

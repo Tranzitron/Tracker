@@ -132,21 +132,37 @@ class _GymsPageState extends State<GymsPage> {
   Future<void> _deleteGym(Gym gym) async {
     final repo = RepositoryScope.maybeOf(context);
     if (repo == null) return;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showFDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete gym?'),
-        content: Text('Remove "${gym.name}"? Past sessions keep their record.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (dialogContext, _, _) => FDialog(
+        builder: (context, style) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Delete gym?', style: style.titleTextStyle),
+            const SizedBox(height: 8),
+            Text(
+              'Remove "${gym.name}"? Past sessions keep their record.',
+              style: style.bodyTextStyle,
+            ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FButton(
+                  variant: .outline,
+                  onPress: () => Navigator.of(context).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                FButton(
+                  onPress: () => Navigator.of(context).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed == true) {
@@ -156,8 +172,10 @@ class _GymsPageState extends State<GymsPage> {
 
   void _snack(String message) {
     if (!mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), duration: const Duration(seconds: 2)),
+    showFToast(
+      context: context,
+      title: Text(message),
+      duration: const Duration(seconds: 2),
     );
   }
 
@@ -287,12 +305,14 @@ class _EditGymDialogState extends State<EditGymDialog> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SingleChildScrollView(
+    return FDialog(
+      builder: (context, style) => SingleChildScrollView(
         child: Column(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
+            Text(widget.title, style: style.titleTextStyle),
+            const SizedBox(height: 16),
             FTextField(
               control: FTextFieldControl.managed(
                 controller: _name,
@@ -345,55 +365,64 @@ class _EditGymDialogState extends State<EditGymDialog> {
                       )!,
                     ),
             ),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FButton(
+                  variant: .outline,
+                  onPress: () => Navigator.of(context).pop(),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                FButton(
+                  onPress: () async {
+                    final nameText = _name.text.trim();
+                    final multiplierError = _gymMultiplierError(
+                      _multiplier.text,
+                      isPrimary: widget.initial.isPrimary,
+                    );
+                    if (_gymNameError(nameText) != null ||
+                        multiplierError != null) {
+                      setState(() {});
+                      return;
+                    }
+                    final candidate = Gym(
+                      name: nameText,
+                      description: _description.text.trim(),
+                      isPrimary: widget.initial.isPrimary,
+                      order: widget.initial.order,
+                      multiplier: widget.initial.isPrimary
+                          ? 1.0
+                          : double.tryParse(_multiplier.text.trim()) ?? 1.0,
+                    )..id = widget.initial.id;
+
+                    final existing =
+                        await widget.getExistingGyms?.call() ?? const <Gym>[];
+                    if (existing.any(
+                      (gym) =>
+                          gym.id != widget.initial.id &&
+                          sameGymName(gym, candidate),
+                    )) {
+                      if (context.mounted) {
+                        showFToast(
+                          context: context,
+                          title: const Text(
+                            'A gym with this name already exists',
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                    if (context.mounted) Navigator.of(context).pop(candidate);
+                  },
+                  child: const Text('Save'),
+                ),
+              ],
+            ),
           ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () async {
-            final nameText = _name.text.trim();
-            final multiplierError = _gymMultiplierError(
-              _multiplier.text,
-              isPrimary: widget.initial.isPrimary,
-            );
-            if (_gymNameError(nameText) != null || multiplierError != null) {
-              setState(() {});
-              return;
-            }
-            final candidate = Gym(
-              name: nameText,
-              description: _description.text.trim(),
-              isPrimary: widget.initial.isPrimary,
-              order: widget.initial.order,
-              multiplier: widget.initial.isPrimary
-                  ? 1.0
-                  : double.tryParse(_multiplier.text.trim()) ?? 1.0,
-            )..id = widget.initial.id;
-
-            final existing =
-                await widget.getExistingGyms?.call() ?? const <Gym>[];
-            if (existing.any(
-              (gym) =>
-                  gym.id != widget.initial.id && sameGymName(gym, candidate),
-            )) {
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('A gym with this name already exists'),
-                  ),
-                );
-              }
-              return;
-            }
-            if (context.mounted) Navigator.of(context).pop(candidate);
-          },
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
 }
@@ -404,9 +433,9 @@ Future<Gym?> _editGymDialog(
   required Gym initial,
   Future<List<Gym>> Function()? getExistingGyms,
 }) {
-  return showDialog<Gym>(
+  return showFDialog<Gym>(
     context: context,
-    builder: (context) => EditGymDialog(
+    builder: (context, _, _) => EditGymDialog(
       title: title,
       initial: initial,
       getExistingGyms: getExistingGyms,
@@ -433,7 +462,7 @@ class _GymTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     final primary = gym.isPrimary;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 6),
@@ -441,7 +470,7 @@ class _GymTile extends StatelessWidget {
         onTap: onEdit,
         leading: Icon(
           primary ? Icons.home_sharp : Icons.fitness_center_sharp,
-          color: primary ? theme.colorScheme.primary : null,
+          color: primary ? theme.colors.primary : null,
         ),
         title: Text(gym.name),
         subtitle: Text(
@@ -450,26 +479,31 @@ class _GymTile extends StatelessWidget {
               : 'Multiplier ×${_fmtGym(gym.multiplier)} · '
                     '${gym.perExerciseMultipliers.length} movement overrides',
         ),
-        trailing: PopupMenuButton<String>(
-          onSelected: (action) => switch (action) {
-            'primary' => onPrimary(),
-            'estimate' => onEstimate(),
-            'delete' => onDelete(),
-            _ => null,
-          },
-          itemBuilder: (context) => [
-            PopupMenuItem(
-              value: 'primary',
-              enabled: !primary,
-              child: Text('Set as primary'),
+        trailing: FPopoverMenu.tiles(
+          menuAnchor: .topRight,
+          childAnchor: .bottomRight,
+          menu: [
+            .group(
+              children: [
+                .tile(
+                  title: const Text('Set as primary'),
+                  enabled: !primary,
+                  onPress: onPrimary,
+                ),
+                if (!primary && canEstimate)
+                  .tile(
+                    title: const Text('Auto-estimate multiplier'),
+                    onPress: onEstimate,
+                  ),
+                .tile(title: const Text('Delete'), onPress: onDelete),
+              ],
             ),
-            if (!primary && canEstimate)
-              const PopupMenuItem(
-                value: 'estimate',
-                child: Text('Auto-estimate multiplier'),
-              ),
-            const PopupMenuItem(value: 'delete', child: Text('Delete')),
           ],
+          builder: (_, controller, _) => IconButton(
+            icon: const Icon(Icons.more_vert),
+            tooltip: 'Gym actions',
+            onPressed: controller.toggle,
+          ),
         ),
       ),
     );

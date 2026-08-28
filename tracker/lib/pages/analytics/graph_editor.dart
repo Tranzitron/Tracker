@@ -39,79 +39,88 @@ class _GraphEditorState extends State<GraphEditor> {
 
   @override
   Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.initial == null ? 'Add graph' : 'Edit graph'),
-      content: SingleChildScrollView(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            FTextField(
-              control: FTextFieldControl.managed(controller: _title),
-              label: const Text('Title'),
-              autofocus: true,
+    return FDialog(
+      builder: (context, style) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            widget.initial == null ? 'Add graph' : 'Edit graph',
+            style: style.titleTextStyle,
+          ),
+          const SizedBox(height: 16),
+          FTextField(
+            control: FTextFieldControl.managed(controller: _title),
+            label: const Text('Title'),
+            autofocus: true,
+          ),
+          const SizedBox(height: 12),
+          FSelect<int?>(
+            label: const Text('Exercise'),
+            items: {
+              'All exercises': null,
+              for (final exercise in widget.exercises)
+                exercise.title: exercise.id,
+            },
+            control: FSelectControl<int?>.lifted(
+              value: _exerciseId,
+              onChange: (value) => setState(() => _exerciseId = value),
             ),
-            const SizedBox(height: 12),
-            FSelect<int?>(
-              label: const Text('Exercise'),
-              items: {
-                'All exercises': null,
-                for (final exercise in widget.exercises)
-                  exercise.title: exercise.id,
-              },
-              control: FSelectControl<int?>.lifted(
-                value: _exerciseId,
-                onChange: (value) => setState(() => _exerciseId = value),
+          ),
+          const SizedBox(height: 12),
+          FSelect<GraphMetric>(
+            label: const Text('Metric'),
+            items: {
+              for (final metric in GraphMetric.values)
+                graphMetricLabel(metric): metric,
+            },
+            control: FSelectControl<GraphMetric>.lifted(
+              value: _metric,
+              onChange: (value) => setState(() => _metric = value!),
+            ),
+          ),
+          const SizedBox(height: 12),
+          FSelect<GraphTimeframe>(
+            label: const Text('Timeframe'),
+            items: {
+              for (final timeframe in GraphTimeframe.values)
+                graphTimeframeLabel(timeframe): timeframe,
+            },
+            control: FSelectControl<GraphTimeframe>.lifted(
+              value: _timeframe,
+              onChange: (value) => setState(() => _timeframe = value!),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              FButton(
+                variant: .outline,
+                onPress: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-            ),
-            const SizedBox(height: 12),
-            FSelect<GraphMetric>(
-              label: const Text('Metric'),
-              items: {
-                for (final metric in GraphMetric.values)
-                  graphMetricLabel(metric): metric,
-              },
-              control: FSelectControl<GraphMetric>.lifted(
-                value: _metric,
-                onChange: (value) => setState(() => _metric = value!),
+              const SizedBox(width: 8),
+              FButton(
+                onPress: () {
+                  final title = _title.text.trim();
+                  if (title.isEmpty) return;
+                  Navigator.pop(
+                    context,
+                    GraphConfig(
+                      title: title,
+                      exerciseId: _exerciseId,
+                      metric: _metric,
+                      timeframe: _timeframe,
+                    ),
+                  );
+                },
+                child: const Text('Save'),
               ),
-            ),
-            const SizedBox(height: 12),
-            FSelect<GraphTimeframe>(
-              label: const Text('Timeframe'),
-              items: {
-                for (final timeframe in GraphTimeframe.values)
-                  graphTimeframeLabel(timeframe): timeframe,
-              },
-              control: FSelectControl<GraphTimeframe>.lifted(
-                value: _timeframe,
-                onChange: (value) => setState(() => _timeframe = value!),
-              ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('Cancel'),
-        ),
-        FilledButton(
-          onPressed: () {
-            final title = _title.text.trim();
-            if (title.isEmpty) return;
-            Navigator.pop(
-              context,
-              GraphConfig(
-                title: title,
-                exerciseId: _exerciseId,
-                metric: _metric,
-                timeframe: _timeframe,
-              ),
-            );
-          },
-          child: const Text('Save'),
-        ),
-      ],
     );
   }
 }

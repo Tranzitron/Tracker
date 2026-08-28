@@ -92,8 +92,9 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
       );
 
   Future<void> _chooseTemplate() async {
-    final template = await showModalBottomSheet<WorkoutSplitTemplate>(
+    final template = await showFSheet<WorkoutSplitTemplate>(
       context: context,
+      side: .btt,
       builder: (context) => ListView(
         shrinkWrap: true,
         children: [
@@ -119,21 +120,34 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
     final split = widget.split;
     final repo = RepositoryScope.maybeOf(context);
     if (split == null || repo == null) return;
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showFDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete split?'),
-        content: Text('Remove "${split.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Delete'),
-          ),
-        ],
+      builder: (dialogContext, _, _) => FDialog(
+        builder: (context, style) => Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Text('Delete split?', style: style.titleTextStyle),
+            const SizedBox(height: 8),
+            Text('Remove "${split.title}"?', style: style.bodyTextStyle),
+            const SizedBox(height: 24),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FButton(
+                  variant: .outline,
+                  onPress: () => Navigator.of(dialogContext).pop(false),
+                  child: const Text('Cancel'),
+                ),
+                const SizedBox(width: 8),
+                FButton(
+                  onPress: () => Navigator.of(dialogContext).pop(true),
+                  child: const Text('Delete'),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
     if (confirmed == true && mounted) {

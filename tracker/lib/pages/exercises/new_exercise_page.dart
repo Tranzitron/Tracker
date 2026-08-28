@@ -38,8 +38,10 @@ class _NewExercisePageState extends State<NewExercisePage> {
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
     if (_primary.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Pick at least one target muscle.')),
+      showFToast(
+        context: context,
+        title: const Text('Pick at least one target muscle.'),
+        duration: const Duration(seconds: 2),
       );
       return;
     }
