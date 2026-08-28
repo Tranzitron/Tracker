@@ -12,6 +12,13 @@ import 'package:tracker/pages/settings_page.dart';
 
 import '../helpers/test_helpers.dart';
 
+Future<void> pumpSettingsPage(WidgetTester tester) async {
+  await pumpAppPage(
+    tester,
+    BlocProvider(create: (_) => SettingsCubit(), child: const SettingsPage()),
+  );
+}
+
 void main() {
   setUp(() {
     HydratedBloc.storage = InMemoryStorage();
@@ -43,18 +50,7 @@ void main() {
   testWidgets('settings page replaces placeholder cards with controls', (
     tester,
   ) async {
-    await tester.pumpWidget(
-      BlocProvider(
-        create: (_) => SettingsCubit(),
-        child: MaterialApp(
-          home: FTheme(
-            data: FTheme.neutral.light.touch,
-            child: const SettingsPage(),
-          ),
-        ),
-      ),
-    );
-    await tester.pump();
+    await pumpSettingsPage(tester);
     expect(find.text('Profile Settings'), findsNothing);
     expect(find.text('Units'), findsOneWidget);
     expect(find.text('Notifications'), findsOneWidget);

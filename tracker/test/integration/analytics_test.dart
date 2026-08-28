@@ -11,27 +11,27 @@ import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 
+import '../helpers/test_helpers.dart';
+
 void main() {
   group('analytics widgets (DB-free)', () {
     testWidgets('LineChart renders an empty state', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(body: LineChart(points: <ProgressionPoint>[])),
-        ),
+      await pumpAppPage(
+        tester,
+        Scaffold(body: LineChart(points: const <ProgressionPoint>[])),
       );
       expect(find.text('No data yet'), findsOneWidget);
     });
 
     testWidgets('LineChart renders a series without crashing', (tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: LineChart(
-              points: [
-                ProgressionPoint(date: DateTime(2026, 1, 1), value: 10),
-                ProgressionPoint(date: DateTime(2026, 1, 2), value: 20),
-              ],
-            ),
+      await pumpAppPage(
+        tester,
+        Scaffold(
+          body: LineChart(
+            points: [
+              ProgressionPoint(date: DateTime(2026, 1, 1), value: 10),
+              ProgressionPoint(date: DateTime(2026, 1, 2), value: 20),
+            ],
           ),
         ),
       );
@@ -41,19 +41,17 @@ void main() {
     testWidgets('ExerciseDetailPage builds and shows an empty chart', (
       tester,
     ) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: ExerciseDetailPage(
-            exercise: Exercise(
-              title: 'Bench Press',
-              primaryMuscle: [Muscle.chest],
-              equipment: [Equipment.barbell],
-              movementPattern: MovementPattern.push,
-            ),
+      await pumpAppPage(
+        tester,
+        ExerciseDetailPage(
+          exercise: Exercise(
+            title: 'Bench Press',
+            primaryMuscle: [Muscle.chest],
+            equipment: [Equipment.barbell],
+            movementPattern: MovementPattern.push,
           ),
         ),
       );
-      await tester.pumpAndSettle();
 
       expect(find.text('Bench Press'), findsOneWidget);
       expect(find.text('Best 1RM'), findsOneWidget);
@@ -61,9 +59,7 @@ void main() {
     });
 
     testWidgets('ProgressionPage opens without a repository', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: ProgressionPage()));
-      await tester.pump();
-      await tester.pumpAndSettle();
+      await pumpAppPage(tester, const ProgressionPage());
       expect(find.text('Working volume over time'), findsOneWidget);
       expect(find.text('No data yet'), findsNWidgets(2));
     });

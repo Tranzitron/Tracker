@@ -4,8 +4,11 @@
 // open a real Isar DB or pump the widget tree call initIsarCore() (setUpAll),
 // openTestIsar() (setUp), and pumpApp() for the app shell.
 
+import 'dart:async';
 import 'dart:ffi';
 import 'dart:io';
+
+import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -38,6 +41,9 @@ Future<Isar> openTestIsar(
 
 /// Pump the app shell ([MyApp]) with a fresh [WorkoutCubit]; returns the cubit.
 Future<WorkoutCubit> pumpApp(WidgetTester tester) async {
+  // Every pumped HydratedCubit (WorkoutCubit/SettingsCubit) reads storage at
+  // construction; ensure it is initialized even when the caller's file doesn't.
+  HydratedBloc.storage = InMemoryStorage();
   final cubit = WorkoutCubit();
   await tester.pumpWidget(
     MultiBlocProvider(
@@ -51,6 +57,17 @@ Future<WorkoutCubit> pumpApp(WidgetTester tester) async {
       child: const MyApp(),
     ),
   );
+  await tester.pumpAndSettle();
+  return cubit;
+}
+
+/// Pump the full app shell via [pumpApp], then push [page] onto the root
+/// navigator so the page under test sits inside the real stack (FTheme +
+/// FToaster + the Material bridge theme), not a bare `MaterialApp`.
+Future<WorkoutCubit> pumpAppPage(WidgetTester tester, Widget page) async {
+  final cubit = await pumpApp(tester);
+  final navigator = tester.state<NavigatorState>(find.byType(Navigator).first);
+  unawaited(navigator.push(MaterialPageRoute<void>(builder: (_) => page)));
   await tester.pumpAndSettle();
   return cubit;
 }
