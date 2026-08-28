@@ -4,11 +4,9 @@
 //     plus hydration round-trips and the idle-guard.
 //  2. Widget: the CurrentWorkout page renders the plan and logs a set inline.
 
-import 'dart:io';
-
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
@@ -16,18 +14,17 @@ import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
-import 'package:tracker/pages/workout/workout_page.dart';
 
 import '../helpers/test_helpers.dart';
 
 void main() {
   setUpAll(initIsarCore);
 
-  setUp(() async {
-    final dir = Directory.systemTemp.createTempSync('workout_test');
-    HydratedBloc.storage = await HydratedStorage.build(
-      storageDirectory: HydratedStorageDirectory(dir.path),
-    );
+  setUp(() {
+    // In-memory storage: the real HydratedStorage does file I/O behind a
+    // static lock that deadlocks the widget-test fake-async zone once the
+    // app shell (HydratedCubits) is pumped — same setup as app_test.
+    HydratedBloc.storage = InMemoryStorage();
   });
 
   test('WorkoutCubit ignores ending an idle workout', () async {
@@ -164,36 +161,45 @@ void main() {
 
   group('CurrentWorkout logging UI', () {
     testWidgets('logs a set inline from a plan exercise', (tester) async {
-      final cubit = WorkoutCubit()
-        ..startPlanWorkout(
-          title: 'PPL · Push',
-          exercises: const [
-            PlanExercise(exerciseId: 1, name: 'Bench Press', order: 0),
-          ],
-        );
-      addTearDown(cubit.close);
-
-      await tester.pumpWidget(
-        MaterialApp(
-          home: MultiBlocProvider(
-            providers: [BlocProvider.value(value: cubit)],
-            child: const WorkoutPage(),
-          ),
-        ),
+      final cubit = await pumpApp(tester);
+      cubit.startPlanWorkout(
+        title: 'PPL · Push',
+        exercises: const [
+          PlanExercise(exerciseId: 1, name: 'Bench Press', order: 0),
+        ],
       );
+
+      // Switch to the CurrentWorkout tab (index 2) via the nav bar onChange —
+      // hit-testing is brittle under the Offstage nested navigators.
+      tester
+          .widget<FBottomNavigationBar>(find.byType(FBottomNavigationBar))
+          .onChange!(2);
       await tester.pumpAndSettle();
 
       // The plan title and exercise render.
       expect(find.text('PPL · Push'), findsOneWidget);
       expect(find.text('Bench Press'), findsOneWidget);
-      // One inline add-form → weight + reps fields, warm-up chip, Add set.
-      expect(find.byType(TextField), findsNWidgets(2));
+      // One inline add-form → weight + reps fields, warm-up checkbox, Add set.
+      expect(find.byType(FTextField), findsNWidgets(2));
+      final weightField = find
+          .descendant(
+            of: find.byType(FTextField).at(0),
+            matching: find.byType(EditableText),
+          )
+          .first;
+      final repsField = find
+          .descendant(
+            of: find.byType(FTextField).at(1),
+            matching: find.byType(EditableText),
+          )
+          .first;
 
-      await tester.enterText(find.byType(TextField).at(0), '100');
-      await tester.enterText(find.byType(TextField).at(1), '5');
+      await tester.enterText(weightField, '100');
+      await tester.enterText(repsField, '5');
 
-      // Mark the set as warm-up before adding.
-      await tester.tap(find.text('Warm-up'));
+      // Mark the set as warm-up before adding (tap the checkbox itself —
+      // FCheckbox's label is not part of the hit target).
+      await tester.tap(find.byType(FCheckbox));
       await tester.pump();
       await tester.tap(find.text('Add set'));
       await tester.pumpAndSettle();

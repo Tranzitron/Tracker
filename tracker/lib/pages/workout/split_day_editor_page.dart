@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -108,22 +109,18 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                TextField(
-                  controller: _title,
-                  onChanged: (_) => setState(() => _titleError = null),
-                  decoration: InputDecoration(
-                    labelText: 'Day name',
-                    errorText: _titleError,
-                    border: const OutlineInputBorder(),
+                FTextField(
+                  control: FTextFieldControl.managed(
+                    controller: _title,
+                    onChange: (_) => setState(() => _titleError = null),
                   ),
+                  label: const Text('Day name'),
+                  error: _titleError == null ? null : Text(_titleError!),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _description,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    border: OutlineInputBorder(),
-                  ),
+                FTextField(
+                  control: FTextFieldControl.managed(controller: _description),
+                  label: const Text('Description (optional)'),
                   minLines: 1,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
@@ -131,10 +128,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
                 const SizedBox(height: 24),
                 Row(
                   children: <Widget>[
-                    Text(
-                      'Exercises',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text('Exercises', style: context.theme.typography.body.md),
                     const Spacer(),
                     OutlinedButton.icon(
                       onPressed: _addExercise,

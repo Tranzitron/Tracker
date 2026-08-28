@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -53,12 +54,10 @@ class _ExercisePickerPageState extends State<ExercisePickerPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: TextField(
-              onChanged: _filter,
-              decoration: const InputDecoration(
-                hintText: 'Search exercises…',
-                prefixIcon: Icon(Icons.search),
-                border: OutlineInputBorder(),
+            child: FTextField(
+              hint: 'Search exercises…',
+              control: FTextFieldControl.managed(
+                onChange: (value) => _filter(value.text),
               ),
             ),
           ),

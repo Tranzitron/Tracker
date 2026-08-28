@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
@@ -192,14 +193,13 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                TextField(
-                  controller: _title,
-                  onChanged: (_) => setState(() {}),
-                  decoration: InputDecoration(
-                    labelText: 'Split name',
-                    errorText: _titleError,
-                    border: const OutlineInputBorder(),
+                FTextField(
+                  control: FTextFieldControl.managed(
+                    controller: _title,
+                    onChange: (_) => setState(() {}),
                   ),
+                  label: const Text('Split name'),
+                  error: _titleError == null ? null : Text(_titleError!),
                 ),
                 const SizedBox(height: 8),
                 OutlinedButton.icon(
@@ -208,18 +208,15 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                   label: const Text('Use a template'),
                 ),
                 const SizedBox(height: 16),
-                TextField(
-                  controller: _description,
-                  decoration: const InputDecoration(
-                    labelText: 'Description (optional)',
-                    border: OutlineInputBorder(),
-                  ),
+                FTextField(
+                  control: FTextFieldControl.managed(controller: _description),
+                  label: const Text('Description (optional)'),
                   minLines: 1,
                   maxLines: null,
                   keyboardType: TextInputType.multiline,
                 ),
                 const SizedBox(height: 24),
-                Text('Days', style: Theme.of(context).textTheme.titleMedium),
+                Text('Days', style: context.theme.typography.body.md),
                 const SizedBox(height: 8),
                 if (_days.isEmpty)
                   const Text('No days yet — add one below.')

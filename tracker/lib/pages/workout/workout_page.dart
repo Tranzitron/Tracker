@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/gym.dart';
@@ -109,8 +110,8 @@ class _InProgressView extends StatelessWidget {
             FilledButton.icon(
               onPressed: () => _confirmEnd(context, presentation.setCount),
               style: FilledButton.styleFrom(
-                backgroundColor: Theme.of(context).colorScheme.error,
-                foregroundColor: Theme.of(context).colorScheme.onError,
+                backgroundColor: context.theme.colors.error,
+                foregroundColor: context.theme.colors.errorForeground,
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               icon: const Icon(Icons.stop),
@@ -168,7 +169,7 @@ class _InProgressView extends StatelessWidget {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.delete_outline),
-                    color: Theme.of(dialogContext).colorScheme.error,
+                    color: dialogContext.theme.colors.error,
                     tooltip: 'Discard workout',
                     onPressed: () =>
                         Navigator.pop(dialogContext, _WorkoutAction.discard),
@@ -290,13 +291,15 @@ class _WorkoutHeader extends StatelessWidget {
               children: <Widget>[
                 Icon(
                   Icons.directions_run_sharp,
-                  color: Theme.of(context).colorScheme.primary,
+                  color: context.theme.colors.primary,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     presentation.planTitle ?? 'Free workout',
-                    style: Theme.of(context).textTheme.titleLarge,
+                    style: context.theme.typography.body.xl.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),
@@ -310,7 +313,7 @@ class _WorkoutHeader extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${presentation.setCount} set(s) · ${formatWeight(context, working)} working volume',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: context.theme.typography.body.md,
             ),
           ],
         ),
@@ -353,19 +356,28 @@ class _PlanExerciseCard extends StatelessWidget {
               children: <Widget>[
                 Text(
                   '${order + 1}. ',
-                  style: Theme.of(context).textTheme.titleMedium,
+                  style: context.theme.typography.body.md.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
                 Expanded(
                   child: Text(
                     exercise.name,
-                    style: Theme.of(context).textTheme.titleMedium,
+                    style: context.theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             if (sets.isEmpty)
-              Text('No sets yet', style: Theme.of(context).textTheme.bodySmall)
+              Text(
+                'No sets yet',
+                style: context.theme.typography.body.xs.copyWith(
+                  color: context.theme.colors.mutedForeground,
+                ),
+              )
             else
               for (final set in sets) _SetTile(set: set),
             const Divider(height: 16),
@@ -419,7 +431,12 @@ class _FreeFormPanelState extends State<_FreeFormPanel> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
-            Text('Log a set', style: Theme.of(context).textTheme.titleMedium),
+            Text(
+              'Log a set',
+              style: context.theme.typography.body.md.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
+            ),
             const SizedBox(height: 8),
             _AddSetForm(exercises: _exercises),
             const SizedBox(height: 8),
@@ -450,14 +467,19 @@ class _SetTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
+    final theme = context.theme;
     return ListTile(
       dense: true,
       contentPadding: EdgeInsets.zero,
       leading: _WarmupBadge(isWarmup: set.isWarmup),
       title: Text('${formatWeight(context, set.weight)} × ${set.reps}'),
       subtitle: set.isWarmup
-          ? Text('Warm-up', style: theme.textTheme.bodySmall)
+          ? Text(
+              'Warm-up',
+              style: theme.typography.body.xs.copyWith(
+                color: theme.colors.mutedForeground,
+              ),
+            )
           : null,
       trailing: IconButton(
         icon: const Icon(Icons.delete_outline, size: 20),
@@ -476,9 +498,8 @@ class _WarmupBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = isWarmup
-        ? Theme.of(context).colorScheme.tertiary
-        : Theme.of(context).colorScheme.primary;
+    final theme = context.theme;
+    final color = isWarmup ? theme.colors.secondary : theme.colors.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
@@ -549,28 +570,22 @@ class _AddSetFormState extends State<_AddSetForm> {
         Row(
           children: <Widget>[
             Expanded(
-              child: TextField(
-                controller: _weight,
+              child: FTextField(
+                control: FTextFieldControl.managed(controller: _weight),
                 keyboardType: const TextInputType.numberWithOptions(
                   decimal: true,
                 ),
-                decoration: InputDecoration(
-                  labelText: 'Weight (${weightUnitOf(context).symbol})',
-                  border: const OutlineInputBorder(),
-                  errorText: _weightError,
-                ),
+                label: Text('Weight (${weightUnitOf(context).symbol})'),
+                error: _weightError == null ? null : Text(_weightError!),
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: TextField(
-                controller: _reps,
+              child: FTextField(
+                control: FTextFieldControl.managed(controller: _reps),
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: 'Reps',
-                  border: const OutlineInputBorder(),
-                  errorText: _repsError,
-                ),
+                label: const Text('Reps'),
+                error: _repsError == null ? null : Text(_repsError!),
               ),
             ),
           ],
@@ -578,10 +593,10 @@ class _AddSetFormState extends State<_AddSetForm> {
         const SizedBox(height: 4),
         Row(
           children: <Widget>[
-            FilterChip(
+            FCheckbox(
               label: const Text('Warm-up'),
-              selected: _warmup,
-              onSelected: (v) => setState(() => _warmup = v),
+              value: _warmup,
+              onChange: (v) => setState(() => _warmup = v),
             ),
             const Spacer(),
             FilledButton(onPressed: _add, child: const Text('Add set')),
@@ -593,17 +608,13 @@ class _AddSetFormState extends State<_AddSetForm> {
 
   Widget _exerciseDropdown() {
     final exercises = widget.exercises ?? const <Exercise>[];
-    return DropdownButtonFormField<int>(
-      initialValue: _selectedId,
-      decoration: const InputDecoration(
-        labelText: 'Exercise',
-        border: OutlineInputBorder(),
+    return FSelect<int>(
+      label: const Text('Exercise'),
+      items: {for (final e in exercises) e.title: e.id},
+      control: FSelectControl<int>.lifted(
+        value: _selectedId,
+        onChange: (v) => setState(() => _selectedId = v),
       ),
-      items: [
-        for (final e in exercises)
-          DropdownMenuItem(value: e.id, child: Text(e.title)),
-      ],
-      onChanged: (v) => setState(() => _selectedId = v),
     );
   }
 

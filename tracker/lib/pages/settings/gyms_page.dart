@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/gym.dart';
@@ -186,7 +187,9 @@ class _GymsPageState extends State<GymsPage> {
                 Text(
                   'The primary gym is the baseline (multiplier ×1.0). '
                   'Secondary multipliers align their weights to it.',
-                  style: Theme.of(context).textTheme.bodySmall,
+                  style: context.theme.typography.body.xs.copyWith(
+                    color: context.theme.colors.mutedForeground,
+                  ),
                 ),
                 const SizedBox(height: 12),
                 StreamBuilder<List<Gym>>(
@@ -290,47 +293,57 @@ class _EditGymDialogState extends State<EditGymDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: <Widget>[
-            TextField(
-              controller: _name,
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: 'Gym name',
-                errorText: _gymNameError(_name.text),
-                border: const OutlineInputBorder(),
+            FTextField(
+              control: FTextFieldControl.managed(
+                controller: _name,
+                onChange: (_) => setState(() {}),
               ),
+              label: const Text('Gym name'),
+              error: _gymNameError(_name.text) == null
+                  ? null
+                  : Text(_gymNameError(_name.text)!),
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _description,
-              decoration: const InputDecoration(
-                labelText: 'Description (optional)',
-                border: OutlineInputBorder(),
-              ),
+            FTextField(
+              control: FTextFieldControl.managed(controller: _description),
+              label: const Text('Description (optional)'),
               minLines: 1,
               maxLines: null,
               keyboardType: TextInputType.multiline,
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _multiplier,
+            FTextField(
+              control: FTextFieldControl.managed(
+                controller: _multiplier,
+                onChange: (_) => setState(() {}),
+              ),
               enabled: !widget.initial.isPrimary,
               keyboardType: const TextInputType.numberWithOptions(
                 decimal: true,
               ),
-              onChanged: (_) => setState(() {}),
-              decoration: InputDecoration(
-                labelText: widget.initial.isPrimary
+              label: Text(
+                widget.initial.isPrimary
                     ? 'Multiplier (primary = ×1.0)'
                     : 'Weight multiplier',
-                helperText: widget.initial.isPrimary
+              ),
+              description: Text(
+                widget.initial.isPrimary
                     ? 'The primary gym is the fixed baseline.'
                     : 'Scales logged weights to the primary gym.',
-                border: const OutlineInputBorder(),
-                errorText: _gymMultiplierError(
-                  _multiplier.text,
-                  isPrimary: widget.initial.isPrimary,
-                ),
               ),
+              error:
+                  _gymMultiplierError(
+                        _multiplier.text,
+                        isPrimary: widget.initial.isPrimary,
+                      ) ==
+                      null
+                  ? null
+                  : Text(
+                      _gymMultiplierError(
+                        _multiplier.text,
+                        isPrimary: widget.initial.isPrimary,
+                      )!,
+                    ),
             ),
           ],
         ),

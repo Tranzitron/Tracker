@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
@@ -82,80 +83,62 @@ class _NewExercisePageState extends State<NewExercisePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: <Widget>[
-                  TextFormField(
-                    controller: _title,
-                    decoration: const InputDecoration(
-                      labelText: 'Name',
-                      border: OutlineInputBorder(),
-                    ),
+                  FTextFormField(
+                    control: FTextFieldControl.managed(controller: _title),
+                    label: const Text('Name'),
                     validator: (v) => requiredText(v),
                   ),
                   const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _description,
-                    decoration: const InputDecoration(
-                      labelText: 'Description (optional)',
-                      border: OutlineInputBorder(),
+                  FTextFormField(
+                    control: FTextFieldControl.managed(
+                      controller: _description,
                     ),
+                    label: const Text('Description (optional)'),
                     minLines: 1,
                     maxLines: null,
                     keyboardType: TextInputType.multiline,
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<MovementPattern>(
-                    initialValue: _movement,
-                    decoration: const InputDecoration(
-                      labelText: 'Movement pattern',
-                      border: OutlineInputBorder(),
-                    ),
-                    items: [
+                  FSelect<MovementPattern>(
+                    label: const Text('Movement pattern'),
+                    items: {
                       for (final m in MovementPattern.values)
-                        DropdownMenuItem(
-                          value: m,
-                          child: Text(_movementLabel(m)),
-                        ),
-                    ],
-                    onChanged: (v) =>
-                        setState(() => _movement = v ?? _movement),
+                        _movementLabel(m): m,
+                    },
+                    control: FSelectControl<MovementPattern>.lifted(
+                      value: _movement,
+                      onChange: (v) =>
+                          setState(() => _movement = v ?? _movement),
+                    ),
                   ),
-                  _ChipSection(
+                  _MuscleSelectGroup(
                     label: 'Primary muscles',
-                    muscles: Muscle.values,
                     selected: _primary,
-                    onToggle: (m) => setState(() {
-                      _primary.contains(m)
-                          ? _primary.remove(m)
-                          : _primary.add(m);
-                    }),
+                    onChange: (sel) => setState(
+                      () => _primary
+                        ..clear()
+                        ..addAll(sel),
+                    ),
                   ),
-                  _ChipSection(
+                  _MuscleSelectGroup(
                     label: 'Secondary muscles (optional)',
-                    muscles: Muscle.values,
                     selected: _secondary,
-                    onToggle: (m) => setState(() {
-                      _secondary.contains(m)
-                          ? _secondary.remove(m)
-                          : _secondary.add(m);
-                    }),
+                    onChange: (sel) => setState(
+                      () => _secondary
+                        ..clear()
+                        ..addAll(sel),
+                    ),
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'Equipment',
-                    style: Theme.of(context).textTheme.titleSmall,
-                  ),
+                  Text('Equipment', style: context.theme.typography.body.sm),
                   const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 8,
-                    children: [
-                      for (final e in Equipment.values)
-                        FilterChip(
-                          label: Text(e.displayName),
-                          selected: _equipment.contains(e),
-                          onSelected: (sel) => setState(() {
-                            sel ? _equipment.add(e) : _equipment.remove(e);
-                          }),
-                        ),
-                    ],
+                  _EquipmentSelectGroup(
+                    selected: _equipment,
+                    onChange: (sel) => setState(
+                      () => _equipment
+                        ..clear()
+                        ..addAll(sel),
+                    ),
                   ),
                   const SizedBox(height: 24),
                 ],
@@ -177,39 +160,52 @@ class _NewExercisePageState extends State<NewExercisePage> {
   };
 }
 
-class _ChipSection extends StatelessWidget {
-  const _ChipSection({
+class _MuscleSelectGroup extends StatelessWidget {
+  const _MuscleSelectGroup({
     required this.label,
-    required this.muscles,
     required this.selected,
-    required this.onToggle,
+    required this.onChange,
   });
 
   final String label;
-  final List<Muscle> muscles;
   final Set<Muscle> selected;
-  final void Function(Muscle) onToggle;
+  final ValueChanged<Set<Muscle>> onChange;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
-        const SizedBox(height: 16),
-        Text(label, style: Theme.of(context).textTheme.titleSmall),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 4,
-          children: [
-            for (final m in muscles)
-              FilterChip(
-                label: Text(m.scientificName),
-                selected: selected.contains(m),
-                onSelected: (_) => onToggle(m),
-              ),
-          ],
-        ),
+    return FSelectGroup<Muscle>(
+      label: Text(label),
+      control: FMultiValueControl<Muscle>.lifted(
+        value: selected,
+        onChange: onChange,
+      ),
+      children: [
+        for (final m in Muscle.values)
+          FSelectGroupItemMixin.checkbox(
+            value: m,
+            label: Text(m.scientificName),
+          ),
+      ],
+    );
+  }
+}
+
+class _EquipmentSelectGroup extends StatelessWidget {
+  const _EquipmentSelectGroup({required this.selected, required this.onChange});
+
+  final Set<Equipment> selected;
+  final ValueChanged<Set<Equipment>> onChange;
+
+  @override
+  Widget build(BuildContext context) {
+    return FSelectGroup<Equipment>(
+      control: FMultiValueControl<Equipment>.lifted(
+        value: selected,
+        onChange: onChange,
+      ),
+      children: [
+        for (final e in Equipment.values)
+          FSelectGroupItemMixin.checkbox(value: e, label: Text(e.displayName)),
       ],
     );
   }

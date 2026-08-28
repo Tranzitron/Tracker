@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
@@ -44,54 +45,47 @@ class _GraphEditorState extends State<GraphEditor> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            TextField(
-              controller: _title,
+            FTextField(
+              control: FTextFieldControl.managed(controller: _title),
+              label: const Text('Title'),
               autofocus: true,
-              decoration: const InputDecoration(labelText: 'Title'),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<int?>(
-              initialValue: _exerciseId,
-              decoration: const InputDecoration(labelText: 'Exercise'),
-              items: [
-                const DropdownMenuItem<int?>(
-                  value: null,
-                  child: Text('All exercises'),
-                ),
-                ...widget.exercises.map(
-                  (exercise) => DropdownMenuItem<int?>(
-                    value: exercise.id,
-                    child: Text(exercise.title),
-                  ),
-                ),
-              ],
-              onChanged: (value) => setState(() => _exerciseId = value),
+            FSelect<int?>(
+              label: const Text('Exercise'),
+              items: {
+                'All exercises': null,
+                for (final exercise in widget.exercises)
+                  exercise.title: exercise.id,
+              },
+              control: FSelectControl<int?>.lifted(
+                value: _exerciseId,
+                onChange: (value) => setState(() => _exerciseId = value),
+              ),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<GraphMetric>(
-              initialValue: _metric,
-              decoration: const InputDecoration(labelText: 'Metric'),
-              items: [
+            FSelect<GraphMetric>(
+              label: const Text('Metric'),
+              items: {
                 for (final metric in GraphMetric.values)
-                  DropdownMenuItem(
-                    value: metric,
-                    child: Text(graphMetricLabel(metric)),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _metric = value!),
+                  graphMetricLabel(metric): metric,
+              },
+              control: FSelectControl<GraphMetric>.lifted(
+                value: _metric,
+                onChange: (value) => setState(() => _metric = value!),
+              ),
             ),
             const SizedBox(height: 12),
-            DropdownButtonFormField<GraphTimeframe>(
-              initialValue: _timeframe,
-              decoration: const InputDecoration(labelText: 'Timeframe'),
-              items: [
+            FSelect<GraphTimeframe>(
+              label: const Text('Timeframe'),
+              items: {
                 for (final timeframe in GraphTimeframe.values)
-                  DropdownMenuItem(
-                    value: timeframe,
-                    child: Text(graphTimeframeLabel(timeframe)),
-                  ),
-              ],
-              onChanged: (value) => setState(() => _timeframe = value!),
+                  graphTimeframeLabel(timeframe): timeframe,
+              },
+              control: FSelectControl<GraphTimeframe>.lifted(
+                value: _timeframe,
+                onChange: (value) => setState(() => _timeframe = value!),
+              ),
             ),
           ],
         ),
