@@ -158,8 +158,10 @@ void main() {
       final failures = <String>[];
 
       // Real delays outside the fake-async zone let Isar's real watcher
-      // events reach the StreamBuilders; a plain pump then renders. (No
-      // pumpAndSettle: loading spinners animate forever under fake time.)
+      // events reach the StreamBuilders; the pumps advance the fake clock so
+      // UI animations (form-error expand, transitions) finish before capture
+      // instead of being caught mid-flight. (No pumpAndSettle: loading
+      // spinners animate forever under fake time.)
       //
       // Frame exceptions (RenderFlex overflows etc.) do NOT throw in-body —
       // they land in the binding's pending slot. takeException() retrieves
@@ -170,7 +172,7 @@ void main() {
           await tester.runAsync(
             () => Future<void>.delayed(const Duration(milliseconds: 150)),
           );
-          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 250));
         }
         final dynamic pending = tester.takeException();
         if (pending != null) {

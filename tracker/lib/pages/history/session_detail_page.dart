@@ -216,18 +216,23 @@ class _WarmupChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
-    final color = isWarmup ? theme.colors.secondary : theme.colors.primary;
+    // Muted/foreground pairing so the W chip reads on white cards (the old
+    // secondary fill + text was near-invisible).
+    final fill = isWarmup ? theme.colors.muted : theme.colors.primary;
+    final textColor = isWarmup
+        ? theme.colors.mutedForeground
+        : theme.colors.primary;
     return Container(
       width: 28,
       height: 28,
       alignment: Alignment.center,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: color.withValues(alpha: 0.15),
+        color: isWarmup ? fill : fill.withValues(alpha: 0.15),
       ),
       child: Text(
         isWarmup ? 'W' : 'S',
-        style: TextStyle(color: color, fontWeight: FontWeight.bold),
+        style: TextStyle(color: textColor, fontWeight: FontWeight.bold),
       ),
     );
   }

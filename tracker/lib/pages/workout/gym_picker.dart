@@ -16,36 +16,40 @@ Future<Gym?> promptGym(BuildContext context, List<Gym> gyms) async {
 }
 
 Future<Gym?> _showGymPicker(BuildContext context, List<Gym> gyms) {
-  return showFSheet<Gym>(
+  // A real bottom-sheet container: showFSheet paints no surface of its own,
+  // so the sheet needs an opaque themed background (forui 0.26 Sheet wraps
+  // the builder's child directly) plus a SafeArea to sit flush on the nav.
+  return showModalBottomSheet<Gym>(
     context: context,
-    side: FLayout.btt,
-    useSafeArea: true,
-    mainAxisMaxRatio: null,
+    backgroundColor: context.theme.colors.background,
     builder: (sheetContext) {
-      return Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Text(
-              'Where are you training?',
-              style: sheetContext.theme.typography.body.md.copyWith(
-                fontWeight: FontWeight.w600,
+      return SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Text(
+                'Where are you training?',
+                style: sheetContext.theme.typography.body.md.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
-          ),
-          for (final gym in gyms)
-            FItem(
-              prefix: Icon(
-                gym.isPrimary ? FLucideIcons.house : FLucideIcons.dumbbell,
+            for (final gym in gyms)
+              FItem(
+                prefix: Icon(
+                  gym.isPrimary ? FLucideIcons.house : FLucideIcons.dumbbell,
+                ),
+                title: Text(gym.name),
+                subtitle: gym.isPrimary ? const Text('Primary gym') : null,
+                onPress: () => Navigator.of(sheetContext).pop(gym),
               ),
-              title: Text(gym.name),
-              subtitle: gym.isPrimary ? const Text('Primary gym') : null,
-              onPress: () => Navigator.of(sheetContext).pop(gym),
-            ),
-          const SizedBox(height: 8),
-        ],
+            const SizedBox(height: 8),
+          ],
+        ),
       );
     },
   );

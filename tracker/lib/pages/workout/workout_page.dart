@@ -527,17 +527,22 @@ class _WarmupBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
-    final color = isWarmup ? theme.colors.secondary : theme.colors.primary;
+    // Muted/foreground pairing so the W badge reads on white cards (the old
+    // secondary fill + text was near-invisible).
+    final fill = isWarmup ? theme.colors.muted : theme.colors.primary;
+    final textColor = isWarmup
+        ? theme.colors.mutedForeground
+        : theme.colors.primary;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: isWarmup ? fill : fill.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
         isWarmup ? 'W' : 'S',
         style: TextStyle(
-          color: color,
+          color: textColor,
           fontWeight: FontWeight.bold,
           fontSize: 12,
         ),
