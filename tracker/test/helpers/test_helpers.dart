@@ -9,7 +9,6 @@ import 'dart:ffi';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
@@ -31,12 +30,15 @@ Future<void> initIsarCore() async {
 }
 
 /// Open a throwaway Isar DB (no path_provider) in a temp directory.
+///
+/// [name] labels both the temp directory and the Isar instance; multiple
+/// instances can coexist in one process only with distinct names.
 Future<Isar> openTestIsar(
   List<CollectionSchema<dynamic>> schemas, {
   String name = 'isar_test',
 }) async {
   final dir = Directory.systemTemp.createTempSync(name);
-  return Isar.open(schemas, directory: dir.path);
+  return Isar.open(schemas, directory: dir.path, name: name);
 }
 
 /// Pump the app shell ([MyApp]) with a fresh [WorkoutCubit]; returns the cubit.

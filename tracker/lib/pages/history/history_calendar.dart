@@ -302,8 +302,11 @@ class _MetricsStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    // Wrap (not Row): two metric cards can exceed a narrow window's width.
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 8,
+      runSpacing: 8,
       children: <Widget>[
         _Metric(label: 'workout days', value: '$monthWorkoutDays'),
         _Metric(label: 'day streak', value: '$streak'),

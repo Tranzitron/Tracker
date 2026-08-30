@@ -130,15 +130,16 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
             const SizedBox(height: 8),
             Text('Remove "${split.title}"?', style: style.bodyTextStyle),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
               children: [
                 FButton(
                   variant: .outline,
                   onPress: () => Navigator.of(dialogContext).pop(false),
                   child: const Text('Cancel'),
                 ),
-                const SizedBox(width: 8),
                 FButton(
                   onPress: () => Navigator.of(dialogContext).pop(true),
                   child: const Text('Delete'),

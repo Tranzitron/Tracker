@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
   isar_community: ^3.3.2
   isar_community_flutter_libs: ^3.3.2
   path_provider: ^2.1.6
@@ -18,7 +20,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   window_size: ^0.2.0
   forui: ^0.26.0
-  forui_lucide: ^0.26.0
+  forui_lucide: ^0.26.1
 
 dev_dependencies:
   flutter_test:

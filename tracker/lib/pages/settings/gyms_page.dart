@@ -146,15 +146,16 @@ class _GymsPageState extends State<GymsPage> {
               style: style.bodyTextStyle,
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
               children: [
                 FButton(
                   variant: .outline,
                   onPress: () => Navigator.of(context).pop(false),
                   child: const Text('Cancel'),
                 ),
-                const SizedBox(width: 8),
                 FButton(
                   onPress: () => Navigator.of(context).pop(true),
                   child: const Text('Delete'),
@@ -366,15 +367,16 @@ class _EditGymDialogState extends State<EditGymDialog> {
                     ),
             ),
             const SizedBox(height: 24),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              alignment: WrapAlignment.end,
               children: [
                 FButton(
                   variant: .outline,
                   onPress: () => Navigator.of(context).pop(),
                   child: const Text('Cancel'),
                 ),
-                const SizedBox(width: 8),
                 FButton(
                   onPress: () async {
                     final nameText = _name.text.trim();

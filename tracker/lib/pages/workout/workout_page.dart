@@ -171,7 +171,13 @@ class _InProgressView extends StatelessWidget {
                   style: style.bodyTextStyle,
                 ),
                 const SizedBox(height: 24),
-                Row(
+                // Wrap (not Row + Spacer): the dialog is only ~240px wide at
+                // the minimum desktop window size, and a fixed row overflows.
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.end,
+                  crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
                     IconButton(
                       icon: const Icon(FLucideIcons.trash2),
@@ -180,14 +186,12 @@ class _InProgressView extends StatelessWidget {
                       onPressed: () =>
                           Navigator.pop(dialogContext, _WorkoutAction.discard),
                     ),
-                    const Spacer(),
                     FButton(
                       variant: .outline,
                       onPress: () =>
                           Navigator.pop(dialogContext, _WorkoutAction.cancel),
                       child: const Text('Keep going'),
                     ),
-                    const SizedBox(width: 8),
                     FButton(
                       onPress: () =>
                           Navigator.pop(dialogContext, _WorkoutAction.save),
@@ -222,15 +226,16 @@ class _InProgressView extends StatelessWidget {
                   style: style.bodyTextStyle,
                 ),
                 const SizedBox(height: 24),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  alignment: WrapAlignment.end,
                   children: [
                     FButton(
                       variant: .outline,
                       onPress: () => Navigator.pop(dialogContext, false),
                       child: const Text('Cancel'),
                     ),
-                    const SizedBox(width: 8),
                     FButton(
                       onPress: () => Navigator.pop(dialogContext, true),
                       child: const Text('Discard'),

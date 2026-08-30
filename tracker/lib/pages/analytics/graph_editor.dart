@@ -92,15 +92,16 @@ class _GraphEditorState extends State<GraphEditor> {
             ),
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.end,
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.end,
             children: [
               FButton(
                 variant: .outline,
                 onPress: () => Navigator.pop(context),
                 child: const Text('Cancel'),
               ),
-              const SizedBox(width: 8),
               FButton(
                 onPress: () {
                   final title = _title.text.trim();
