@@ -621,12 +621,15 @@ class _AddSetFormState extends State<_AddSetForm> {
         const SizedBox(height: 4),
         Row(
           children: <Widget>[
-            FCheckbox(
-              label: const Text('Warm-up'),
-              value: _warmup,
-              onChange: (v) => setState(() => _warmup = v),
+            // Expanded keeps the label from being squeezed to one character
+            // per line when the Add-set button takes its intrinsic width.
+            Expanded(
+              child: FCheckbox(
+                label: const Text('Warm-up'),
+                value: _warmup,
+                onChange: (v) => setState(() => _warmup = v),
+              ),
             ),
-            const Spacer(),
             FilledButton(onPressed: _add, child: const Text('Add set')),
           ],
         ),

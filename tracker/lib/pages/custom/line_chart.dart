@@ -1,10 +1,12 @@
+import 'dart:math' as math;
+
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/analytics/analytics.dart';
 
 /// Minimal dependency-free line chart for [ProgressionPoint] series
 /// (Milestone 6 analytics). A plain [CustomPainter] — no charting package —
-/// plotting a polyline + point dots with min/max value labels.
+/// plotting a polyline + point dots over a light grid with y-axis tick labels.
 class LineChart extends StatelessWidget {
   const LineChart({
     super.key,
@@ -42,7 +44,11 @@ class LineChart extends StatelessWidget {
           unit: unit,
           lineColor: theme.colors.primary,
           dotColor: theme.colors.primary,
-          labelColor: theme.colors.mutedForeground,
+          // Full theme style (family included) so labels don't fall back to
+          // the blocky test/default font.
+          labelStyle: theme.typography.body.xs.copyWith(
+            color: theme.colors.mutedForeground,
+          ),
         ),
       ),
     );
@@ -55,25 +61,27 @@ class _LineChartPainter extends CustomPainter {
     required this.unit,
     required this.lineColor,
     required this.dotColor,
-    required this.labelColor,
+    required this.labelStyle,
   });
 
-  static const double _leftPad = 40;
+  static const double _minGutter = 32;
   static const double _topPad = 8;
   static const double _rightPad = 12;
   static const double _bottomPad = 18;
+  static const int _tickCount = 4;
 
   final List<ProgressionPoint> points;
   final String unit;
   final Color lineColor;
   final Color dotColor;
-  final Color labelColor;
+  final TextStyle labelStyle;
 
   @override
   void paint(Canvas canvas, Size size) {
-    final chartWidth = size.width - _leftPad - _rightPad;
-    final chartHeight = size.height - _topPad - _bottomPad;
-    if (chartWidth <= 0 || chartHeight <= 0) return;
+    // Labels are painted through a clip so an over-long value can never bleed
+    // past the chart bounds.
+    canvas.save();
+    canvas.clipRect(Offset.zero & size);
 
     var minY = points.map((p) => p.value).reduce((a, b) => a < b ? a : b);
     var maxY = points.map((p) => p.value).reduce((a, b) => a > b ? a : b);
@@ -83,14 +91,57 @@ class _LineChartPainter extends CustomPainter {
       maxY += 1;
     }
 
+    // Y-axis ticks: lay out the labels first so the left gutter always fits
+    // the widest one.
+    final ticks = <(double, TextPainter)>[
+      for (var i = 0; i < _tickCount; i++)
+        _tickLabel(
+          minY + (maxY - minY) * i / (_tickCount - 1),
+          withUnit: i == _tickCount - 1,
+        ),
+    ];
+    // Floor at _minGutter (never throws on degenerate widths, unlike a
+    // clamp whose bounds can cross) so the early-out below stays safe.
+    final gutter = math.max(
+      _minGutter,
+      math.min(
+        ticks.map((t) => t.$2.width).reduce((a, b) => a > b ? a : b) + 8,
+        size.width / 3,
+      ),
+    );
+
+    final chartWidth = size.width - gutter - _rightPad;
+    final chartHeight = size.height - _topPad - _bottomPad;
+    if (chartWidth <= 0 || chartHeight <= 0) {
+      canvas.restore();
+      return;
+    }
+
     double yFor(double value) =>
         _topPad + chartHeight * (1 - (value - minY) / (maxY - minY));
     double xFor(int i) => chartWidth == 1
-        ? _leftPad
-        : _leftPad +
+        ? gutter
+        : gutter +
               (points.length == 1
                   ? chartWidth / 2
                   : chartWidth * i / (points.length - 1));
+
+    // Gridlines + tick labels.
+    final gridPaint = Paint()
+      ..color = lineColor.withValues(alpha: 0.12)
+      ..strokeWidth = 1;
+    for (final (value, label) in ticks) {
+      final y = yFor(value);
+      canvas.drawLine(
+        Offset(gutter, y),
+        Offset(size.width - _rightPad, y),
+        gridPaint,
+      );
+      label.paint(
+        canvas,
+        Offset(gutter - 8 - label.width, y - label.height / 2),
+      );
+    }
 
     final linePaint = Paint()
       ..color = lineColor
@@ -99,17 +150,6 @@ class _LineChartPainter extends CustomPainter {
       ..strokeCap = StrokeCap.round;
     final dotPaint = Paint()..color = dotColor;
 
-    // Horizontal mid gridline.
-    final gridPaint = Paint()
-      ..color = lineColor.withValues(alpha: 0.12)
-      ..strokeWidth = 1;
-    final midY = yFor((minY + maxY) / 2);
-    canvas.drawLine(
-      Offset(_leftPad, midY),
-      Offset(size.width - _rightPad, midY),
-      gridPaint,
-    );
-
     // Polyline.
     final path = Path()..moveTo(xFor(0), yFor(points[0].value));
     for (var i = 1; i < points.length; i++) {
@@ -117,53 +157,23 @@ class _LineChartPainter extends CustomPainter {
     }
     canvas.drawPath(path, linePaint);
 
-    // Dots + value labels.
+    // Point dots.
     for (var i = 0; i < points.length; i++) {
-      final o = Offset(xFor(i), yFor(points[i].value));
-      canvas.drawCircle(o, 3, dotPaint);
+      canvas.drawCircle(Offset(xFor(i), yFor(points[i].value)), 3, dotPaint);
     }
 
-    _label(
-      canvas,
-      '$_fmt(maxY) $unit',
-      _leftPad - 4,
-      _topPad,
-      alignRight: true,
-    );
-    _label(
-      canvas,
-      '$_fmt(minY) $unit',
-      _leftPad - 4,
-      size.height - _bottomPad,
-      alignRight: true,
-    );
-    _label(
-      canvas,
-      _fmt(points.first.value),
-      _leftPad,
-      size.height - 2,
-      alignRight: false,
-    );
+    canvas.restore();
   }
 
-  void _label(
-    Canvas canvas,
-    String text,
-    double x,
-    double y, {
-    required bool alignRight,
-  }) {
+  (double, TextPainter) _tickLabel(double value, {required bool withUnit}) {
+    final text = withUnit && unit.isNotEmpty
+        ? '${_fmt(value)} $unit'
+        : _fmt(value);
     final painter = TextPainter(
-      text: TextSpan(
-        text: text,
-        style: TextStyle(fontSize: 9, color: labelColor),
-      ),
+      text: TextSpan(text: text, style: labelStyle),
       textDirection: TextDirection.ltr,
     )..layout();
-    final offset = alignRight
-        ? Offset(x - painter.width, y)
-        : Offset(x, y - painter.height);
-    painter.paint(canvas, offset);
+    return (value, painter);
   }
 
   String _fmt(double v) =>
@@ -174,5 +184,5 @@ class _LineChartPainter extends CustomPainter {
       oldDelegate.points != points ||
       oldDelegate.lineColor != lineColor ||
       oldDelegate.dotColor != dotColor ||
-      oldDelegate.labelColor != labelColor;
+      oldDelegate.labelStyle != labelStyle;
 }

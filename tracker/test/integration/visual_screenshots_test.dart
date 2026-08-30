@@ -29,6 +29,7 @@ import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/analytics/graph_editor.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
+import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 import 'package:tracker/pages/exercises/new_exercise_page.dart';
 import 'package:tracker/pages/feed_page.dart';
@@ -211,22 +212,21 @@ void main() {
       }
 
       // Push a page onto the root navigator (how the app really presents
-      // these screens), capture after settle, then pop. Capture must happen
-      // before the pop: afterwards the boundary shows the base page again.
+      // these screens — pushTo paints the route's theme background), capture
+      // after settle, then pop. Capture must happen before the pop:
+      // afterwards the boundary shows the base page again.
       // [dataReady] gates the capture on stream-backed content arriving.
       //
       // Route/dialog transitions are driven by the fake clock — runAsync
       // delays don't advance them, so pump(350 ms) is what actually completes
-      // the 300 ms MaterialPageRoute transition (without it the pushed page
+      // the 250 ms pushTo transition (without it the pushed page
       // builds but stays invisible and the capture shows the page beneath).
       Future<void> visit(
         String page,
         Widget pageWidget, {
         bool Function()? dataReady,
       }) => guarded(page, () async {
-        unawaited(
-          navigator.push(MaterialPageRoute<void>(builder: (_) => pageWidget)),
-        );
+        unawaited(pushTo<void>(navigator.context, pageWidget));
         // Two pumps: one frame starts the transition, the second advances
         // the fake clock past it (a bare pump doesn't move the clock).
         await tester.pump();
@@ -384,11 +384,7 @@ void main() {
 
       // End-workout confirmation dialog (on a pushed in-progress WorkoutPage).
       await guarded('End-workout dialog', () async {
-        unawaited(
-          navigator.push(
-            MaterialPageRoute<void>(builder: (_) => const WorkoutPage()),
-          ),
-        );
+        unawaited(pushTo<void>(navigator.context, const WorkoutPage()));
         // Two pumps: one frame starts the transition, the second advances
         // the fake clock past it (a bare pump doesn't move the clock).
         await tester.pump();

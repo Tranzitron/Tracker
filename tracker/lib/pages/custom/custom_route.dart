@@ -14,7 +14,10 @@ Route<T> _createRoute<T>(Color backgroundColor, Widget destination) {
   return PageRouteBuilder<T>(
     transitionDuration: const Duration(milliseconds: 250),
     barrierColor: backgroundColor,
-    pageBuilder: (context, animation, secondaryAnimation) => destination,
+    // Opaque routes ignore the barrier color, so the destination must paint
+    // the background itself or the body renders black.
+    pageBuilder: (context, animation, secondaryAnimation) =>
+        ColoredBox(color: backgroundColor, child: destination),
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
       const begin = Offset(1.0, 0.0);
       const end = Offset.zero;

@@ -28,6 +28,14 @@ class HistoryCalendar extends StatefulWidget {
 class _HistoryCalendarState extends State<HistoryCalendar> {
   static const _weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
 
+  /// Height kept for everything around the day grid (month header, weekday
+  /// row, metrics strip, day-list title + list) plus a small safety margin,
+  /// so a 6-row month fits the visible area on wide windows.
+  static const double _reservedHeight = 340;
+
+  /// Estimated bottom-navigation height for the unbounded-constraint fallback.
+  static const double _navAllowance = 64;
+
   late int _year;
   late int _month;
   DateTime? _selectedDay;
@@ -71,65 +79,86 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     final monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
     final streak = _dateIndex.currentStreak();
 
-    return SingleChildScrollView(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: <Widget>[
-          _BuildMonthHeader(
-            year: _year,
-            monthName: _monthName(_month),
-            onPrev: () => _goMonth(-1),
-            onNext: () => _goMonth(1),
-          ),
-          const SizedBox(height: 4),
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        // The calendar sits inside the page's scroll view, so its height
+        // constraint is unbounded; fall back to the window height minus the
+        // app bar / bottom navigation chrome.
+        final available = constraints.maxHeight.isFinite
+            ? constraints.maxHeight
+            : MediaQuery.sizeOf(context).height -
+                  MediaQuery.paddingOf(context).top -
+                  kToolbarHeight -
+                  _navAllowance;
+        // Reserve the month header, weekday row, metrics strip and the day
+        // list below the grid; split the rest between the grid rows.
+        final cellHeight =
+            ((available - _reservedHeight) / (grid.days.length ~/ 7)).clamp(
+              36.0,
+              56.0,
+            );
+        return SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
-              for (final label in _weekdayLabels)
-                Expanded(
-                  child: Center(
-                    child: Text(
-                      label,
-                      style: theme.typography.body.xs.copyWith(
-                        color: theme.colors.mutedForeground,
+              _BuildMonthHeader(
+                year: _year,
+                monthName: _monthName(_month),
+                onPrev: () => _goMonth(-1),
+                onNext: () => _goMonth(1),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                children: <Widget>[
+                  for (final label in _weekdayLabels)
+                    Expanded(
+                      child: Center(
+                        child: Text(
+                          label,
+                          style: theme.typography.body.xs.copyWith(
+                            color: theme.colors.mutedForeground,
+                          ),
+                        ),
                       ),
                     ),
-                  ),
+                ],
+              ),
+              const SizedBox(height: 2),
+              _dayGrid(grid, theme, cellHeight),
+              const SizedBox(height: 6),
+              _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
+              const SizedBox(height: 6),
+              Text(
+                _selectedDay == null
+                    ? 'Workouts'
+                    : 'Workouts · ${_dateLabel(_selectedDay!)}',
+                style: theme.typography.body.sm.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
+              ),
+              const SizedBox(height: 4),
+              _dayList(_selectedDay),
             ],
           ),
-          const SizedBox(height: 2),
-          _dayGrid(grid, theme),
-          const SizedBox(height: 6),
-          _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
-          const SizedBox(height: 6),
-          Text(
-            _selectedDay == null
-                ? 'Workouts'
-                : 'Workouts · ${_dateLabel(_selectedDay!)}',
-            style: theme.typography.body.sm.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          const SizedBox(height: 4),
-          _dayList(_selectedDay),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget _dayGrid(CalendarGrid grid, FThemeData theme) {
+  Widget _dayGrid(CalendarGrid grid, FThemeData theme, double cellHeight) {
     const double cellSpacing = 4;
-    return GridView.count(
+    return GridView.builder(
       padding: EdgeInsets.only(top: 4),
-      crossAxisCount: 7,
-      childAspectRatio: 1.75,
-      mainAxisSpacing: cellSpacing,
-      crossAxisSpacing: cellSpacing,
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisExtent: cellHeight,
+        mainAxisSpacing: cellSpacing,
+        crossAxisSpacing: cellSpacing,
+      ),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      children: <Widget>[
-        for (var i = 0; i < grid.days.length; i++) _dayCell(grid, i, theme),
-      ],
+      itemCount: grid.days.length,
+      itemBuilder: (context, index) => _dayCell(grid, index, theme),
     );
   }
 
