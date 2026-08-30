@@ -11,11 +11,9 @@
 // The test font is wider than Inter, so this over-reports relative to real
 // Windows rendering — a deliberate safety margin.
 import 'dart:async';
-import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
@@ -51,6 +49,8 @@ import 'package:tracker/pages/workout/split_day_page.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 import 'package:tracker/pages/workout/workout_page.dart';
 
+import '../helpers/test_fixtures.dart';
+import '../helpers/test_fonts.dart';
 import '../helpers/test_helpers.dart';
 
 const _sizes = <(String, double, double)>[
@@ -61,60 +61,12 @@ const _sizes = <(String, double, double)>[
 
 void _mark(String what) => print('SWEEP: $what');
 
-bool _fontsLoaded = false;
-
-/// Load ForUI's bundled Inter so widget tests use real Windows text metrics
-/// instead of the extra-wide test font (which over-reports tight rows).
-///
-/// `Isolate.packageConfig`/`resolvePackageUri` are unsupported in the flutter
-/// test environment, so resolve the pub cache directory directly (honoring
-/// `PUB_CACHE`); if the font is not found the sweep just over-reports.
-Future<void> _loadForuiFonts() async {
-  if (_fontsLoaded) return;
-  final pubCache =
-      Platform.environment['PUB_CACHE'] ??
-      (Platform.isWindows
-          ? '${Platform.environment['LOCALAPPDATA']}${Platform.pathSeparator}Pub${Platform.pathSeparator}Cache'
-          : '${Platform.environment['HOME']}${Platform.pathSeparator}.pub-cache');
-  final hosted = Directory(
-    '$pubCache${Platform.pathSeparator}hosted${Platform.pathSeparator}pub.dev',
-  );
-  if (!hosted.existsSync()) {
-    print('SWEEP: Inter font not found in pub cache — using test font.');
-    _fontsLoaded = true;
-    return;
-  }
-  final foruiDir = hosted.listSync().whereType<Directory>().firstWhere(
-    (d) => d.path.contains('forui-'),
-    orElse: () => hosted,
-  );
-  final fontDir = Directory(
-    '${foruiDir.path}${Platform.pathSeparator}assets'
-    '${Platform.pathSeparator}fonts${Platform.pathSeparator}inter',
-  );
-  if (!fontDir.existsSync()) {
-    print('SWEEP: Inter font not found at ${fontDir.path}.');
-    _fontsLoaded = true;
-    return;
-  }
-  for (final name in ['Inter.ttf', 'Inter-Italic.ttf']) {
-    final file = File('${fontDir.path}${Platform.pathSeparator}$name');
-    if (!file.existsSync()) continue;
-    final data = await file.readAsBytes();
-    final loader = FontLoader('packages/forui/Inter')
-      ..addFont(Future.value(ByteData.view(data.buffer)));
-    await loader.load();
-  }
-  _fontsLoaded = true;
-  print('SWEEP: Inter loaded from ${fontDir.path}');
-}
-
 void main() {
   setUpAll(initIsarCore);
 
   for (final (label, width, height) in _sizes) {
     testWidgets('no overflow at $label', (tester) async {
-      await tester.runAsync(_loadForuiFonts);
+      await tester.runAsync(loadTestFonts);
       debugDefaultTargetPlatformOverride = TargetPlatform.windows;
       addTearDown(() => debugDefaultTargetPlatformOverride = null);
       tester.view.physicalSize = Size(width, height);
@@ -125,7 +77,7 @@ void main() {
       // they never complete in the testWidgets fake-async zone.
       late TrackerRepository repo;
       late Isar isar;
-      late _Fixtures fixtures;
+      late SweepFixtures fixtures;
       await tester.runAsync(() async {
         isar = await openTestIsar([
           ExerciseSchema,
@@ -135,7 +87,7 @@ void main() {
         ], name: 'isar_$label');
         repo = TrackerRepository(isar);
         await seedExercisesIfNeeded(repo);
-        fixtures = await _seed(repo);
+        fixtures = await seedSweepFixtures(repo);
       });
       // No isar.close() teardown: Isar's native close never completes inside
       // the fake-async zone, stalling the suite. The temp DB dies with the
@@ -333,132 +285,4 @@ void main() {
       debugDefaultTargetPlatformOverride = null;
     });
   }
-}
-
-class _Fixtures {
-  _Fixtures({
-    required this.exercises,
-    required this.bench,
-    required this.benchId,
-    required this.inclineId,
-    required this.allGyms,
-    required this.secondaryGym,
-    required this.split,
-    required this.session,
-    required this.allSessions,
-    required this.gymNames,
-  });
-
-  final List<Exercise> exercises;
-  final Exercise bench;
-  final int benchId;
-  final int inclineId;
-  final List<Gym> allGyms;
-  final Gym secondaryGym;
-  final WorkoutSplit split;
-  final WorkoutSession session;
-  final List<WorkoutSession> allSessions;
-  final Map<int, String> gymNames;
-}
-
-Future<_Fixtures> _seed(TrackerRepository repo) async {
-  final exercises = await repo.exercises.getAll();
-  final bench = exercises.firstWhere((e) => e.title == 'Bench Press');
-  final incline = exercises.firstWhere((e) => e.title == 'Incline Bench Press');
-
-  final primaryGym = Gym(name: 'Iron Temple', isPrimary: true, order: 0);
-  final secondaryGym = Gym(
-    name: 'Very Long Gym Name — Westfield Century City',
-    order: 1,
-    multiplier: 0.9,
-  );
-  await repo.gyms.put(primaryGym);
-  await repo.gyms.put(secondaryGym);
-
-  final split = WorkoutSplit(
-    title: 'Push Pull Legs — Complete Program',
-    description: 'A three-day split for the weekday warrior',
-    order: 0,
-    splitDays: [
-      WorkoutSplitDay(
-        title: 'Push Day',
-        description: 'Chest, shoulders, triceps',
-        order: 0,
-        exercises: [
-          ExerciseItem(
-            exerciseId: bench.id,
-            order: 0,
-            targetSets: 4,
-            targetReps: 8,
-          ),
-          ExerciseItem(exerciseId: incline.id, order: 1, targetSets: 3),
-        ],
-      ),
-      WorkoutSplitDay(
-        title: 'Pull Day — a rather long day title for overflow checks',
-        description: 'Back and biceps',
-        order: 1,
-        exercises: [ExerciseItem(exerciseId: incline.id, order: 0)],
-      ),
-    ],
-  );
-  await repo.splits.put(split);
-
-  final now = DateTime.now();
-  final sessions = <WorkoutSession>[
-    WorkoutSession(
-      title: 'Push Day',
-      startTime: now.subtract(const Duration(days: 1, hours: 2)),
-      endTime: now.subtract(const Duration(days: 1)),
-      gymId: primaryGym.id,
-      sets: [
-        WorkoutSet(
-          exerciseId: bench.id,
-          weight: 60,
-          reps: 10,
-          type: SetType.warmup,
-          order: 0,
-        ),
-        WorkoutSet(exerciseId: bench.id, weight: 82.5, reps: 8, order: 1),
-        WorkoutSet(exerciseId: incline.id, weight: 60, reps: 10, order: 2),
-      ],
-    ),
-    WorkoutSession(
-      title: 'Pull Day — Long Session Title Meant To Stress Tight Card Rows',
-      startTime: now.subtract(const Duration(days: 3, hours: 1)),
-      endTime: now.subtract(const Duration(days: 3)),
-      gymId: secondaryGym.id,
-      sets: [
-        WorkoutSet(exerciseId: incline.id, weight: 40, reps: 12, order: 0),
-      ],
-    ),
-    WorkoutSession(
-      title: 'Legs',
-      startTime: now.subtract(const Duration(days: 8)),
-      endTime: now
-          .subtract(const Duration(days: 8))
-          .add(const Duration(minutes: 45)),
-      gymId: primaryGym.id,
-      sets: [],
-    ),
-  ];
-  for (final s in sessions) {
-    await repo.sessions.put(s);
-  }
-
-  return _Fixtures(
-    exercises: exercises,
-    bench: bench,
-    benchId: bench.id,
-    inclineId: incline.id,
-    allGyms: [primaryGym, secondaryGym],
-    secondaryGym: secondaryGym,
-    split: split,
-    session: sessions.first,
-    allSessions: sessions,
-    gymNames: {
-      primaryGym.id: primaryGym.name,
-      secondaryGym.id: secondaryGym.name,
-    },
-  );
 }

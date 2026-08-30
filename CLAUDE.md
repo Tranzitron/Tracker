@@ -78,3 +78,10 @@ The README records intended refactors/features, not current behavior; several ar
 ## Running GitHub Actions locally (repo root)
 
 `run-github-actions-locally.ps1` is a cross-platform (Windows/macOS/Linux) PowerShell script that ensures an Internet connection, then installs (if needed) the `act` CLI (nektos/act) and Docker, starts Docker Desktop/systemctl, then runs the GitHub Actions workflow locally. It self-elevates via `sudo`/RunAs. macOS support is partial and untested. Run as: `pwsh run-github-actions-locally.ps1`.
+
+## Visual debugging screenshots (widget-test sweep)
+
+`pwsh run-visual-tests.ps1` (repo root) renders every app page, dialog and sheet at 320x568, 800x600 and 1280x720 with real Inter text and Lucide/Material icon fonts, writing ~66 PNGs plus `manifest.json` to `tracker/build/test_screenshots/` (gitignored). Exit code = flutter test exit code. The sweep also runs on Linux CI via bare `flutter test`.
+
+- **Vision-analysis loop** (for Claude Code, after UI changes): run the script → read `manifest.json` (or glob `tracker/build/test_screenshots/*.png`) → inspect the images with the Read tool for overflow, clipped text, misalignment or tofu glyphs → fix → re-run. Files suffixed `_FAIL` are auto-captures of the screen that threw a render exception; the test output's `SCREENSHOT-SWEEP:` / `SCREENSHOT:` lines map captures to pages.
+- Under the hood: `test/integration/visual_screenshots_test.dart` (the sweep), `test/helpers/screenshot_helpers.dart` (PNG capture + manifest), `test/helpers/test_fonts.dart` (loads Inter/Lucide/MaterialIcons/Roboto from the pub cache and Flutter SDK — the test env ships no real fonts), `test/helpers/test_fixtures.dart` (seed data shared with `layout_overflow_test.dart`). The output directory is disposable; `-NoClean` keeps previous captures.
