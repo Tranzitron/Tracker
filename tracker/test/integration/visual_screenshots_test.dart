@@ -303,10 +303,16 @@ void main() {
       await visit(
         'Exercise detail page',
         ExerciseDetailPage(exercise: fixtures.bench),
+        // The page loads its summary async from Isar; wait for the chart to
+        // leave its empty state or the capture shows "0 Sessions".
+        dataReady: () => !tester.any(find.text('No data yet')),
       );
       await visit(
         'Session detail page',
         SessionDetailPage(session: fixtures.session, gymName: 'Iron Temple'),
+        // Set rows fall back to "Exercise <id>" until the async name map
+        // resolves; gate on the real exercise name.
+        dataReady: () => tester.any(find.text('Bench Press')),
       );
       await visit('Split editor (new)', const SplitEditorPage());
       await visit(

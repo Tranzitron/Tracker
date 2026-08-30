@@ -35,3 +35,7 @@ List<ProgressionPoint> displayProgressionPoints(
       ),
   ];
 }
+
+/// Counted noun for UI labels: `plural('set', 3)` → "3 sets", `plural('set', 1)`
+/// → "1 set" (plain concatenation would render "1 sets").
+String plural(String noun, int n) => n == 1 ? '1 $noun' : '$n ${noun}s';

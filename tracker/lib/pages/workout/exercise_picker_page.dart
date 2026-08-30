@@ -3,6 +3,7 @@ import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/exercise.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 
 /// Picks one exercise from the library for a split day (§1.3.1.1.1). Pops the
 /// selected [Exercise] (or null if dismissed).
@@ -54,10 +55,12 @@ class _ExercisePickerPageState extends State<ExercisePickerPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-            child: FTextField(
-              hint: 'Search exercises…',
-              control: FTextFieldControl.managed(
-                onChange: (value) => _filter(value.text),
+            child: MaxWidth(
+              child: FTextField(
+                hint: 'Search exercises…',
+                control: FTextFieldControl.managed(
+                  onChange: (value) => _filter(value.text),
+                ),
               ),
             ),
           ),
@@ -65,13 +68,15 @@ class _ExercisePickerPageState extends State<ExercisePickerPage> {
         SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             final e = _shown[index];
-            return FItem(
-              title: Text(e.title),
-              subtitle: Text(
-                e.primaryMuscle.map((m) => m.scientificName).join(', '),
-                overflow: TextOverflow.ellipsis,
+            return MaxWidth(
+              child: FItem(
+                title: Text(e.title),
+                subtitle: Text(
+                  e.primaryMuscle.map((m) => m.scientificName).join(', '),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                onPress: () => Navigator.of(context).pop(e),
               ),
-              onPress: () => Navigator.of(context).pop(e),
             );
           }, childCount: _shown.length),
         ),

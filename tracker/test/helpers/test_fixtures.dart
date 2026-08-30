@@ -35,6 +35,10 @@ class SweepFixtures {
   final Map<int, String> gymNames;
 }
 
+// Single captured 'now': all seeded session times are fixed offsets from it so
+// timestamps don't drift between capture sizes (pixel-diff determinism).
+final _fixtureNow = DateTime.now();
+
 Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
   final exercises = await repo.exercises.getAll();
   final bench = exercises.firstWhere((e) => e.title == 'Bench Press');
@@ -78,7 +82,7 @@ Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
   );
   await repo.splits.put(split);
 
-  final now = DateTime.now();
+  final now = _fixtureNow;
   final sessions = <WorkoutSession>[
     WorkoutSession(
       title: 'Push Day',

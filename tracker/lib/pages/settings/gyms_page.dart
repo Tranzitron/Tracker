@@ -6,6 +6,7 @@ import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 
 /// Gym management (Plan.md §2.2 / §2.3): create/edit gyms, mark one as the
 /// primary baseline (multiplier locked to 1.0), and set or auto-estimate each
@@ -200,45 +201,47 @@ class _GymsPageState extends State<GymsPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                Text(
-                  'The primary gym is the baseline (multiplier ×1.0). '
-                  'Secondary multipliers align their weights to it.',
-                  style: context.theme.typography.body.xs.copyWith(
-                    color: context.theme.colors.mutedForeground,
+            child: MaxWidth(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Text(
+                    'The primary gym is the baseline (multiplier ×1.0). '
+                    'Secondary multipliers align their weights to it.',
+                    style: context.theme.typography.body.xs.copyWith(
+                      color: context.theme.colors.mutedForeground,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 12),
-                StreamBuilder<List<Gym>>(
-                  stream: _stream,
-                  initialData: const <Gym>[],
-                  builder: (context, snapshot) {
-                    final gyms = snapshot.data ?? const <Gym>[];
-                    if (gyms.isEmpty) {
-                      return const Padding(
-                        padding: EdgeInsets.only(top: 24),
-                        child: Text('No gyms yet — add one.'),
+                  const SizedBox(height: 12),
+                  StreamBuilder<List<Gym>>(
+                    stream: _stream,
+                    initialData: const <Gym>[],
+                    builder: (context, snapshot) {
+                      final gyms = snapshot.data ?? const <Gym>[];
+                      if (gyms.isEmpty) {
+                        return const Padding(
+                          padding: EdgeInsets.only(top: 24),
+                          child: Text('No gyms yet — add one.'),
+                        );
+                      }
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          for (final gym in gyms)
+                            _GymTile(
+                              gym: gym,
+                              canEstimate: _sessions.isNotEmpty,
+                              onPrimary: () => _setPrimary(gym),
+                              onEdit: () => _editGym(gym),
+                              onEstimate: () => _estimateMultiplier(gym),
+                              onDelete: () => _deleteGym(gym),
+                            ),
+                        ],
                       );
-                    }
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        for (final gym in gyms)
-                          _GymTile(
-                            gym: gym,
-                            canEstimate: _sessions.isNotEmpty,
-                            onPrimary: () => _setPrimary(gym),
-                            onEdit: () => _editGym(gym),
-                            onEstimate: () => _estimateMultiplier(gym),
-                            onDelete: () => _deleteGym(gym),
-                          ),
-                      ],
-                    );
-                  },
-                ),
-              ],
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),

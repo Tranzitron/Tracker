@@ -7,6 +7,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
@@ -104,20 +105,22 @@ class _ExercisesPageState extends State<ExercisesPage> {
         SliverPadding(
           padding: const EdgeInsets.fromLTRB(16, 8, 16, 32),
           sliver: SliverToBoxAdapter(
-            child: _exercises.isEmpty
-                ? const Text('No exercises in the library yet.')
-                : FTabs(
-                    children: [
-                      .entry(
-                        label: const Text('Muscle group'),
-                        child: _groupList(_groupsByMuscle(_exercises)),
-                      ),
-                      .entry(
-                        label: const Text('Movement'),
-                        child: _groupList(_groupsByMovement(_exercises)),
-                      ),
-                    ],
-                  ),
+            child: MaxWidth(
+              child: _exercises.isEmpty
+                  ? const Text('No exercises in the library yet.')
+                  : FTabs(
+                      children: [
+                        .entry(
+                          label: const Text('Muscle group'),
+                          child: _groupList(_groupsByMuscle(_exercises)),
+                        ),
+                        .entry(
+                          label: const Text('Movement'),
+                          child: _groupList(_groupsByMovement(_exercises)),
+                        ),
+                      ],
+                    ),
+            ),
           ),
         ),
       ],

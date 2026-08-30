@@ -125,6 +125,29 @@ extension _FThemeMaterialBridge on FThemeData {
   }
 }
 
+/// Strengthens the bottom nav's inactive icon + label color: the inherited
+/// `mutedForeground` is too faint on the bar. One neutral step stronger per
+/// brightness (light #737373 → #525252, dark #A1A1A1 → #D4D4D4); the selected
+/// item keeps its primary color, so only the base is overridden.
+FThemeData _strengthenNavLabels(FThemeData data) {
+  final inactive = data.colors.brightness == Brightness.light
+      ? const Color(0xFF525252)
+      : const Color(0xFFD4D4D4);
+  final itemStyle = data.bottomNavigationBarStyle.itemStyle;
+  return data.copyWith(
+    bottomNavigationBarStyle: data.bottomNavigationBarStyle.copyWith(
+      itemStyle: itemStyle.copyWith(
+        iconStyle: itemStyle.iconStyle.apply([
+          FVariantOperation.base(IconThemeDataDelta.delta(color: inactive)),
+        ]),
+        textStyle: itemStyle.textStyle.apply([
+          FVariantOperation.base(TextStyleDelta.delta(color: inactive)),
+        ]),
+      ),
+    ),
+  );
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -144,6 +167,10 @@ class MyApp extends StatelessWidget {
         }.contains(defaultTargetPlatform)
         ? (FTheme.neutral.light.touch, FTheme.neutral.dark.touch)
         : (FTheme.neutral.light.desktop, FTheme.neutral.dark.desktop);
+    final (navLightTheme, navDarkTheme) = (
+      _strengthenNavLabels(lightTheme),
+      _strengthenNavLabels(darkTheme),
+    );
 
     return MaterialApp(
       supportedLocales: FLocalizations.supportedLocales,
@@ -159,10 +186,12 @@ class MyApp extends StatelessWidget {
       // Material theme so remaining Material widgets (SliverAppBar,
       // ExpansionTile, CircularProgressIndicator, …) inherit the Forui
       // palette; FTheme below keeps Forui widgets themed.
-      theme: lightTheme.toSdkMaterialTheme(),
-      darkTheme: darkTheme.toSdkMaterialTheme(),
+      theme: navLightTheme.toSdkMaterialTheme(),
+      darkTheme: navDarkTheme.toSdkMaterialTheme(),
       builder: (context, child) => FTheme(
-        data: Theme.brightnessOf(context) == .light ? lightTheme : darkTheme,
+        data: Theme.brightnessOf(context) == Brightness.light
+            ? navLightTheme
+            : navDarkTheme,
         child: FToaster(child: FTooltipGroup(child: child!)),
       ),
       themeMode: ThemeMode.system,

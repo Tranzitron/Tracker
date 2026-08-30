@@ -4,6 +4,7 @@ import 'package:forui/forui.dart';
 
 import 'custom/custom_app_bar.dart';
 import 'custom/custom_route.dart';
+import 'custom/max_width.dart';
 import 'settings/gyms_page.dart';
 import 'settings/settings_cubit.dart';
 
@@ -17,46 +18,50 @@ class SettingsPage extends StatelessWidget {
         CustomAppBar(context, title: 'Settings'),
         SliverFillRemaining(
           child: BlocBuilder<SettingsCubit, SettingsState>(
-            builder: (context, state) => ListView(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              children: <Widget>[
-                _buildSettingsMenuItem(
-                  context,
-                  icon: FLucideIcons.dumbbell,
-                  title: 'Gyms',
-                  subtitle: 'Manage gyms and weight multipliers',
-                  onTap: () => pushTo(context, const GymsPage()),
-                ),
-                _buildSettingsDropdownRow(
-                  context,
-                  icon: FLucideIcons.scale,
-                  title: 'Units',
-                  subtitle: 'Set your preferred weight unit',
-                  value: state.unit,
-                  onChanged: (unit) {
-                    context.read<SettingsCubit>().setUnit(unit);
-                  },
-                ),
-                _buildSwitchRow(
-                  context,
-                  icon: FLucideIcons.bell,
-                  title: 'Notifications',
-                  subtitle:
-                      'Allow workout reminders and progress notifications',
-                  value: state.notificationsEnabled,
-                  onChanged: context
-                      .read<SettingsCubit>()
-                      .setNotificationsEnabled,
-                ),
-                _buildSwitchRow(
-                  context,
-                  icon: FLucideIcons.shield,
-                  title: 'Privacy & Security',
-                  subtitle: 'Allow anonymous analytics to improve the app',
-                  value: state.analyticsEnabled,
-                  onChanged: context.read<SettingsCubit>().setAnalyticsEnabled,
-                ),
-              ],
+            builder: (context, state) => MaxWidth(
+              child: ListView(
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                children: <Widget>[
+                  _buildSettingsMenuItem(
+                    context,
+                    icon: FLucideIcons.dumbbell,
+                    title: 'Gyms',
+                    subtitle: 'Manage gyms and weight multipliers',
+                    onTap: () => pushTo(context, const GymsPage()),
+                  ),
+                  _buildSettingsDropdownRow(
+                    context,
+                    icon: FLucideIcons.scale,
+                    title: 'Units',
+                    subtitle: 'Set your preferred weight unit',
+                    value: state.unit,
+                    onChanged: (unit) {
+                      context.read<SettingsCubit>().setUnit(unit);
+                    },
+                  ),
+                  _buildSwitchRow(
+                    context,
+                    icon: FLucideIcons.bell,
+                    title: 'Notifications',
+                    subtitle:
+                        'Allow workout reminders and progress notifications',
+                    value: state.notificationsEnabled,
+                    onChanged: context
+                        .read<SettingsCubit>()
+                        .setNotificationsEnabled,
+                  ),
+                  _buildSwitchRow(
+                    context,
+                    icon: FLucideIcons.shield,
+                    title: 'Privacy & Security',
+                    subtitle: 'Allow anonymous analytics to improve the app',
+                    value: state.analyticsEnabled,
+                    onChanged: context
+                        .read<SettingsCubit>()
+                        .setAnalyticsEnabled,
+                  ),
+                ],
+              ),
             ),
           ),
         ),

@@ -18,40 +18,31 @@ class CustomAppBar extends StatelessWidget {
       pinned: true,
       snap: false,
       floating: false,
-      flexibleSpace: FlexibleSpaceBar(
-        title: Text(title),
-        background: Center(
-          child: Padding(
-            padding: EdgeInsets.only(
-              top: MediaQuery.paddingOf(context).top,
-              left: 4,
-              right: 4,
+      // The title Row below lays out its own back button and action aligned
+      // with the body margin; the app bar must not inject a second leading.
+      automaticallyImplyLeading: false,
+      titleSpacing: 16,
+      title: Row(
+        children: [
+          // Explicit ghost back-button (Phase 6): tab-root pages sit at the
+          // bottom of their nested Navigator, so canPop() is false there and
+          // no leading is shown.
+          if (Navigator.of(context).canPop())
+            FButton(
+              variant: .ghost,
+              onPress: () => Navigator.of(context).pop(),
+              child: const Icon(FLucideIcons.chevronLeft),
             ),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                // Explicit ghost back-button (Phase 6): tab-root pages sit at
-                // the bottom of their nested Navigator, so canPop() is false
-                // there and no leading is shown.
-                if (Navigator.of(context).canPop())
-                  FButton(
-                    variant: .ghost,
-                    onPress: () => Navigator.of(context).maybePop(),
-                    child: const Icon(FLucideIcons.chevronLeft),
-                  )
-                else
-                  const Spacer(),
-                if (actionButton != null)
-                  FButton(
-                    variant: .ghost,
-                    onPress: actionButton!.onPressed,
-                    child: Text(actionButton!.title),
-                  ),
-              ],
-            ),
+          Expanded(
+            child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
           ),
-        ),
+          if (actionButton != null)
+            FButton(
+              variant: .ghost,
+              onPress: actionButton!.onPressed,
+              child: Text(actionButton!.title),
+            ),
+        ],
       ),
     );
   }

@@ -7,6 +7,7 @@ import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_set.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
@@ -26,14 +27,16 @@ class WorkoutPage extends StatelessWidget {
       slivers: <Widget>[
         CustomAppBar(context, title: 'Current Workout'),
         SliverToBoxAdapter(
-          child: BlocSelector<WorkoutCubit, WorkoutState, bool>(
-            selector: (state) => state.isInProgress,
-            builder: (context, isInProgress) {
-              final cubit = context.read<WorkoutCubit>();
-              return isInProgress
-                  ? _InProgressView(onEnd: cubit.endWorkout)
-                  : _IdleView(onStart: () => _startWorkout(context));
-            },
+          child: MaxWidth(
+            child: BlocSelector<WorkoutCubit, WorkoutState, bool>(
+              selector: (state) => state.isInProgress,
+              builder: (context, isInProgress) {
+                final cubit = context.read<WorkoutCubit>();
+                return isInProgress
+                    ? _InProgressView(onEnd: cubit.endWorkout)
+                    : _IdleView(onStart: () => _startWorkout(context));
+              },
+            ),
           ),
         ),
       ],
@@ -167,10 +170,10 @@ class _InProgressView extends StatelessWidget {
                 Text('End workout?', style: style.titleTextStyle),
                 const SizedBox(height: 8),
                 Text(
-                  'Log $setCount set(s) and save this workout to history.',
+                  'Log ${plural('set', setCount)} and save this workout to history.',
                   style: style.bodyTextStyle,
                 ),
-                const SizedBox(height: 24),
+                const SizedBox(height: 16),
                 // Wrap (not Row + Spacer): the dialog is only ~240px wide at
                 // the minimum desktop window size, and a fixed row overflows.
                 Wrap(
@@ -179,12 +182,20 @@ class _InProgressView extends StatelessWidget {
                   alignment: WrapAlignment.end,
                   crossAxisAlignment: WrapCrossAlignment.center,
                   children: [
-                    IconButton(
-                      icon: const Icon(FLucideIcons.trash2),
-                      color: dialogContext.theme.colors.error,
-                      tooltip: 'Discard workout',
-                      onPressed: () =>
-                          Navigator.pop(dialogContext, _WorkoutAction.discard),
+                    // The tooltip covers visual hover text; Semantics makes
+                    // the bare icon announce itself to screen readers too.
+                    Semantics(
+                      label: 'Discard workout',
+                      button: true,
+                      child: IconButton(
+                        icon: const Icon(FLucideIcons.trash2),
+                        color: dialogContext.theme.colors.error,
+                        tooltip: 'Discard workout',
+                        onPressed: () => Navigator.pop(
+                          dialogContext,
+                          _WorkoutAction.discard,
+                        ),
+                      ),
                     ),
                     FButton(
                       variant: .outline,
@@ -340,7 +351,7 @@ class _WorkoutHeader extends StatelessWidget {
               Text(_fmtTime(started)),
             const SizedBox(height: 8),
             Text(
-              '${presentation.setCount} set(s) · ${formatWeight(context, working)} working volume',
+              '${plural('set', presentation.setCount)} · ${formatWeight(context, working)} working volume',
               style: context.theme.typography.body.md,
             ),
           ],

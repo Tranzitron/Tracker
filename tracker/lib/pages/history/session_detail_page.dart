@@ -66,14 +66,18 @@ class _SessionDetailPageState extends State<SessionDetailPage> {
               children: <Widget>[
                 _HeaderCard(session: session, gymName: widget.gymName),
                 const SizedBox(height: 12),
-                Row(
-                  children: <Widget>[
-                    _Stat(label: 'Sets', value: '${session.sets.length}'),
-                    _Stat(
-                      label: 'Working volume',
-                      value: formatWeight(context, workingVolume),
-                    ),
-                  ],
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      _Stat(label: 'Sets', value: '${session.sets.length}'),
+                      const SizedBox(width: 12),
+                      _Stat(
+                        label: 'Working volume',
+                        value: formatWeight(context, workingVolume),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 16),
                 Text(

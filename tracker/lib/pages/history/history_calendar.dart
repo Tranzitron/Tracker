@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 
 import 'calendar_grid.dart';
 import 'session_detail_page.dart';
@@ -243,7 +244,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(session.title),
-                          Text('${session.sets.length} set(s)'),
+                          Text(plural('set', session.sets.length)),
                         ],
                       ),
                     ),

@@ -6,6 +6,7 @@ import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/history/history_calendar.dart';
 import 'package:tracker/pages/history/session_detail_page.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 
 /// History overview (Plan.md §1.2) + calendar (Plan.md §2.5).
 ///
@@ -192,7 +193,7 @@ class _SessionTile extends StatelessWidget {
               child: Text(
                 '${session.title}\n${_date(session.startTime)}'
                 '${gymName != null ? ' · $gymName' : ''}'
-                '\n${session.sets.length} set(s) · ${_dur(duration)}',
+                '\n${plural('set', session.sets.length)} · ${_dur(duration)}',
               ),
             ),
             const Icon(FLucideIcons.chevronRight),

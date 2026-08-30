@@ -319,7 +319,7 @@ class _ActivityCard extends StatelessWidget {
             Expanded(
               child: Text(
                 '${session.title}\n${_date(session.startTime)}${gymName == null ? '' : ' · $gymName'}\n'
-                '${session.sets.length} sets · ${_duration(duration)} · ${formatWeight(context, volume)}',
+                '${plural('set', session.sets.length)} · ${_duration(duration)} · ${formatWeight(context, volume)}',
               ),
             ),
             const Icon(FLucideIcons.chevronRight),

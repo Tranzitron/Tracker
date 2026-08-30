@@ -6,6 +6,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 
 /// Individual exercise view (Plan.md §1.4.1.1): profile rows plus a
@@ -80,68 +81,81 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                if (exercise.description != null) ...[
-                  Text(exercise.description!, style: theme.typography.body.lg),
-                  const SizedBox(height: 16),
-                ],
-                _InfoRow(
-                  label: 'Movement pattern',
-                  value: MovementPatternLabel.label(exercise.movementPattern),
-                ),
-                _InfoRow(
-                  label: 'Primary muscles',
-                  value: exercise.primaryMuscle
-                      .map((m) => m.scientificName)
-                      .join(', '),
-                ),
-                if (exercise.secondaryMuscle != null &&
-                    exercise.secondaryMuscle!.isNotEmpty)
+            child: MaxWidth(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  if (exercise.description != null) ...[
+                    Text(
+                      exercise.description!,
+                      style: theme.typography.body.lg,
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   _InfoRow(
-                    label: 'Secondary muscles',
-                    value: exercise.secondaryMuscle!
+                    label: 'Movement pattern',
+                    value: MovementPatternLabel.label(exercise.movementPattern),
+                  ),
+                  _InfoRow(
+                    label: 'Primary muscles',
+                    value: exercise.primaryMuscle
                         .map((m) => m.scientificName)
                         .join(', '),
                   ),
-                _InfoRow(
-                  label: 'Equipment',
-                  value: exercise.equipment
-                      .map((e) => e.displayName)
-                      .join(', '),
-                ),
-                const SizedBox(height: 16),
-                const FDivider(),
-                const SizedBox(height: 16),
-                Text(
-                  'Performance history',
-                  style: theme.typography.body.md.copyWith(
-                    fontWeight: FontWeight.w600,
+                  if (exercise.secondaryMuscle != null &&
+                      exercise.secondaryMuscle!.isNotEmpty)
+                    _InfoRow(
+                      label: 'Secondary muscles',
+                      value: exercise.secondaryMuscle!
+                          .map((m) => m.scientificName)
+                          .join(', '),
+                    ),
+                  _InfoRow(
+                    label: 'Equipment',
+                    value: exercise.equipment
+                        .map((e) => e.displayName)
+                        .join(', '),
                   ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: <Widget>[
-                    _Stat(
-                      label: 'Best 1RM',
-                      value: formatWeight(context, summary.best1rm),
+                  const SizedBox(height: 16),
+                  const FDivider(),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Performance history',
+                    style: theme.typography.body.md.copyWith(
+                      fontWeight: FontWeight.w600,
                     ),
-                    _Stat(
-                      label: 'Peak volume',
-                      value: formatWeight(context, summary.peakVolume),
+                  ),
+                  const SizedBox(height: 8),
+                  // IntrinsicHeight + stretch equalizes card heights when one
+                  // label wraps to two lines at narrow widths.
+                  IntrinsicHeight(
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: <Widget>[
+                        _Stat(
+                          label: 'Best 1RM',
+                          value: formatWeight(context, summary.best1rm),
+                        ),
+                        _Stat(
+                          label: 'Peak volume',
+                          value: formatWeight(context, summary.peakVolume),
+                        ),
+                        _Stat(
+                          label: 'Sessions',
+                          value: '${summary.sessionCount}',
+                        ),
+                      ],
                     ),
-                    _Stat(label: 'Sessions', value: '${summary.sessionCount}'),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Best working-set 1RM over time',
-                  style: theme.typography.body.sm,
-                ),
-                const SizedBox(height: 8),
-                LineChart(points: series, unit: weightUnitOf(context).symbol),
-              ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Best working-set 1RM over time',
+                    style: theme.typography.body.sm,
+                  ),
+                  const SizedBox(height: 8),
+                  LineChart(points: series, unit: weightUnitOf(context).symbol),
+                ],
+              ),
             ),
           ),
         ),

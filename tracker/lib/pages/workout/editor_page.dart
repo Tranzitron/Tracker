@@ -6,6 +6,7 @@ import 'package:tracker/models/gym.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import 'gym_picker.dart';
@@ -51,29 +52,31 @@ class _EditorPageState extends State<EditorPage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: StreamBuilder<List<WorkoutSplit>>(
-              stream: _stream,
-              initialData: const <WorkoutSplit>[],
-              builder: (context, snapshot) {
-                final splits = snapshot.data ?? const <WorkoutSplit>[];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: <Widget>[
-                    const BuildNewSplitButton(),
-                    if (splits.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 24),
-                        child: Text('No splits yet. Create one below.'),
-                      )
-                    else
-                      for (final split in splits)
-                        BuildMaterialSplit(
-                          split,
-                          exerciseNames: _exerciseNames,
-                        ),
-                  ],
-                );
-              },
+            child: MaxWidth(
+              child: StreamBuilder<List<WorkoutSplit>>(
+                stream: _stream,
+                initialData: const <WorkoutSplit>[],
+                builder: (context, snapshot) {
+                  final splits = snapshot.data ?? const <WorkoutSplit>[];
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: <Widget>[
+                      const BuildNewSplitButton(),
+                      if (splits.isEmpty)
+                        const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 24),
+                          child: Text('No splits yet. Create one below.'),
+                        )
+                      else
+                        for (final split in splits)
+                          BuildMaterialSplit(
+                            split,
+                            exerciseNames: _exerciseNames,
+                          ),
+                    ],
+                  );
+                },
+              ),
             ),
           ),
         ),

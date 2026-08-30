@@ -5,6 +5,7 @@ import 'package:tracker/models/exercise.dart';
 import 'package:tracker/models/muscle.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/pages/custom/max_width.dart';
 
 /// Custom exercise creation form (Plan.md §1.4): title, movement pattern,
 /// target muscle groups, equipment and a description, persisted to the library
@@ -80,70 +81,72 @@ class _NewExercisePageState extends State<NewExercisePage> {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.all(16),
-            child: Form(
-              key: _formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  FTextFormField(
-                    control: FTextFieldControl.managed(controller: _title),
-                    label: const Text('Name'),
-                    validator: (v) => requiredText(v),
-                  ),
-                  const SizedBox(height: 16),
-                  FTextFormField(
-                    control: FTextFieldControl.managed(
-                      controller: _description,
+            child: MaxWidth(
+              child: Form(
+                key: _formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    FTextFormField(
+                      control: FTextFieldControl.managed(controller: _title),
+                      label: const Text('Name'),
+                      validator: (v) => requiredText(v),
                     ),
-                    label: const Text('Description (optional)'),
-                    minLines: 1,
-                    maxLines: null,
-                    keyboardType: TextInputType.multiline,
-                  ),
-                  const SizedBox(height: 16),
-                  FSelect<MovementPattern>(
-                    label: const Text('Movement pattern'),
-                    items: {
-                      for (final m in MovementPattern.values)
-                        _movementLabel(m): m,
-                    },
-                    control: FSelectControl<MovementPattern>.lifted(
-                      value: _movement,
-                      onChange: (v) =>
-                          setState(() => _movement = v ?? _movement),
+                    const SizedBox(height: 16),
+                    FTextFormField(
+                      control: FTextFieldControl.managed(
+                        controller: _description,
+                      ),
+                      label: const Text('Description (optional)'),
+                      minLines: 1,
+                      maxLines: null,
+                      keyboardType: TextInputType.multiline,
                     ),
-                  ),
-                  _MuscleSelectGroup(
-                    label: 'Primary muscles',
-                    selected: _primary,
-                    onChange: (sel) => setState(
-                      () => _primary
-                        ..clear()
-                        ..addAll(sel),
+                    const SizedBox(height: 16),
+                    FSelect<MovementPattern>(
+                      label: const Text('Movement pattern'),
+                      items: {
+                        for (final m in MovementPattern.values)
+                          _movementLabel(m): m,
+                      },
+                      control: FSelectControl<MovementPattern>.lifted(
+                        value: _movement,
+                        onChange: (v) =>
+                            setState(() => _movement = v ?? _movement),
+                      ),
                     ),
-                  ),
-                  _MuscleSelectGroup(
-                    label: 'Secondary muscles (optional)',
-                    selected: _secondary,
-                    onChange: (sel) => setState(
-                      () => _secondary
-                        ..clear()
-                        ..addAll(sel),
+                    _MuscleSelectGroup(
+                      label: 'Primary muscles',
+                      selected: _primary,
+                      onChange: (sel) => setState(
+                        () => _primary
+                          ..clear()
+                          ..addAll(sel),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 16),
-                  Text('Equipment', style: context.theme.typography.body.sm),
-                  const SizedBox(height: 8),
-                  _EquipmentSelectGroup(
-                    selected: _equipment,
-                    onChange: (sel) => setState(
-                      () => _equipment
-                        ..clear()
-                        ..addAll(sel),
+                    _MuscleSelectGroup(
+                      label: 'Secondary muscles (optional)',
+                      selected: _secondary,
+                      onChange: (sel) => setState(
+                        () => _secondary
+                          ..clear()
+                          ..addAll(sel),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+                    const SizedBox(height: 16),
+                    Text('Equipment', style: context.theme.typography.body.sm),
+                    const SizedBox(height: 8),
+                    _EquipmentSelectGroup(
+                      selected: _equipment,
+                      onChange: (sel) => setState(
+                        () => _equipment
+                          ..clear()
+                          ..addAll(sel),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
+                ),
               ),
             ),
           ),

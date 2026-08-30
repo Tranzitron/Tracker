@@ -4,6 +4,7 @@ import 'package:tracker/data/repository_scope.dart';
 import 'package:tracker/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/pages/settings/weight_format.dart';
 
 import '../../models/workout_split_templates.dart';
 import 'split_day_editor_page.dart';
@@ -239,7 +240,7 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                     FItem(
                       title: Text(_days[i].title),
                       subtitle: Text(
-                        '${_days[i].exercises.length} exercise(s)',
+                        plural('exercise', _days[i].exercises.length),
                       ),
                       suffix: IconButton(
                         icon: const Icon(FLucideIcons.trash2),

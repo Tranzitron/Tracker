@@ -127,18 +127,23 @@ class _ProgressionPageState extends State<ProgressionPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
-        Row(
-          children: <Widget>[
-            _Stat(label: 'Workouts', value: '${summary.sessionCount}'),
-            _Stat(
-              label: 'Best 1RM',
-              value: formatWeight(context, summary.best1rm),
-            ),
-            _Stat(
-              label: 'Peak volume',
-              value: formatWeight(context, summary.peakVolume),
-            ),
-          ],
+        // IntrinsicHeight + stretch equalizes card heights when one label
+        // wraps to two lines at narrow widths.
+        IntrinsicHeight(
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _Stat(label: 'Workouts', value: '${summary.sessionCount}'),
+              _Stat(
+                label: 'Best 1RM',
+                value: formatWeight(context, summary.best1rm),
+              ),
+              _Stat(
+                label: 'Peak volume',
+                value: formatWeight(context, summary.peakVolume),
+              ),
+            ],
+          ),
         ),
         const SizedBox(height: 8),
         Row(
