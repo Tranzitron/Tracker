@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/exercise.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/max_width.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/max_width.dart';
 
 /// Picks one exercise from the library for a split day (§1.3.1.1.1). Pops the
 /// selected [Exercise] (or null if dismissed).

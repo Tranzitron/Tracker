@@ -3,11 +3,11 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/domain/models/weight_unit.dart';
 
-import 'custom/custom_app_bar.dart';
-import 'custom/custom_route.dart';
-import 'custom/max_width.dart';
-import 'settings/gyms_page.dart';
-import 'settings/settings_cubit.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/core/ui/max_width.dart';
+import 'package:tracker/ui/settings/widgets/gyms_page.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});

@@ -13,8 +13,9 @@ import 'package:tracker/data/repositories/tracker_repository.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/data/services/seed.dart';
 import 'package:tracker/routing/home_page.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/ui/core/themes/material_theme_bridge.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:window_size/window_size.dart';
 
 Future<void> main() async {
@@ -89,65 +90,6 @@ Future<void> _seedExercises(
   }
 }
 
-/// Approximate SDK [ThemeData] from a Forui [FThemeData].
-///
-/// Forui 0.26's `FThemeData.toApproximateMaterialTheme()` returns
-/// `material_ui`'s `ThemeData`, which is a distinct type from Flutter SDK's
-/// `ThemeData` and cannot be passed to the SDK `MaterialApp` used here
-/// (switching the app root to `material_ui`'s `MaterialApp` is out of scope).
-/// This bridge maps the Forui palette onto the SDK `ColorScheme` so the
-/// remaining Material widgets (SliverAppBar, ExpansionTile,
-/// CircularProgressIndicator, …) inherit the Forui palette.
-extension _FThemeMaterialBridge on FThemeData {
-  ThemeData toSdkMaterialTheme() {
-    final c = colors;
-    return ThemeData(
-      brightness: c.brightness,
-      useMaterial3: true,
-      colorScheme: ColorScheme(
-        brightness: c.brightness,
-        primary: c.primary,
-        onPrimary: c.primaryForeground,
-        secondary: c.secondary,
-        onSecondary: c.secondaryForeground,
-        error: c.error,
-        onError: c.errorForeground,
-        surface: c.card,
-        onSurface: c.foreground,
-        onSurfaceVariant: c.mutedForeground,
-        surfaceContainerHighest: c.muted,
-        outline: c.border,
-        outlineVariant: c.border,
-      ),
-      scaffoldBackgroundColor: c.background,
-      dividerColor: c.border,
-    );
-  }
-}
-
-/// Strengthens the bottom nav's inactive icon + label color: the inherited
-/// `mutedForeground` is too faint on the bar. One neutral step stronger per
-/// brightness (light #737373 → #525252, dark #A1A1A1 → #D4D4D4); the selected
-/// item keeps its primary color, so only the base is overridden.
-FThemeData _strengthenNavLabels(FThemeData data) {
-  final inactive = data.colors.brightness == Brightness.light
-      ? const Color(0xFF525252)
-      : const Color(0xFFD4D4D4);
-  final itemStyle = data.bottomNavigationBarStyle.itemStyle;
-  return data.copyWith(
-    bottomNavigationBarStyle: data.bottomNavigationBarStyle.copyWith(
-      itemStyle: itemStyle.copyWith(
-        iconStyle: itemStyle.iconStyle.apply([
-          FVariantOperation.base(IconThemeDataDelta.delta(color: inactive)),
-        ]),
-        textStyle: itemStyle.textStyle.apply([
-          FVariantOperation.base(TextStyleDelta.delta(color: inactive)),
-        ]),
-      ),
-    ),
-  );
-}
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -168,8 +110,8 @@ class MyApp extends StatelessWidget {
         ? (FTheme.neutral.light.touch, FTheme.neutral.dark.touch)
         : (FTheme.neutral.light.desktop, FTheme.neutral.dark.desktop);
     final (navLightTheme, navDarkTheme) = (
-      _strengthenNavLabels(lightTheme),
-      _strengthenNavLabels(darkTheme),
+      strengthenNavLabels(lightTheme),
+      strengthenNavLabels(darkTheme),
     );
 
     return MaterialApp(

@@ -5,7 +5,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/domain/models/graph_config.dart';
 import 'package:tracker/domain/models/weight_unit.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 
 void main() {
   group('Setting conversions & state', () {

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_split.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/custom_route.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/custom_route.dart';
 import 'package:tracker/utils/form_validators.dart';
-import 'package:tracker/pages/workout/exercise_picker_page.dart';
+import 'package:tracker/ui/workout/widgets/exercise_picker_page.dart';
 
 /// Split day editor (Plan.md §1.3.1.1 / §1.3.1.1.1): configure a day's title,
 /// description and ordered exercise list (add / remove / reorder). Pops the

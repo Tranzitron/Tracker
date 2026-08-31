@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
 import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/domain/models/weight_unit.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 
 WeightUnit weightUnitOf(BuildContext context) {
   return SettingsCubit.maybeOf(context)?.state.unit ?? WeightUnit.kilograms;

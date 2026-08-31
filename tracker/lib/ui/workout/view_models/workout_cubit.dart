@@ -6,9 +6,9 @@ import 'package:tracker/domain/services/analytics.dart';
 
 import 'package:tracker/data/repositories/tracker_repository.dart';
 
-import '../../domain/models/gym.dart';
-import '../../domain/models/workout_session.dart';
-import '../../domain/models/workout_set.dart';
+import 'package:tracker/domain/models/gym.dart';
+import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_set.dart';
 
 /// A single set logged during the in-progress workout.
 ///

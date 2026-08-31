@@ -3,8 +3,8 @@ import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/settings/weight_format.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/weight_format.dart';
 
 /// Full view of a single past [WorkoutSession] (Plan.md §1.2): header stats
 /// plus every logged set with its warm-up/working indicator and working volume.

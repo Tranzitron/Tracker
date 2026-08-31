@@ -5,17 +5,17 @@ import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/routing/tab_navigation.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/workout_session.dart';
-import 'package:tracker/pages/analytics/graph_editor.dart';
-import 'package:tracker/pages/analytics/progression_page.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/custom_route.dart';
-import 'package:tracker/pages/feed_page_graph_card.dart';
-import 'package:tracker/pages/history/session_detail_page.dart';
+import 'package:tracker/ui/analytics/widgets/graph_editor.dart';
+import 'package:tracker/ui/analytics/widgets/progression_page.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/feed/widgets/feed_page_graph_card.dart';
+import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 import 'package:tracker/domain/models/graph_config.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
-import 'package:tracker/pages/settings/weight_format.dart';
-import 'package:tracker/pages/settings_page.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/core/ui/weight_format.dart';
+import 'package:tracker/ui/settings/widgets/settings_page.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 
 /// Personal activity feed built from completed workout sessions.
 class FeedPage extends StatefulWidget {

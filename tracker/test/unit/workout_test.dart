@@ -4,7 +4,7 @@
 // test/integration/workout_test.dart.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 
 void main() {
   group('WorkoutState serialization', () {

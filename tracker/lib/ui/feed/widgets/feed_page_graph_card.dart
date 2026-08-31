@@ -3,9 +3,9 @@ import 'package:forui/forui.dart';
 import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/weight_unit.dart';
-import 'package:tracker/pages/custom/line_chart.dart';
+import 'package:tracker/ui/core/ui/line_chart.dart';
 import 'package:tracker/domain/models/graph_config.dart';
-import 'package:tracker/pages/settings/weight_format.dart';
+import 'package:tracker/ui/core/ui/weight_format.dart';
 
 class FeedGraphCard extends StatelessWidget {
   const FeedGraphCard({

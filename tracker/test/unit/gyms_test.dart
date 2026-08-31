@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/domain/models/gym.dart';
-import 'package:tracker/pages/settings/gyms_page.dart';
+import 'package:tracker/ui/settings/widgets/gyms_page.dart';
 
 void main() {
   group('sameGymName', () {

@@ -14,8 +14,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/main.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
-import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 
 /// Load Isar's native core once. Call from `setUpAll` in any integration test
 /// that opens a real Isar instance.

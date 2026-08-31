@@ -5,11 +5,11 @@ import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/muscle.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/custom_route.dart';
-import 'package:tracker/pages/custom/max_width.dart';
-import 'package:tracker/pages/exercises/exercise_detail_page.dart';
-import 'package:tracker/pages/exercises/new_exercise_page.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/core/ui/max_width.dart';
+import 'package:tracker/ui/exercises/widgets/exercise_detail_page.dart';
+import 'package:tracker/ui/exercises/widgets/new_exercise_page.dart';
 
 import 'package:tracker/routing/tab_navigation.dart';
 

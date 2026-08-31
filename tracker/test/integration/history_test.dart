@@ -8,8 +8,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
-import 'package:tracker/pages/history/history_calendar.dart';
-import 'package:tracker/pages/history/session_detail_page.dart';
+import 'package:tracker/ui/history/widgets/history_calendar.dart';
+import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 
 import '../helpers/test_helpers.dart';
 

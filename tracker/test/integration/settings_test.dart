@@ -8,8 +8,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:tracker/domain/models/weight_unit.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
-import 'package:tracker/pages/settings_page.dart';
+import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/settings/widgets/settings_page.dart';
 
 import '../helpers/test_helpers.dart';
 

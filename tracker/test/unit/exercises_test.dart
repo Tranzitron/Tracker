@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/muscle.dart';
-import 'package:tracker/pages/exercises_page.dart';
+import 'package:tracker/ui/exercises/widgets/exercises_page.dart';
 
 void main() {
   test('muscle-group browsing lists exercise once per group', () {

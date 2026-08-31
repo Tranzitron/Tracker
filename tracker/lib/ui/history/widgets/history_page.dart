@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_session.dart';
-import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/custom_route.dart';
-import 'package:tracker/pages/history/history_calendar.dart';
-import 'package:tracker/pages/history/session_detail_page.dart';
-import 'package:tracker/pages/settings/weight_format.dart';
+import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/history/widgets/history_calendar.dart';
+import 'package:tracker/ui/history/widgets/session_detail_page.dart';
+import 'package:tracker/ui/core/ui/weight_format.dart';
 
 /// History overview (Plan.md §1.2) + calendar (Plan.md §2.5).
 ///
