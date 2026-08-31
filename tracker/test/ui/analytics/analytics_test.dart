@@ -11,7 +11,7 @@ import 'package:tracker/ui/analytics/widgets/progression_page.dart';
 import 'package:tracker/ui/core/ui/line_chart.dart';
 import 'package:tracker/ui/exercises/widgets/exercise_detail_page.dart';
 
-import '../helpers/test_helpers.dart';
+import '../../../testing/test_helpers.dart';
 
 void main() {
   group('analytics widgets (DB-free)', () {

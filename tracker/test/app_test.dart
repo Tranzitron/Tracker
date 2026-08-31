@@ -15,7 +15,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
-import '../helpers/test_helpers.dart';
+import '../testing/fakes/in_memory_storage.dart';
+import '../testing/test_helpers.dart';
 
 void main() {
   setUp(() {

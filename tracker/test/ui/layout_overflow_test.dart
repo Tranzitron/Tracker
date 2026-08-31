@@ -50,9 +50,10 @@ import 'package:tracker/ui/workout/widgets/split_day_page.dart';
 import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:tracker/ui/workout/widgets/workout_page.dart';
 
-import '../helpers/test_fixtures.dart';
-import '../helpers/test_fonts.dart';
-import '../helpers/test_helpers.dart';
+import '../../testing/fakes/in_memory_storage.dart';
+import '../../testing/test_fixtures.dart';
+import '../../testing/test_fonts.dart';
+import '../../testing/test_helpers.dart';
 
 const _sizes = <(String, double, double)>[
   ('320x568-min', 320, 568),

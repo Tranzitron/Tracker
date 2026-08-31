@@ -6,6 +6,23 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 A cross-platform (iOS/Android/macOS/Windows/Linux) Flutter workout-tracking app. The Flutter app lives in `tracker/`; the repository root also contains a PowerShell script for running GitHub Actions locally. This is an early-stage work in progress — much of the UI is placeholder scaffolding.
 
+## Architecture layout (Flutter app-architecture case study)
+
+`tracker/lib/` follows the official Flutter [app architecture case study](https://docs.flutter.dev/app-architecture/case-study#package-structure) (MVVM + Repository, hybrid organization: data/domain by type, UI by feature):
+
+- `lib/domain/models/` — Isar-annotated models (`Exercise`, `Gym`, `WorkoutSession` + embedded `WorkoutSet`, `WorkoutSplit` + embedded days/items, `Muscle`/`MuscleGroup`, split templates) plus pure value types (`graph_config.dart`, `weight_unit.dart`). Generated `*.g.dart` parts live next to their parents.
+- `lib/domain/services/analytics.dart` — pure, DB-free analytics engine (`normalizedWeight`, `epley1rm`, `exerciseBest1rm`, `volumeTrend`, `estimateGymMultiplier`, …). Imports only domain models.
+- `lib/data/repositories/` — one file per repository (`ExerciseRepository`, `GymRepository`, `WorkoutSplitRepository`, `WorkoutSessionRepository`) plus the `TrackerRepository` facade. Pages/cubits never touch Isar directly.
+- `lib/data/services/` — `db.dart` (single Isar instance, opened only by `main.dart`) and `seed.dart` (first-run exercise seeding).
+- `lib/ui/core/ui/` — shared widgets/helpers used across features: `CustomAppBar`, `pushTo` (`custom_route.dart`), `MaxWidth`, `LineChart`, `weight_format.dart` (kg/lb UI conversion), `repository_scope.dart` (`RepositoryScope` InheritedWidget exposing `TrackerRepository` down the tree).
+- `lib/ui/core/themes/material_theme_bridge.dart` — Forui `FThemeData` → SDK `ThemeData` bridge + nav-label strengthening.
+- `lib/ui/<feature>/widgets/` + `lib/ui/<feature>/view_models/` — features: `feed`, `history`, `workout` (incl. `view_models/workout_cubit.dart`), `exercises`, `settings` (incl. `view_models/settings_cubit.dart`), `analytics`.
+- `lib/routing/` — `home_page.dart` (5-tab shell with nested `Navigator`s) and `tab_navigation.dart` (`TabName`, `HomePageSingleton`, `TabVisibilityScope`); features depend on `tab_navigation.dart`, never on the shell.
+- `lib/utils/` — pure Dart helpers (`form_validators.dart`).
+- `lib/main.dart` — composition root: HydratedBloc storage, Isar open + seed, `RepositoryProvider`/`RepositoryScope`/`MultiBlocProvider` wiring.
+
+Layer direction: `ui` → `data` + `domain`; `data` → `domain` (+ Isar); `domain` depends on nothing UI/data. Intra-`lib` relative imports are lint-legal but package: imports are preferred for cross-folder references.
+
 ## Commands
 
 The Dart/Flutter app is rooted in `tracker/`; run Flutter/Dart commands from that directory.
@@ -17,8 +34,8 @@ cd tracker && flutter pub get
 # Static analysis (this is what CI runs)
 cd tracker && flutter analyze
 
-# Run tests (single: `flutter test test/integration/app_test.dart`)
-# Unit tier (pure Dart, no Isar/DB): `flutter test test/unit`
+# Run tests (single: `flutter test test/app_test.dart`)
+# Domain/unit tier (pure Dart, no Isar/DB): `flutter test test/domain`
 cd tracker && flutter test
 
 # Regenerate code from Isar/JsonSerializable annotations
@@ -35,40 +52,31 @@ and the plain-`sh` hook is LF-pinned via `.gitattributes`
 (`.husky/** text eol=lf`) so Windows CRLF autoconversion can't break it on
 any of Windows / macOS / Linux.
 
-Tests live under `tracker/test/`, split by tier. `test/unit/` holds pure-Dart tests (analytics math, calendar/streak, weight format, state serialization) — no Isar, no widgets. `test/integration/` holds tests that open a real Isar DB, use `HydratedStorage`, or pump the widget tree (repositories/CRUD, WorkoutCubit flows, page widgets, app shell). Shared test infra (Isar core init, temp Isar open, `pumpApp`, in-memory Hydrated storage, watcher polling) lives in `test/helpers/test_helpers.dart`. CI (`dart.yml`) runs dependency installation, `flutter analyze`, generated-code verification, generated-file drift detection, and `flutter test` on `ubuntu-latest`.
+Tests live under `tracker/test/`, mirroring `lib/`: `test/domain/` (analytics, split templates), `test/utils/` (form validators), `test/data/` (Isar repositories/CRUD), `test/ui/<feature>/` (cubit state/flows, page widgets), plus `test/app_test.dart` (app shell). Shared test infrastructure lives in the top-level `tracker/testing/` directory (sibling of `test/`, imported via relative paths): `test_helpers.dart` (Isar core init, temp Isar open, `pumpApp`, watcher polling), `test_fixtures.dart` (seed data shared with the sweep tests), `test_fonts.dart` (loads Inter/Lucide/MaterialIcons/Roboto from the pub cache and Flutter SDK — the test env ships no real fonts), `screenshot_helpers.dart` (PNG capture + manifest), and `fakes/in_memory_storage.dart` (in-memory `HydratedBloc` `Storage` fake). CI (`dart.yml`) runs dependency installation, `flutter analyze`, generated-code verification, generated-file drift detection, and `flutter test` on `ubuntu-latest`.
 
-## Architecture
+## State management & persistence
 
-The app uses **Isar** for local persistence and **Bloc (flutter_bloc + HydratedBloc)** for state management.
-
-**State management**
-- `WorkoutCubit` (`lib/pages/workout/workout_cubit.dart`) is the sole cubit. It is a `HydratedCubit<WorkoutState>` — state is JSON-serialized and persisted via `HydratedStorage` to the app-documents directory (set up in `main.dart`). Consequence: the in-progress workout survives app restarts automatically.
-- `WorkoutState` is a hand-written plain class with manual `toJson`/`fromJson` (no codegen). It holds `isInProgress`, `startTime`, gym id/name (`gymId`/`gymName`), an optional plan (`planTitle` + `List<PlanExercise>`), and `List<ActiveSet> sets` (the sets logged so far). Idle is the default (`initial()`). Active-set helper types `ActiveSet` / `PlanExercise` are serializable; `ActiveSet.isWarmup` flags `SetType.warmup` (from `workout_set.dart`) for a warm-up indicator.
-- **Logging flow**: `startWorkout`/`startPlanWorkout` begin a session (optionally with a split-day plan); `logSet`/`removeSet` mutate the ordered set list; `endWorkout` (async) writes a real `WorkoutSession` to Isar (sets + gym + duration = now−start) via its `TrackerRepository` reference, then resets to idle. Hydrated state caches only the *in-progress* session; completed records live in Isar.
-- The cubit holds an optional `TrackerRepository` reference and never opens its own DB connection.
-- The cubit is provided app-wide in `main.dart` via `MultiBlocProvider` with `lazy: false`.
-
-**Persistence (Isar) & data layer**
-- Isar `@collection` models live in `lib/models/`: `Exercise`, `WorkoutSplit` (with `@embedded` `WorkoutSplitDay` → `@embedded` `ExerciseItem`, which holds `exerciseId` + per-slot guidance), `Gym` (includes a `multiplier` for future machine equivalence), `WorkoutSession` (with `@embedded` `WorkoutSet`, whose `@enumerated SetType` flags warmup). `Exercise` uses `@enumerated` muscle lists plus `@enumerated MovementPattern` and `Equipment` enums. `Muscle`/`MuscleGroup` live in `lib/models/muscle.dart`.
-- **Repository layer** (`lib/data/`): pages and cubits never touch `Isar` directly. Each entity has a repository (`ExerciseRepository`, `GymRepository`, `WorkoutSplitRepository`, `WorkoutSessionRepository`, all in `lib/data/repositories.dart`), bundled into a `TrackerRepository` facade. `DbInstance.getIsar` (`lib/data/db.dart`) opens the single instance; it is constructed and injected in `main.dart` and exposed down the tree via the `RepositoryScope` `InheritedWidget` (`lib/data/repository_scope.dart`). `WorkoutCubit` holds an optional `TrackerRepository` reference. Exercise seeding lives in `lib/data/seed.dart`, run on first launch when the table is empty.
+- **Isar** for local persistence; **Bloc (flutter_bloc + HydratedBloc)** for state management. The case-study MVVM layout treats each `HydratedCubit` as its feature's view model (`ui/<feature>/view_models/`).
+- `WorkoutCubit` (`lib/ui/workout/view_models/workout_cubit.dart`) is the sole workout cubit, a `HydratedCubit<WorkoutState>` — state is JSON-serialized via `HydratedStorage`, so the in-progress workout survives app restarts. `WorkoutState` is a hand-written plain class with manual `toJson`/`fromJson` holding `isInProgress`, `startTime`, gym id/name, optional plan (`planTitle` + `List<PlanExercise>`), and `List<ActiveSet> sets`; `ActiveSet.isWarmup` flags `SetType.warmup`. `startWorkout`/`startPlanWorkout` begin a session; `logSet`/`removeSet` mutate the set list; `endWorkout` (async) writes a real `WorkoutSession` to Isar via its optional `TrackerRepository` reference, then resets to idle. It also estimates gym multipliers (`estimateGymMultiplier`) at end-of-workout.
+- `SettingsCubit` (`lib/ui/settings/view_models/settings_cubit.dart`) is a `HydratedCubit<SettingsState>` for unit/notification/privacy prefs + user graphs. Its pure value types (`GraphMetric`, `GraphTimeframe`, `GraphConfig`, `FreeStartPlacement`, `WeightUnit`) live in `lib/domain/models/{graph_config,weight_unit}.dart`.
+- `WorkoutCubit` is provided app-wide in `main.dart` via `MultiBlocProvider` with `lazy: false`.
 - The **`.g.dart` files are generated** — do not edit them by hand. After changing a `@collection`/`@embedded`/`@enumerated` annotation, run `dart run build_runner build` in `tracker/`. The analyzer excludes `*.g.dart`. (Isar 3.1 requires `@enumerated` enum fields to be non-nullable and models must not carry computed getters — the generator rejects both.)
 - Host-side `flutter test` needs the Isar native lib: `libisar.dylib` is copied into `tracker/` (gitignored) so tests load it.
 
-**Navigation & UI shell**
-- `lib/home_page.dart` implements a 5-tab bottom `NavigationBar` using **nested `Navigator`s** via an `Offstage` `Stack` (`_buildOffstageNavigator`) — each tab keeps its own navigation stack so state survives tab switches. Tabs: Feed(0), History(1), CurrentWorkout(2), Editor/Workout(3), Exercises(4). A `HomePageSingleton` (with a `BiMap<TabName,int>` + `TabName` enum) bridges imperative `changeTab` calls from child pages (e.g. the Feed button and `SplitDayPage` after starting a plan workout).
-- `CurrentWorkoutPage` (`lib/pages/workout/current_workout_page.dart`) drives the active session from `WorkoutCubit`: idle → Start (with `promptGym` gym selection, `lib/pages/workout/gym_picker.dart`); in progress → a session header plus one card per plan exercise with an inline weight/reps/warm-up add-set form and per-set remove, ending with a confirm dialog that calls `cubit.endWorkout` (writes the `WorkoutSession`). Sets render a `W` warm-up chip vs `S` working chip. With no plan a free-form panel offers an exercise dropdown. It reads the repository via `RepositoryScope.maybeOf` (nullable) so it degrades gracefully in tests.
-- `WorkoutPage` is the splits list — it loads splits reactively from `repo.splits.watchAll()`; a split-day tile opens `SplitDayPage` (`lib/pages/workout/split_day_page.dart`), a detail screen that lists the day's exercises and can start that workout as the current plan; a split/tile header opens `SplitEditorPage`.
-- `FeedPage` streams recent completed sessions from `repo.sessions.watchAll()`, shows loading/empty/error states, and links each activity to `SessionDetailPage`. `SettingsCubit` is a `HydratedCubit<SettingsState>` for profile, unit, notification, and privacy/analytics preferences. Weights remain canonical kilograms in persisted workout data; `lib/pages/settings/weight_format.dart` converts and formats values at UI boundaries for kg/lb display and input.
-- `SplitEditorPage` (`lib/pages/workout/new_split_page.dart`, handles both create and edit) is the split CRUD editor: title/description + ordered day list, each opening `SplitDayEditorPage` (`lib/pages/workout/split_day_editor_page.dart`) which edits day fields and add/remove/reorders exercises via a `ReorderableListView` fed by `ExercisePickerPage` (`lib/pages/workout/exercise_picker_page.dart`).
-- `ExercisesPage` (`lib/pages/exercises_page.dart`) is the master exercise library: browse by muscle group or movement pattern (segmented toggle), with `NewExercisePage` (`lib/pages/exercises/new_exercise_page.dart`) for custom exercises and `ExerciseDetailPage` (`lib/pages/exercises/exercise_detail_page.dart`, §1.4.1.1) for the profile plus a **performance-history** section (best normalized working-set 1RM over time + stats).
-- **Analytics** (`lib/analytics/analytics.dart`) is a pure, DB-free layer over `List<WorkoutSession>` + a `gymId → multiplier` map: `normalizedWeight`, `epley1rm` (Epley), `exerciseBest1rm`/`exercisePeakWeight`/`volumeTrend`/`exerciseSummary` (per-exercise or overall), and `estimateGymMultiplier` (median-of-ratio across exercises shared with the primary gym). All exclude warm-up sets (§2.1). `LineChart` (`lib/pages/custom/line_chart.dart`) is a dependency-free `CustomPainter` chart for the series. `ProgressionPage` (`lib/pages/analytics/progression_page.dart`, reached from the Feed tab) plots overall strength + volume trends. `GymsPage` (`lib/pages/settings/gyms_page.dart`, reached from Settings) creates/edits gyms, marks the primary baseline (multiplier locked to 1.0), and sets or auto-estimates each gym's multiplier.
-- `HistoryPage` (`lib/pages/history_page.dart`) lists persisted `WorkoutSession` records via `repo.sessions.watchAll()`, toggling between a **list** and an **interactive month calendar** (segmented control). List tiles and the calendar's per-day list both open `SessionDetailPage` (`lib/pages/history/session_detail_page.dart`), which shows header stats (date, gym, duration), working volume (excluding warm-ups), and every set with a W/S warm-up marker. `HistoryCalendar` (`lib/pages/history/history_calendar.dart`) marks workout days, navigates months, and shows consistency metrics (workout days + streak). Calendar layout + streak math are pure, DB-free helpers in `lib/pages/history/calendar_grid.dart` (`CalendarGrid`, `currentStreak`) so they're unit-testable.
-- **`CustomAppBar`** (`lib/pages/custom/custom_app_bar.dart`) is the standardized pinned `SliverAppBar` used by screens. It takes a title and an optional record-typed `actionButton: ({String title, VoidCallback onPressed})?`.
-- **`pushTo`** (`lib/pages/custom/custom_route.dart`) is the app's slide-transition page push; it returns `Future<T?>` so callers can await a value popped back by the destination (e.g. editors returning their edited draft). Use it instead of bare `Navigator.push` for consistency. Screens commonly use `CustomScrollView` + `SliverFillRemaining`.
+## UI features (lib/ui/<feature>/)
+
+- **feed** — `FeedPage` streams recent completed sessions (loading/empty/error states), hosts user-defined graph cards (`feed_page_graph_card.dart`) and links to `SessionDetailPage`; Settings is reached from the Feed app-bar action.
+- **history** — `HistoryPage` lists persisted sessions via `repo.sessions.watchAll()`, toggling list ↔ interactive month calendar (`history_calendar.dart`; layout/streak math in `calendar_grid.dart`). List tiles and calendar day lists open `SessionDetailPage` (header stats, working volume excluding warm-ups, per-set W/S markers).
+- **workout** — `WorkoutPage` drives the active session from `WorkoutCubit` (idle → Start with `promptGym` gym selection; in progress → per-exercise cards with inline add-set form, W/S chips, confirm dialog calling `cubit.endWorkout`). `EditorPage` is the split-selection tab; `SplitDayPage` starts a plan workout; `SplitEditorPage` (`new_split_page.dart`) is the split CRUD editor with template picker; `SplitDayEditorPage` reorders exercises via `ReorderableListView` fed by `ExercisePickerPage`.
+- **exercises** — `ExercisesPage` master library (browse by muscle group or movement pattern), `NewExercisePage` for custom exercises, `ExerciseDetailPage` for profile + performance history (best normalized 1RM over time).
+- **settings** — `SettingsPage` (units, gyms, graphs) and `GymsPage` (create/edit gyms, primary baseline multiplier locked to 1.0, auto-estimate via `estimateGymMultiplier`).
+- **analytics** — `ProgressionPage` plots overall strength + volume trends (`LineChart` in `ui/core/ui` is a dependency-free `CustomPainter`).
+- Weights remain canonical kilograms in persisted data; `ui/core/ui/weight_format.dart` converts/formats at UI boundaries.
 
 **Placeholder/known-incomplete code** (present in the scaffold, not implemented):
 - `ExerciseDetailPage` shows best-1RM chart and summary stats; deeper performance-log detail is optional polish.
-- Malformed hydration defaults, idle cubit behavior, Isar watcher updates, and settings persistence are covered across `test/unit/` and `test/integration/`. CI verifies generated code with `dart run build_runner build --delete-conflicting-outputs` and fails if generated files drift. Platform release builds require local signing/toolchains; CI does not claim store-ready artifacts.
+- Malformed hydration defaults, idle cubit behavior, Isar watcher updates, and settings persistence are covered across `test/`.
+- Platform release builds require local signing/toolchains; CI does not claim store-ready artifacts.
 - Hardware directories (`ios/`, `android/`, `macos/`, `windows/`, `linux/`) are stock Flutter platform runners; `tracker/ios/Podfile.lock` and `build/` are committed and may be stale.
 
 ## README (planning notes)
@@ -84,4 +92,4 @@ The README records intended refactors/features, not current behavior; several ar
 `pwsh run-visual-tests.ps1` (repo root) renders every app page, dialog and sheet at 320x568, 800x600 and 1280x720 with real Inter text and Lucide/Material icon fonts, writing ~66 PNGs plus `manifest.json` to `tracker/build/test_screenshots/` (gitignored). Exit code = flutter test exit code. The sweep also runs on Linux CI via bare `flutter test`.
 
 - **Vision-analysis loop** (for Claude Code, after UI changes): run the script → read `manifest.json` (or glob `tracker/build/test_screenshots/*.png`) → inspect the images with the Read tool for overflow, clipped text, misalignment or tofu glyphs → fix → re-run. Files suffixed `_FAIL` are auto-captures of the screen that threw a render exception; the test output's `SCREENSHOT-SWEEP:` / `SCREENSHOT:` lines map captures to pages.
-- Under the hood: `test/integration/visual_screenshots_test.dart` (the sweep), `test/helpers/screenshot_helpers.dart` (PNG capture + manifest), `test/helpers/test_fonts.dart` (loads Inter/Lucide/MaterialIcons/Roboto from the pub cache and Flutter SDK — the test env ships no real fonts), `test/helpers/test_fixtures.dart` (seed data shared with `layout_overflow_test.dart`). The output directory is disposable; `-NoClean` keeps previous captures.
+- Under the hood: `test/ui/visual_screenshots_test.dart` (the sweep), `test/ui/layout_overflow_test.dart` (overflow assertions over the same pages), and the shared infra in `testing/` (`screenshot_helpers.dart`, `test_fixtures.dart`, `test_fonts.dart`, `test_helpers.dart`). The output directory is disposable; `-NoClean` keeps previous captures.

@@ -25,7 +25,7 @@ if (-not $NoClean) {
 
 Push-Location (Join-Path $PSScriptRoot 'tracker')
 try {
-    flutter test test/integration/visual_screenshots_test.dart
+    flutter test test/ui/visual_screenshots_test.dart
     $code = $LASTEXITCODE
 }
 finally {

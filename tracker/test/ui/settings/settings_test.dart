@@ -11,7 +11,8 @@ import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 import 'package:tracker/ui/settings/widgets/settings_page.dart';
 
-import '../helpers/test_helpers.dart';
+import '../../../testing/fakes/in_memory_storage.dart';
+import '../../../testing/test_helpers.dart';
 
 Future<void> pumpSettingsPage(WidgetTester tester) async {
   await pumpAppPage(

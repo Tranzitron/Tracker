@@ -14,7 +14,7 @@ import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/domain/models/workout_split.dart';
 
-import '../helpers/test_helpers.dart';
+import '../../testing/test_helpers.dart';
 
 final _schemas = <CollectionSchema<dynamic>>[
   ExerciseSchema,

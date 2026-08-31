@@ -17,6 +17,8 @@ import 'package:tracker/main.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 
+import 'fakes/in_memory_storage.dart';
+
 /// Load Isar's native core once. Call from `setUpAll` in any integration test
 /// that opens a real Isar instance.
 Future<void> initIsarCore() async {
@@ -81,30 +83,4 @@ Future<void> waitFor(bool Function() condition) async {
     await Future<void>.delayed(const Duration(milliseconds: 5));
   }
   expect(condition(), isTrue, reason: 'Timed out waiting for condition');
-}
-
-/// [Storage] backed by an in-memory map, for widget/pages tests.
-///
-/// HydratedStorage (Hive/file) performs real I/O behind a static lock that
-/// cannot complete or be rebuilt across the widget-test fake-async zone once a
-/// HydratedCubit has been pumped — so repeated pumps in one file hang. An
-/// in-memory implementation avoids that entirely and is functionally equivalent
-/// for pages that don't need real persistence.
-class InMemoryStorage implements Storage {
-  final Map<String, dynamic> _data = <String, dynamic>{};
-
-  @override
-  dynamic read(String key) => _data[key];
-
-  @override
-  Future<void> write(String key, dynamic value) async => _data[key] = value;
-
-  @override
-  Future<void> delete(String key) async => _data.remove(key);
-
-  @override
-  Future<void> clear() async => _data.clear();
-
-  @override
-  Future<void> close() async {}
 }

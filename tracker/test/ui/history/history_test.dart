@@ -11,7 +11,7 @@ import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/ui/history/widgets/history_calendar.dart';
 import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 
-import '../helpers/test_helpers.dart';
+import '../../../testing/test_helpers.dart';
 
 void main() {
   testWidgets('calendar keeps a bounded internal day list', (tester) async {
