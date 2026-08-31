@@ -4,7 +4,8 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 
 import 'package:tracker/domain/services/analytics.dart';
 
-import '../../data/repositories.dart';
+import 'package:tracker/data/repositories/tracker_repository.dart';
+
 import '../../domain/models/gym.dart';
 import '../../domain/models/workout_session.dart';
 import '../../domain/models/workout_set.dart';

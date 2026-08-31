@@ -5,8 +5,8 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
-import 'package:tracker/data/repositories.dart';
-import 'package:tracker/data/seed.dart';
+import 'package:tracker/data/repositories/tracker_repository.dart';
+import 'package:tracker/data/services/seed.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/muscle.dart';

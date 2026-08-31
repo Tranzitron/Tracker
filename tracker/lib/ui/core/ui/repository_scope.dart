@@ -1,6 +1,6 @@
 import 'package:flutter/widgets.dart';
 
-import 'repositories.dart';
+import 'package:tracker/data/repositories/tracker_repository.dart';
 
 /// Lightweight dependency injection for the [TrackerRepository].
 ///

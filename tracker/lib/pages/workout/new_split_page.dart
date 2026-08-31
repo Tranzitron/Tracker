@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/data/repository_scope.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
