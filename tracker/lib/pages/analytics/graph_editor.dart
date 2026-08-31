@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/analytics/analytics.dart';
-import 'package:tracker/models/exercise.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
+import 'package:tracker/domain/services/analytics.dart';
+import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/graph_config.dart';
 
 /// Small dialog for creating or editing a feed graph configuration.
 class GraphEditor extends StatefulWidget {

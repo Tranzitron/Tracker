@@ -1,10 +1,10 @@
 import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
-import '../models/exercise.dart';
-import '../models/gym.dart';
-import '../models/workout_session.dart';
-import '../models/workout_split.dart';
+import '../domain/models/exercise.dart';
+import '../domain/models/gym.dart';
+import '../domain/models/workout_session.dart';
+import '../domain/models/workout_split.dart';
 
 /// Owns the single [Isar] instance for the app.
 ///

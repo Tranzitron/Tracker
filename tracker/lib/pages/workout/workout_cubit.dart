@@ -2,11 +2,12 @@ import 'dart:collection';
 
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 
-import '../../analytics/analytics.dart';
+import 'package:tracker/domain/services/analytics.dart';
+
 import '../../data/repositories.dart';
-import '../../models/gym.dart';
-import '../../models/workout_session.dart';
-import '../../models/workout_set.dart';
+import '../../domain/models/gym.dart';
+import '../../domain/models/workout_session.dart';
+import '../../domain/models/workout_set.dart';
 
 /// A single set logged during the in-progress workout.
 ///

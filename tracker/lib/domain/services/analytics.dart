@@ -3,9 +3,9 @@ library;
 
 import 'dart:math' as math;
 
-import 'package:tracker/models/workout_session.dart';
-import 'package:tracker/models/workout_set.dart';
-import 'package:tracker/pages/settings/settings_cubit.dart';
+import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_set.dart';
+import 'package:tracker/domain/models/graph_config.dart';
 
 /// Returns the beginning of the requested graph range, relative to the newest
 /// session. The all-time range returns null.

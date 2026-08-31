@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 

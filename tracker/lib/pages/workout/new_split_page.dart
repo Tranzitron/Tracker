@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/data/repository_scope.dart';
-import 'package:tracker/models/workout_split.dart';
+import 'package:tracker/domain/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 
-import '../../models/workout_split_templates.dart';
+import '../../domain/models/workout_split_templates.dart';
 import 'split_day_editor_page.dart';
 
 /// Split CRUD editor (Plan.md §1.3.1). Handles both creating a new split and

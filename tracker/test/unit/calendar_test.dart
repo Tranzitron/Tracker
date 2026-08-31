@@ -4,7 +4,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/pages/history/calendar_grid.dart';
 
 void main() {

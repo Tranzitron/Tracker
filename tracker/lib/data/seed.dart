@@ -1,5 +1,5 @@
-import '../models/exercise.dart';
-import '../models/muscle.dart';
+import '../domain/models/exercise.dart';
+import '../domain/models/muscle.dart';
 import 'repositories.dart';
 
 /// Inserts the built-in exercise library when the collection is empty.

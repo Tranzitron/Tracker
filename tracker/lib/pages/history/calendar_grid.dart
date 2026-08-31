@@ -1,7 +1,7 @@
 import 'dart:collection';
 
 import 'package:flutter/material.dart';
-import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_session.dart';
 
 /// Immutable, normalized index of sessions by local calendar date.
 ///

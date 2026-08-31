@@ -1,9 +1,9 @@
 import 'package:isar_community/isar.dart';
 
-import '../models/exercise.dart';
-import '../models/gym.dart';
-import '../models/workout_session.dart';
-import '../models/workout_split.dart';
+import '../domain/models/exercise.dart';
+import '../domain/models/gym.dart';
+import '../domain/models/workout_session.dart';
+import '../domain/models/workout_split.dart';
 
 /// Pages and cubits talk to these repositories, never to [Isar] directly.
 /// Each wraps the [Isar] collection query API for one entity.

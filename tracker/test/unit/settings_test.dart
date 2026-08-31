@@ -3,6 +3,8 @@
 // SettingsPage widget are integration tests: test/integration/settings_test.dart.
 
 import 'package:flutter_test/flutter_test.dart';
+import 'package:tracker/domain/models/graph_config.dart';
+import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
 
 void main() {

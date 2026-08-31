@@ -1,4 +1,4 @@
-import 'package:tracker/models/workout_split.dart';
+import 'package:tracker/domain/models/workout_split.dart';
 
 class WorkoutSplitTemplate {
   const WorkoutSplitTemplate({required this.title, required this.days});

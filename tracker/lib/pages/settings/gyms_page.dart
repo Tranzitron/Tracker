@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/analytics/analytics.dart';
+import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/data/repository_scope.dart';
-import 'package:tracker/models/gym.dart';
-import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/domain/models/gym.dart';
+import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/form_validators.dart';
 import 'package:tracker/pages/custom/max_width.dart';

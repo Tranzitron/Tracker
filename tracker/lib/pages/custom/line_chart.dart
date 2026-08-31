@@ -2,7 +2,7 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/analytics/analytics.dart';
+import 'package:tracker/domain/services/analytics.dart';
 
 /// Minimal dependency-free line chart for [ProgressionPoint] series
 /// (Milestone 6 analytics). A plain [CustomPainter] — no charting package —

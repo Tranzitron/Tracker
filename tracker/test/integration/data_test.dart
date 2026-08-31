@@ -7,12 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
 import 'package:tracker/data/seed.dart';
-import 'package:tracker/models/exercise.dart';
-import 'package:tracker/models/gym.dart';
-import 'package:tracker/models/muscle.dart';
-import 'package:tracker/models/workout_session.dart';
-import 'package:tracker/models/workout_set.dart';
-import 'package:tracker/models/workout_split.dart';
+import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/gym.dart';
+import 'package:tracker/domain/models/muscle.dart';
+import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_set.dart';
+import 'package:tracker/domain/models/workout_split.dart';
 
 import '../helpers/test_helpers.dart';
 

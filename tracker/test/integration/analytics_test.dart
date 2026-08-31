@@ -4,9 +4,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tracker/analytics/analytics.dart';
-import 'package:tracker/models/exercise.dart';
-import 'package:tracker/models/muscle.dart';
+import 'package:tracker/domain/services/analytics.dart';
+import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/muscle.dart';
 import 'package:tracker/pages/analytics/progression_page.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';

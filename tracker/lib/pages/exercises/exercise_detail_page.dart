@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/analytics/analytics.dart';
+import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/data/repository_scope.dart';
-import 'package:tracker/models/exercise.dart';
-import 'package:tracker/models/workout_session.dart';
+import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/line_chart.dart';
 import 'package:tracker/pages/custom/max_width.dart';
+import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/pages/settings/weight_format.dart';
 
 /// Individual exercise view (Plan.md §1.4.1.1): profile rows plus a

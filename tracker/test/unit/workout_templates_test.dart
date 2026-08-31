@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tracker/models/workout_split_templates.dart';
+import 'package:tracker/domain/models/workout_split_templates.dart';
 
 void main() {
   test('provides four usable workout templates', () {

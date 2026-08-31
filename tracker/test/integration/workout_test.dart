@@ -10,9 +10,9 @@ import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories.dart';
-import 'package:tracker/models/gym.dart';
-import 'package:tracker/models/workout_session.dart';
-import 'package:tracker/models/workout_set.dart';
+import 'package:tracker/domain/models/gym.dart';
+import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 
 import '../helpers/test_helpers.dart';

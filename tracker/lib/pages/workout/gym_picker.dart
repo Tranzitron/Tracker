@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/models/gym.dart';
+import 'package:tracker/domain/models/gym.dart';
 
 /// Resolves which [Gym] a workout should be logged at (Plan.md §2.2).
 ///
