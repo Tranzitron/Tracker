@@ -12,7 +12,7 @@ import 'package:tracker/data/services/db.dart';
 import 'package:tracker/data/repositories/tracker_repository.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/data/services/seed.dart';
-import 'package:tracker/home_page.dart';
+import 'package:tracker/routing/home_page.dart';
 import 'package:tracker/pages/settings/settings_cubit.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
 import 'package:window_size/window_size.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forui/forui.dart';
 import 'package:tracker/ui/core/ui/repository_scope.dart';
-import 'package:tracker/home_page.dart';
+import 'package:tracker/routing/tab_navigation.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/pages/analytics/graph_editor.dart';

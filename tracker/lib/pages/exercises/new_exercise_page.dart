@@ -4,7 +4,7 @@ import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/muscle.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
-import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/utils/form_validators.dart';
 import 'package:tracker/pages/custom/max_width.dart';
 
 /// Custom exercise creation form (Plan.md §1.4): title, movement pattern,

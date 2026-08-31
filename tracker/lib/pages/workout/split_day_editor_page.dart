@@ -4,7 +4,7 @@ import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_split.dart';
 import 'package:tracker/pages/custom/custom_app_bar.dart';
 import 'package:tracker/pages/custom/custom_route.dart';
-import 'package:tracker/pages/custom/form_validators.dart';
+import 'package:tracker/utils/form_validators.dart';
 import 'package:tracker/pages/workout/exercise_picker_page.dart';
 
 /// Split day editor (Plan.md §1.3.1.1 / §1.3.1.1.1): configure a day's title,

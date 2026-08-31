@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forui/forui.dart';
-import 'package:quiver/collection.dart';
 import 'package:tracker/pages/workout/workout_cubit.dart';
+import 'package:tracker/routing/tab_navigation.dart';
 
-import 'pages/exercises_page.dart';
-import 'pages/feed_page.dart';
-import 'pages/history_page.dart';
-import 'pages/workout/editor_page.dart';
-import 'pages/workout/workout_page.dart';
+import 'package:tracker/pages/exercises_page.dart';
+import 'package:tracker/pages/feed_page.dart';
+import 'package:tracker/pages/history_page.dart';
+import 'package:tracker/pages/workout/editor_page.dart';
+import 'package:tracker/pages/workout/workout_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -141,55 +141,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-
-/// Visibility contract for pages hosted by the persistent tab navigators.
-/// Inactive pages stay mounted to preserve their nested route stack, but should
-/// pause live subscriptions and resume them when [isActive] becomes true.
-class TabVisibilityScope extends InheritedWidget {
-  const TabVisibilityScope({
-    required this.index,
-    required this.isActive,
-    required super.child,
-    super.key,
-  });
-
-  final int index;
-  final bool isActive;
-
-  static bool isActiveOf(BuildContext context) =>
-      context
-          .dependOnInheritedWidgetOfExactType<TabVisibilityScope>()
-          ?.isActive ??
-      true;
-
-  @override
-  bool updateShouldNotify(TabVisibilityScope oldWidget) =>
-      isActive != oldWidget.isActive || index != oldWidget.index;
-}
-
-class HomePageSingleton {
-  factory HomePageSingleton() => _singleton;
-
-  HomePageSingleton._internal() {
-    tabMap.addAll({
-      TabName.feed: 0,
-      TabName.history: 1,
-      TabName.currentWorkout: 2,
-      TabName.editor: 3,
-      TabName.exercises: 4,
-    });
-  }
-
-  static final HomePageSingleton _singleton = HomePageSingleton._internal();
-
-  Function? indexSetState;
-
-  void changeTab(TabName tabName) {
-    final index = tabMap[tabName];
-    if (index != null) indexSetState?.call(index);
-  }
-
-  BiMap<TabName, int> tabMap = BiMap<TabName, int>();
-}
-
-enum TabName { feed, history, currentWorkout, editor, exercises }

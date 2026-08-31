@@ -11,7 +11,7 @@ import 'package:tracker/pages/custom/max_width.dart';
 import 'package:tracker/pages/exercises/exercise_detail_page.dart';
 import 'package:tracker/pages/exercises/new_exercise_page.dart';
 
-import '../home_page.dart';
+import 'package:tracker/routing/tab_navigation.dart';
 
 Map<MuscleGroup, List<Exercise>> groupExercisesByMuscle(
   List<Exercise> exercises,
