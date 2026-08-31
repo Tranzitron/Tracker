@@ -20,34 +20,34 @@ import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories/tracker_repository.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/data/services/seed.dart';
-import 'package:tracker/main.dart';
 import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/graph_config.dart';
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/domain/models/workout_split.dart';
+import 'package:tracker/main.dart';
 import 'package:tracker/ui/analytics/widgets/graph_editor.dart';
 import 'package:tracker/ui/analytics/widgets/progression_page.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/exercises/widgets/exercise_detail_page.dart';
-import 'package:tracker/ui/exercises/widgets/new_exercise_page.dart';
 import 'package:tracker/ui/exercises/widgets/exercises_page.dart';
+import 'package:tracker/ui/exercises/widgets/new_exercise_page.dart';
 import 'package:tracker/ui/feed/widgets/feed_page.dart';
 import 'package:tracker/ui/history/widgets/history_calendar.dart';
-import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 import 'package:tracker/ui/history/widgets/history_page.dart';
-import 'package:tracker/ui/settings/widgets/gyms_page.dart';
-import 'package:tracker/domain/models/graph_config.dart';
+import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/settings/widgets/gyms_page.dart';
 import 'package:tracker/ui/settings/widgets/settings_page.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:tracker/ui/workout/widgets/editor_page.dart';
 import 'package:tracker/ui/workout/widgets/exercise_picker_page.dart';
 import 'package:tracker/ui/workout/widgets/gym_picker.dart';
 import 'package:tracker/ui/workout/widgets/new_split_page.dart';
 import 'package:tracker/ui/workout/widgets/split_day_editor_page.dart';
 import 'package:tracker/ui/workout/widgets/split_day_page.dart';
-import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:tracker/ui/workout/widgets/workout_page.dart';
 
 import '../../testing/fakes/in_memory_storage.dart';
@@ -57,8 +57,11 @@ import '../../testing/test_helpers.dart';
 
 const _sizes = <(String, double, double)>[
   ('320x568-min', 320, 568),
+  ('480x800-tall', 480, 800),
+  ('640x720-snap-half', 640, 720),
   ('800x600-small', 800, 600),
   ('1280x720-default', 1280, 720),
+  ('1920x1080-maximized', 1920, 1080),
 ];
 
 void _mark(String what) => print('SWEEP: $what');

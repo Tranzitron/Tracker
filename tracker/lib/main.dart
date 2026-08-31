@@ -4,16 +4,15 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:tracker/data/services/db.dart';
 import 'package:tracker/data/repositories/tracker_repository.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
+import 'package:tracker/data/services/db.dart';
 import 'package:tracker/data/services/seed.dart';
 import 'package:tracker/routing/home_page.dart';
 import 'package:tracker/ui/core/themes/material_theme_bridge.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:window_size/window_size.dart';
@@ -115,13 +114,13 @@ class MyApp extends StatelessWidget {
     );
 
     return MaterialApp(
-      supportedLocales: FLocalizations.supportedLocales,
-      localizationsDelegates: const [
-        ...FLocalizations.localizationsDelegates,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
+      // supportedLocales: FLocalizations.supportedLocales,
+      // localizationsDelegates: const [
+      //   ...FLocalizations.localizationsDelegates,
+      //   GlobalMaterialLocalizations.delegate,
+      //   GlobalWidgetsLocalizations.delegate,
+      //   GlobalCupertinoLocalizations.delegate,
+      // ],
       home: const FScaffold(child: HomePage()),
       // ForUI 0.26 targets `material_ui` ThemeData, while MaterialApp uses
       // Flutter's ThemeData. Bridge the Forui-selected FThemeData into the

@@ -103,12 +103,14 @@ class _InProgressView extends StatelessWidget {
             if (presentation.plan.isEmpty)
               const _FreeFormPanel()
             else
-              for (final exercise in presentation.plan)
-                _PlanExerciseCard(
-                  key: ValueKey('plan-${exercise.exercise.order}'),
-                  exercise: exercise.exercise,
-                  sets: exercise.sets,
-                  order: exercise.exercise.order,
+              for (final entry in presentation.plan)
+                _ExerciseLogCard(
+                  key: ValueKey('plan-${entry.exercise.order}'),
+                  orderNumber: entry.exercise.order,
+                  title: entry.exercise.name,
+                  sets: entry.sets,
+                  exerciseId: entry.exercise.exerciseId,
+                  exerciseName: entry.exercise.name,
                 ),
             const SizedBox(height: 24),
             FilledButton.icon(
@@ -370,21 +372,36 @@ class _WorkoutHeader extends StatelessWidget {
   }
 }
 
-/// One exercise from the plan: its logged sets plus an inline add-set form.
-class _PlanExerciseCard extends StatelessWidget {
-  const _PlanExerciseCard({
+/// One exercise's logging card, shared by plan workouts and free-form
+/// logging: title, the sets logged so far, and an inline add-set form.
+class _ExerciseLogCard extends StatelessWidget {
+  const _ExerciseLogCard({
     super.key,
-    required this.exercise,
+    this.orderNumber,
+    required this.title,
     required this.sets,
-    required this.order,
+    this.exerciseId,
+    this.exerciseName,
+    this.exercises,
   });
 
-  final PlanExercise exercise;
+  /// 0-based position in the plan; renders the "N." prefix when provided.
+  final int? orderNumber;
+
+  final String title;
   final List<ActiveSet> sets;
-  final int order;
+
+  /// Passed through to [_AddSetForm]: a fixed plan exercise ([exerciseId]
+  /// with [exerciseName]), or a dropdown over [exercises] (free-form).
+  final int? exerciseId;
+  final String? exerciseName;
+  final List<Exercise>? exercises;
 
   @override
   Widget build(BuildContext context) {
+    final titleStyle = context.theme.typography.body.md.copyWith(
+      fontWeight: FontWeight.w600,
+    );
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: FCard(
@@ -395,20 +412,9 @@ class _PlanExerciseCard extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  Text(
-                    '${order + 1}. ',
-                    style: context.theme.typography.body.md.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  Expanded(
-                    child: Text(
-                      exercise.name,
-                      style: context.theme.typography.body.md.copyWith(
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
+                  if (orderNumber != null)
+                    Text('${orderNumber! + 1}. ', style: titleStyle),
+                  Expanded(child: Text(title, style: titleStyle)),
                 ],
               ),
               const SizedBox(height: 8),
@@ -423,8 +429,9 @@ class _PlanExerciseCard extends StatelessWidget {
                 for (final set in sets) _SetTile(set: set),
               const FDivider(),
               _AddSetForm(
-                exerciseId: exercise.exerciseId,
-                exerciseName: exercise.name,
+                exerciseId: exerciseId,
+                exerciseName: exerciseName,
+                exercises: exercises,
               ),
             ],
           ),
@@ -434,8 +441,8 @@ class _PlanExerciseCard extends StatelessWidget {
   }
 }
 
-/// Free-form logging (no split plan): a single editor with an exercise
-/// dropdown (loaded from the repository) plus all sets logged so far.
+/// Free-form logging (no split plan): loads the exercise list for the
+/// dropdown, then renders a shared [_ExerciseLogCard] over all logged sets.
 class _FreeFormPanel extends StatefulWidget {
   const _FreeFormPanel();
 
@@ -467,35 +474,11 @@ class _FreeFormPanelState extends State<_FreeFormPanel> {
 
   @override
   Widget build(BuildContext context) {
-    return FCard(
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            Text(
-              'Log a set',
-              style: context.theme.typography.body.md.copyWith(
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 8),
-            _AddSetForm(exercises: _exercises),
-            const SizedBox(height: 8),
-            BlocBuilder<WorkoutCubit, WorkoutState>(
-              builder: (context, state) {
-                final sets = state.sets;
-                if (sets.isEmpty) {
-                  return const Text('No sets yet');
-                }
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [for (final set in sets) _SetTile(set: set)],
-                );
-              },
-            ),
-          ],
-        ),
+    return BlocBuilder<WorkoutCubit, WorkoutState>(
+      builder: (context, state) => _ExerciseLogCard(
+        title: 'Log a set',
+        sets: state.sets,
+        exercises: _exercises,
       ),
     );
   }
