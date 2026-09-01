@@ -121,7 +121,7 @@ class MyApp extends StatelessWidget {
       //   GlobalWidgetsLocalizations.delegate,
       //   GlobalCupertinoLocalizations.delegate,
       // ],
-      home: const FScaffold(child: HomePage()),
+      home: const FScaffold(childPad: false, child: HomePage()),
       theme: navLightTheme.toCustomMaterialTheme(),
       darkTheme: navDarkTheme.toCustomMaterialTheme(),
       builder: (context, child) => FTheme(

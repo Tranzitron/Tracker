@@ -149,7 +149,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   Widget _dayGrid(CalendarGrid grid, FThemeData theme, double cellHeight) {
     const double cellSpacing = 4;
     return GridView.builder(
-      padding: EdgeInsets.only(top: 4),
+      padding: const EdgeInsets.only(top: 4),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 7,
         mainAxisExtent: cellHeight,
@@ -215,47 +215,46 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     if (sessions.isEmpty) {
       return const Text('No workouts on this day.');
     }
-    return SizedBox(
-      height: 128,
-      child: ListView.builder(
-        itemCount: sessions.length,
-        itemBuilder: (context, index) {
-          final session = sessions[index];
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 4),
-            child: FItem.raw(
-              onPress: () => pushTo(
-                context,
-                SessionDetailPage(
-                  session: session,
-                  gymName: session.gymId == null
-                      ? null
-                      : widget.gymNames[session.gymId],
-                ),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(12),
-                child: Row(
-                  children: [
-                    const Icon(FLucideIcons.footprints),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(session.title),
-                          Text(plural('set', session.sets.length)),
-                        ],
-                      ),
-                    ),
-                    const Icon(FLucideIcons.chevronRight),
-                  ],
-                ),
+    return ListView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: sessions.length,
+      itemBuilder: (context, index) {
+        final session = sessions[index];
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: FItem.raw(
+            onPress: () => pushTo(
+              context,
+              SessionDetailPage(
+                session: session,
+                gymName: session.gymId == null
+                    ? null
+                    : widget.gymNames[session.gymId],
               ),
             ),
-          );
-        },
-      ),
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: Row(
+                children: [
+                  const Icon(FLucideIcons.footprints),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(session.title),
+                        Text(plural('set', session.sets.length)),
+                      ],
+                    ),
+                  ),
+                  const Icon(FLucideIcons.chevronRight),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 
