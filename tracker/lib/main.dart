@@ -122,13 +122,8 @@ class MyApp extends StatelessWidget {
       //   GlobalCupertinoLocalizations.delegate,
       // ],
       home: const FScaffold(child: HomePage()),
-      // ForUI 0.26 targets `material_ui` ThemeData, while MaterialApp uses
-      // Flutter's ThemeData. Bridge the Forui-selected FThemeData into the
-      // Material theme so remaining Material widgets (SliverAppBar,
-      // ExpansionTile, CircularProgressIndicator, …) inherit the Forui
-      // palette; FTheme below keeps Forui widgets themed.
-      theme: navLightTheme.toSdkMaterialTheme(),
-      darkTheme: navDarkTheme.toSdkMaterialTheme(),
+      theme: navLightTheme.toCustomMaterialTheme(),
+      darkTheme: navDarkTheme.toCustomMaterialTheme(),
       builder: (context, child) => FTheme(
         data: Theme.brightnessOf(context) == Brightness.light
             ? navLightTheme

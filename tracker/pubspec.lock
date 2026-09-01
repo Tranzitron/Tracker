@@ -253,6 +253,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.26.0"
+  forui_cli:
+    dependency: "direct dev"
+    description:
+      name: forui_cli
+      sha256: "91769964c515edef30923a62474fc8b164d358debb17e690ffa9367a6efd3b22"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.26.0"
   forui_lucide:
     dependency: "direct main"
     description:
@@ -844,6 +852,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.1.4"
+  yaml_edit:
+    dependency: transitive
+    description:
+      name: yaml_edit
+      sha256: "07c9e63ba42519745182b88ca12264a7ba2484d8239958778dfe4d44fe760488"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.4"
 sdks:
-  dart: ">=3.13.0 <4.0.0"
+  dart: ">=3.13.2 <4.0.0"
   flutter: "3.47.2"

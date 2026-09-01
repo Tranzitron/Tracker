@@ -4,7 +4,7 @@ publish_to: 'none'
 version: 1.0.0+1
 
 environment:
-  sdk: '>=3.13.0 <4.0.0'
+  sdk: '>=3.13.2 <4.0.0'
   flutter: 3.47.2
 
 dependencies:
@@ -31,6 +31,7 @@ dev_dependencies:
   isar_community_generator: ^3.3.2
   build_runner: any
   husky: ^0.1.7
+  forui_cli: ^0.26.0
 
 # path_provider_android 2.3.x depends on package:jni 1.0.x, whose JList/JMap
 # extension-type wrappers fail to compile in Flutter builds (dart-lang/native
