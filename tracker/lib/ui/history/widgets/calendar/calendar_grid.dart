@@ -50,18 +50,18 @@ class WorkoutDateIndex {
   int currentStreak() => _streak;
 }
 
-/// Pure calendar math for the history calendar (Plan.md §2.5), kept free of
-/// Isar/widget concerns so the layout and consistency logic can be unit-tested
-/// without a database.
 class CalendarGrid {
   CalendarGrid(this.year, this.month) {
     final first = DateTime(year, month);
-    final leading = first.weekday - 1; // Monday-start grid
+    final leading = first.weekday - 1; // 0 for Mon, 6 for Sun
     final daysInMonth = DateTime(year, month + 1, 0).day;
-    final cells = <int?>[for (var i = 0; i < 6 * 7; i++) null];
-    for (var d = 1; d <= daysInMonth; d++) {
-      cells[leading + d - 1] = d;
-    }
+    final totalCount = leading + daysInMonth;
+    final totalCells = (totalCount + 6) ~/ 7 * 7;
+    final cells = List<int?>.generate(
+      totalCells,
+      (i) => (i < leading || i >= totalCount) ? null : i - leading + 1,
+      growable: false,
+    );
     days = cells;
   }
 

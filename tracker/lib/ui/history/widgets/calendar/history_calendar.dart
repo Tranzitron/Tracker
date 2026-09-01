@@ -4,14 +4,10 @@ import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/ui/core/ui/custom_route.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
 
+import '../session_detail_page.dart';
 import 'calendar_grid.dart';
-import 'session_detail_page.dart';
 
 /// Interactive month calendar of workout days (Plan.md §2.5).
-///
-/// Days with at least one session get a dot; tapping a day selects it and lists
-/// that day's sessions (each → [SessionDetailPage]). A metrics strip shows the
-/// month's workout-day count and the current consistency streak.
 class HistoryCalendar extends StatefulWidget {
   const HistoryCalendar({
     super.key,
@@ -28,19 +24,18 @@ class HistoryCalendar extends StatefulWidget {
 
 class _HistoryCalendarState extends State<HistoryCalendar> {
   static const _weekdayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
-
-  /// Height kept for everything around the day grid (month header, weekday
-  /// row, metrics strip, day-list title + list) plus a small safety margin,
-  /// so a 6-row month fits the visible area on wide windows.
   static const double _reservedHeight = 340;
-
-  /// Estimated bottom-navigation height for the unbounded-constraint fallback.
   static const double _navAllowance = 64;
 
   late int _year;
   late int _month;
-  DateTime? _selectedDay;
   late WorkoutDateIndex _dateIndex;
+  late final ValueNotifier<DateTime?> _selectedDayNotifier;
+
+  late CalendarGrid _grid;
+  late int _monthWorkoutDays;
+  late Set<int> _daysWithWorkouts;
+  late int _streak;
 
   @override
   void initState() {
@@ -48,8 +43,12 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     final now = DateTime.now();
     _year = now.year;
     _month = now.month;
-    _selectedDay = _day(now);
     _dateIndex = WorkoutDateIndex.fromSessions(widget.sessions);
+    _selectedDayNotifier = ValueNotifier(_day(now));
+
+    // Calculate streak ONLY ONCE on init
+    _streak = _dateIndex.currentStreak();
+    _updateMonthData();
   }
 
   @override
@@ -57,47 +56,68 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
     super.didUpdateWidget(oldWidget);
     if (!identical(oldWidget.sessions, widget.sessions)) {
       _dateIndex = WorkoutDateIndex.fromSessions(widget.sessions);
+      _streak = _dateIndex
+          .currentStreak(); // Recalculate streak only when sessions change
+      _updateMonthData();
     }
+  }
+
+  @override
+  void dispose() {
+    _selectedDayNotifier.dispose();
+    super.dispose();
   }
 
   static DateTime _day(DateTime t) => DateTime(t.year, t.month, t.day);
 
   List<WorkoutSession> _sessionsOn(DateTime day) => _dateIndex.sessionsOn(day);
 
+  void _updateMonthData() {
+    _grid = CalendarGrid(_year, _month);
+    _monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
+
+    // Pre-calculate days with workouts in an O(1) Set for the grid cells
+    final days = <int>{};
+    for (final dayVal in _grid.days) {
+      if (dayVal != null) {
+        final date = DateTime(_year, _month, dayVal);
+        if (_dateIndex.sessionsOn(date).isNotEmpty) {
+          days.add(dayVal);
+        }
+      }
+    }
+    _daysWithWorkouts = days;
+  }
+
   void _goMonth(int delta) {
     setState(() {
       final d = DateTime(_year, _month + delta);
       _year = d.year;
       _month = d.month;
-      _selectedDay = null;
+      _selectedDayNotifier.value = null;
+      _updateMonthData();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = context.theme;
-    final grid = CalendarGrid(_year, _month);
-    final monthWorkoutDays = _dateIndex.monthWorkoutDays(_year, _month);
-    final streak = _dateIndex.currentStreak();
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        // The calendar sits inside the page's scroll view, so its height
-        // constraint is unbounded; fall back to the window height minus the
-        // app bar / bottom navigation chrome.
         final available = constraints.maxHeight.isFinite
             ? constraints.maxHeight
             : MediaQuery.sizeOf(context).height -
                   MediaQuery.paddingOf(context).top -
                   kToolbarHeight -
                   _navAllowance;
-        // Reserve the month header, weekday row, metrics strip and the day
-        // list below the grid; split the rest between the grid rows.
+
         final cellHeight =
-            ((available - _reservedHeight) / (grid.days.length ~/ 7)).clamp(
+            ((available - _reservedHeight) / (_grid.days.length ~/ 7)).clamp(
               36.0,
               56.0,
             );
+
         return SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -125,85 +145,44 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
                 ],
               ),
               const SizedBox(height: 2),
-              _dayGrid(grid, theme, cellHeight),
-              const SizedBox(height: 6),
-              _MetricsStrip(monthWorkoutDays: monthWorkoutDays, streak: streak),
-              const SizedBox(height: 6),
-              Text(
-                _selectedDay == null
-                    ? 'Workouts'
-                    : 'Workouts · ${_dateLabel(_selectedDay!)}',
-                style: theme.typography.body.sm.copyWith(
-                  fontWeight: FontWeight.w600,
-                ),
+              ValueListenableBuilder<DateTime?>(
+                valueListenable: _selectedDayNotifier,
+                builder: (context, selectedDay, _) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _DayGrid(
+                        grid: _grid,
+                        theme: theme,
+                        cellHeight: cellHeight,
+                        selectedDay: selectedDay,
+                        daysWithWorkouts: _daysWithWorkouts,
+                        onSelectDay: (day) => _selectedDayNotifier.value = day,
+                      ),
+                      const SizedBox(height: 6),
+                      _MetricsStrip(
+                        monthWorkoutDays: _monthWorkoutDays,
+                        streak: _streak,
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        selectedDay == null
+                            ? 'Workouts'
+                            : 'Workouts · ${_dateLabel(selectedDay)}',
+                        style: theme.typography.body.sm.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      _dayList(selectedDay),
+                    ],
+                  );
+                },
               ),
-              const SizedBox(height: 4),
-              _dayList(_selectedDay),
             ],
           ),
         );
       },
-    );
-  }
-
-  Widget _dayGrid(CalendarGrid grid, FThemeData theme, double cellHeight) {
-    const double cellSpacing = 4;
-    return GridView.builder(
-      padding: const EdgeInsets.only(top: 4),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 7,
-        mainAxisExtent: cellHeight,
-        mainAxisSpacing: cellSpacing,
-        crossAxisSpacing: cellSpacing,
-      ),
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: grid.days.length,
-      itemBuilder: (context, index) => _dayCell(grid, index, theme),
-    );
-  }
-
-  Widget _dayCell(CalendarGrid grid, int index, FThemeData theme) {
-    final dayVal = grid.days[index];
-    if (dayVal == null) return const SizedBox.shrink();
-    final date = DateTime(grid.year, grid.month, dayVal);
-    final hasWorkout = _sessionsOn(date).isNotEmpty;
-    final selected =
-        _selectedDay != null && _selectedDay!.isAtSameMomentAs(date);
-
-    final foreground = selected
-        ? theme.colors.primaryForeground
-        : theme.colors.foreground;
-    final dot = selected
-        ? theme.colors.primaryForeground
-        : (hasWorkout ? theme.colors.primary : Colors.transparent);
-
-    return InkWell(
-      onTap: () => setState(() => _selectedDay = date),
-      borderRadius: BorderRadius.circular(8),
-      child: Container(
-        margin: const EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          color: selected ? theme.colors.primary : null,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        alignment: Alignment.center,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(
-              dayVal.toString(),
-              style: theme.typography.body.xs.copyWith(color: foreground),
-            ),
-            const SizedBox(height: 0),
-            Container(
-              width: 4,
-              height: 4,
-              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
-            ),
-          ],
-        ),
-      ),
     );
   }
 
@@ -216,6 +195,7 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
       return const Text('No workouts on this day.');
     }
     return ListView.builder(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: sessions.length,
@@ -281,6 +261,112 @@ class _HistoryCalendarState extends State<HistoryCalendar> {
   String _p(int v) => v.toString().padLeft(2, '0');
 }
 
+class _DayGrid extends StatelessWidget {
+  const _DayGrid({
+    required this.grid,
+    required this.theme,
+    required this.cellHeight,
+    required this.selectedDay,
+    required this.daysWithWorkouts,
+    required this.onSelectDay,
+  });
+
+  final CalendarGrid grid;
+  final FThemeData theme;
+  final double cellHeight;
+  final DateTime? selectedDay;
+  final Set<int> daysWithWorkouts;
+  final ValueChanged<DateTime> onSelectDay;
+
+  @override
+  Widget build(BuildContext context) {
+    const double cellSpacing = 4;
+    return GridView.builder(
+      padding: const EdgeInsets.only(top: 4),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 7,
+        mainAxisExtent: cellHeight,
+        mainAxisSpacing: cellSpacing,
+        crossAxisSpacing: cellSpacing,
+      ),
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      itemCount: grid.days.length,
+      itemBuilder: (context, index) {
+        final dayVal = grid.days[index];
+        if (dayVal == null) return const SizedBox.shrink();
+
+        final isSelected =
+            selectedDay != null &&
+            selectedDay!.year == grid.year &&
+            selectedDay!.month == grid.month &&
+            selectedDay!.day == dayVal;
+
+        return _DayCell(
+          dayVal: dayVal,
+          theme: theme,
+          isSelected: isSelected,
+          hasWorkout: daysWithWorkouts.contains(dayVal),
+          onTap: () => onSelectDay(DateTime(grid.year, grid.month, dayVal)),
+        );
+      },
+    );
+  }
+}
+
+class _DayCell extends StatelessWidget {
+  const _DayCell({
+    required this.dayVal,
+    required this.theme,
+    required this.isSelected,
+    required this.hasWorkout,
+    required this.onTap,
+  });
+
+  final int dayVal;
+  final FThemeData theme;
+  final bool isSelected;
+  final bool hasWorkout;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final foreground = isSelected
+        ? theme.colors.primaryForeground
+        : theme.colors.foreground;
+    final dot = isSelected
+        ? theme.colors.primaryForeground
+        : (hasWorkout ? theme.colors.primary : Colors.transparent);
+
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        margin: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          color: isSelected ? theme.colors.primary : null,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        alignment: Alignment.center,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              dayVal.toString(),
+              style: theme.typography.body.xs.copyWith(color: foreground),
+            ),
+            Container(
+              width: 4,
+              height: 4,
+              decoration: BoxDecoration(color: dot, shape: BoxShape.circle),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _BuildMonthHeader extends StatelessWidget {
   const _BuildMonthHeader({
     required this.year,
@@ -331,7 +417,6 @@ class _MetricsStrip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Wrap (not Row): two metric cards can exceed a narrow window's width.
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 8,

@@ -17,7 +17,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories/tracker_repository.dart';
 import 'package:tracker/data/services/seed.dart';
@@ -35,7 +34,7 @@ import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/exercises/widgets/exercise_detail_page.dart';
 import 'package:tracker/ui/exercises/widgets/new_exercise_page.dart';
 import 'package:tracker/ui/feed/widgets/feed_page.dart';
-import 'package:tracker/ui/history/widgets/history_calendar.dart';
+import 'package:tracker/ui/history/widgets/calendar/history_calendar.dart';
 import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
 import 'package:tracker/ui/settings/widgets/gyms_page.dart';
@@ -62,7 +61,7 @@ const _sizes = <(String, double, double)>[
 void _mark(String what) => debugPrint('SWEEP: $what');
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  LiveTestWidgetsFlutterBinding.ensureInitialized();
 
   setUpAll(initIsarCore);
 

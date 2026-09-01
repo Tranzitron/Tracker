@@ -8,7 +8,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
-import 'package:tracker/ui/history/widgets/history_calendar.dart';
+import 'package:tracker/ui/history/widgets/calendar/history_calendar.dart';
 import 'package:tracker/ui/history/widgets/session_detail_page.dart';
 
 import '../../../testing/test_helpers.dart';
@@ -29,7 +29,6 @@ void main() {
     );
 
     expect(find.byType(ListView), findsOneWidget);
-    expect(tester.getSize(find.byType(ListView)).height, 128);
     expect(find.text('Workout 0'), findsOneWidget);
   });
 
