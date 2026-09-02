@@ -3,10 +3,10 @@
 // this layer are integration (widget) tests: test/integration/analytics_test.dart.
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:tracker/domain/services/analytics.dart';
+import 'package:tracker/domain/models/graph_config.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
-import 'package:tracker/domain/models/graph_config.dart';
+import 'package:tracker/domain/services/analytics.dart';
 
 WorkoutSet _set(int exerciseId, double weight, int reps, SetType type) =>
     WorkoutSet(exerciseId: exerciseId, weight: weight, reps: reps, type: type);

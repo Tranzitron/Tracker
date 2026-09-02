@@ -2,14 +2,14 @@
 // ignore_for_file: avoid_print
 //
 // Pumps the full app stack (ForUI desktop theme, real Isar data) at the window
-// sizes a Windows desktop session can hit — the 320x568 minimum set by
-// `window_size`, a small 800x600 window and the 1280x720 default — and visits
+// sizes a Windows desktop session can hit - the 320x568 minimum set by
+// `window_size`, a small 800x600 window and the 1280x720 default - and visits
 // every page, dialog and sheet. Any RenderFlex/RenderBox overflow throws
 // through FlutterError and fails the sweep; the last "SWEEP:" line names the
 // offending page.
 //
 // The test font is wider than Inter, so this over-reports relative to real
-// Windows rendering — a deliberate safety margin.
+// Windows rendering - a deliberate safety margin.
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
@@ -134,7 +134,7 @@ void main() {
             BlocProvider<SettingsCubit>(
               create: (_) => SettingsCubit()
                 ..addGraph(
-                  const GraphConfig(title: 'Strength — upper body progression'),
+                  const GraphConfig(title: 'Strength - upper body progression'),
                 ),
               lazy: false,
             ),
@@ -242,7 +242,7 @@ void main() {
           context: pageContext,
           builder: (_, _, _) => GraphEditor(
             exercises: fixtures.exercises,
-            initial: const GraphConfig(title: 'Strength — upper body'),
+            initial: const GraphConfig(title: 'Strength - upper body'),
           ),
         ),
       );
@@ -253,7 +253,7 @@ void main() {
           builder: (_, _, _) => EditGymDialog(
             title: 'Edit Gym',
             initial: Gym(
-              name: 'Very Long Gym Name — Westfield Century City',
+              name: 'Very Long Gym Name - Westfield Century City',
               description: 'Busy hours',
               order: 1,
             ),

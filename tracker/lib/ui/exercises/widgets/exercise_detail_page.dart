@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/domain/services/analytics.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
 import 'package:tracker/ui/core/ui/line_chart.dart';
 import 'package:tracker/ui/core/ui/max_width.dart';
-import 'package:tracker/domain/models/weight_unit.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
 
 /// Individual exercise view (Plan.md §1.4.1.1): profile rows plus a
@@ -137,10 +137,12 @@ class _ExerciseDetailPageState extends State<ExerciseDetailPage> {
                           label: 'Best 1RM',
                           value: formatWeight(context, summary.best1rm),
                         ),
+                        const SizedBox(width: 8),
                         _Stat(
                           label: 'Peak volume',
                           value: formatWeight(context, summary.peakVolume),
                         ),
+                        const SizedBox(width: 8),
                         _Stat(
                           label: 'Sessions',
                           value: '${summary.sessionCount}',
@@ -216,7 +218,7 @@ class _InfoRow extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
           SizedBox(
-            width: 140,
+            width: 175,
             child: Text(
               label,
               style: theme.typography.body.sm.copyWith(

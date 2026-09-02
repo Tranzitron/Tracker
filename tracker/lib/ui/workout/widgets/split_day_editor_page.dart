@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_split.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
 import 'package:tracker/ui/core/ui/custom_route.dart';
-import 'package:tracker/utils/form_validators.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/workout/widgets/exercise_picker_page.dart';
+import 'package:tracker/utils/form_validators.dart';
 
 /// Split day editor (Plan.md §1.3.1.1 / §1.3.1.1.1): configure a day's title,
 /// description and ordered exercise list (add / remove / reorder). Pops the
@@ -101,7 +101,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
         CustomAppBar(
           context,
           title: _title.text.isEmpty ? 'Edit Day' : _title.text,
-          actionButton: (title: 'Save', onPressed: _save),
+          actionButton: (title: 'Done', onPressed: _save),
         ),
         SliverToBoxAdapter(
           child: Padding(
@@ -139,7 +139,7 @@ class _SplitDayEditorPageState extends State<SplitDayEditorPage> {
                 ),
                 const SizedBox(height: 8),
                 if (_items.isEmpty)
-                  const Text('No exercises yet — drag the handle to reorder.')
+                  const Text('No exercises yet')
                 else
                   _buildReorderableList(),
               ],

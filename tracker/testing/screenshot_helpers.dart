@@ -7,7 +7,7 @@
 // mapping every file to the page/size it shows.
 //
 // Fake-async caveats (all load-bearing):
-//  * Every capture's IO/encoding runs inside `tester.runAsync` — real file IO
+//  * Every capture's IO/encoding runs inside `tester.runAsync` - real file IO
 //    and PNG encoding never complete in the testWidgets fake-async zone.
 //  * Capture strictly between settle and pop: after pop the boundary shows the
 //    base page again.
@@ -30,7 +30,7 @@ final GlobalKey screenshotBoundaryKey = GlobalKey();
 
 /// Resolve `<packageRoot>/build/test_screenshots`, creating it. `flutter test`
 /// runs with the package root as CWD; the walk-up is defensive. Do NOT use
-/// `Platform.script` — under flutter test it points at the test-runner
+/// `Platform.script` - under flutter test it points at the test-runner
 /// bootstrap kernel, not at a test file.
 Directory screenshotDir() {
   var dir = Directory.current;
@@ -52,7 +52,7 @@ Directory screenshotDir() {
 
 /// Captures the [screenshotBoundaryKey] boundary to numbered PNG files.
 ///
-/// Naming: `NNN_<sanitized-label>@<W>x<H>.png` — the counter resets per
+/// Naming: `NNN_<sanitized-label>@<W>x<H>.png` - the counter resets per
 /// [beginRun] and the `@WxH` suffix keeps names collision-proof across size
 /// runs and deterministic across runs (no timestamps), e.g.
 /// `003_history-calendar@800x600.png`. Failure captures insert `_FAIL`.
@@ -121,7 +121,7 @@ class ScreenshotRecorder {
     if (written) print('SCREENSHOT: ${file.path}');
   }
 
-  /// Best-effort capture of a screen that threw; never throws itself — a
+  /// Best-effort capture of a screen that threw; never throws itself - a
   /// capture problem must not turn into a second test failure.
   Future<void> captureFailure(String label) async {
     try {

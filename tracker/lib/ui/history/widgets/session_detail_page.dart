@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
 
 /// Full view of a single past [WorkoutSession] (Plan.md §1.2): header stats
@@ -15,7 +15,7 @@ class SessionDetailPage extends StatefulWidget {
 
   final WorkoutSession session;
 
-  /// Resolved gym display name (nullable — a session may have no gym).
+  /// Resolved gym display name (nullable - a session may have no gym).
   final String? gymName;
 
   @override

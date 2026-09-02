@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/workout_split.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
 import 'package:tracker/ui/core/ui/custom_route.dart';
 import 'package:tracker/ui/core/ui/max_width.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 
 import 'gym_picker.dart';
@@ -62,6 +62,7 @@ class _EditorPageState extends State<EditorPage> {
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: <Widget>[
                       const BuildNewSplitButton(),
+                      const SizedBox(height: 12),
                       if (splits.isEmpty)
                         const Padding(
                           padding: EdgeInsets.symmetric(vertical: 24),
@@ -131,45 +132,44 @@ class BuildMaterialSplit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 16),
-      child: FCard(
-        child: FItemGroup(
-          divider: .full,
-          children: <FItem>[
+    return FCard(
+      child: FItemGroup(
+        divider: .full,
+        children: <FItem>[
+          FItem(
+            key: ValueKey<String>('split-header-${split.id}'),
+            title: Text(split.title, overflow: TextOverflow.ellipsis),
+            suffix: const Icon(FLucideIcons.pen, size: 20),
+            onPress: () => pushTo(context, SplitEditorPage(split: split)),
+          ),
+          for (var index = 0; index < split.splitDays.length; index++)
             FItem(
-              key: ValueKey<String>('split-header-${split.id}'),
-              title: Text(split.title, overflow: TextOverflow.ellipsis),
-              suffix: const Icon(FLucideIcons.pen, size: 20),
-              onPress: () => pushTo(context, SplitEditorPage(split: split)),
-            ),
-            for (var index = 0; index < split.splitDays.length; index++)
-              FItem(
-                key: ValueKey<String>('split-day-${split.id}-$index'),
-                title: Text(
-                  split.splitDays[index].title,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: Text(
-                  split.splitDays[index].exercises
-                      .map(
-                        (e) =>
-                            exerciseNames[e.exerciseId] ??
-                            'Exercise ${e.exerciseId}',
-                      )
-                      .join(', '),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                onPress: () => pushTo(
-                  context,
-                  SplitDayPage(
-                    splitTitle: split.title,
-                    day: split.splitDays[index],
-                  ),
+              key: ValueKey<String>('split-day-${split.id}-$index'),
+              title: Text(
+                split.splitDays[index].title,
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: Text(
+                split.splitDays[index].exercises.isNotEmpty
+                    ? split.splitDays[index].exercises
+                          .map(
+                            (e) =>
+                                exerciseNames[e.exerciseId] ??
+                                'Exercise ${e.exerciseId}',
+                          )
+                          .join(', ')
+                    : 'No exercises yet',
+                overflow: TextOverflow.ellipsis,
+              ),
+              onPress: () => pushTo(
+                context,
+                SplitDayPage(
+                  splitTitle: split.title,
+                  day: split.splitDays[index],
                 ),
               ),
-          ],
-        ),
+            ),
+        ],
       ),
     );
   }

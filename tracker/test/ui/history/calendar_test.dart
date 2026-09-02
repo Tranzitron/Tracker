@@ -1,4 +1,4 @@
-// Unit tests for history/calendar math (lib/pages/history/calendar_grid.dart) —
+// Unit tests for history/calendar math (lib/pages/history/calendar_grid.dart) -
 // pure functions/classes, no Isar, no widgets. The SessionDetailPage widget
 // that renders this data is an integration test: test/integration/history_test.dart.
 

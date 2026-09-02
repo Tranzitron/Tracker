@@ -7,7 +7,7 @@
 // `resolvePackageUri` are unsupported in the test environment, so paths are
 // resolved directly).
 //
-// Must be invoked inside `tester.runAsync(...)` — engine font registration is
+// Must be invoked inside `tester.runAsync(...)` - engine font registration is
 // real async and never completes in the testWidgets fake-async zone.
 //
 // Each font is loaded individually guarded: a miss prints and continues, so
@@ -24,12 +24,12 @@ Future<void>? _pending;
 Future<void> _load() async {
   final hosted = _pubCacheHostedDir();
   if (hosted == null) {
-    print('FONTS: pub cache not found — text falls back to the test font.');
+    print('FONTS: pub cache not found - text falls back to the test font.');
     await _loadSdkFonts();
     return;
   }
 
-  // Inter: forui's bundled text face — the app's real text metrics.
+  // Inter: forui's bundled text face - the app's real text metrics.
   final foruiDir = _findPackageDir(hosted, 'forui-');
   final fontDir = foruiDir == null
       ? null
@@ -39,7 +39,7 @@ Future<void> _load() async {
         );
   if (fontDir == null || !fontDir.existsSync()) {
     print(
-      'FONTS: Inter not found in pub cache — text stays on the wider test font.',
+      'FONTS: Inter not found in pub cache - text stays on the wider test font.',
     );
   } else {
     for (final name in ['Inter.ttf', 'Inter-Italic.ttf']) {
@@ -53,7 +53,7 @@ Future<void> _load() async {
     print('FONTS: Inter loaded from ${fontDir.path}');
   }
 
-  // Lucide icons: register under both family names that can be requested —
+  // Lucide icons: register under both family names that can be requested -
   // the plain name (what FLucideIcons' IconData constants carry) and the
   // package-prefixed name (what FontManifest registers in real builds).
   final lucideDir = _findPackageDir(hosted, 'forui_lucide-');
@@ -64,7 +64,7 @@ Future<void> _load() async {
           '${Platform.pathSeparator}lucide.ttf',
         );
   if (lucideFile == null || !lucideFile.existsSync()) {
-    print('FONTS: lucide.ttf not found in pub cache — icons render as tofu.');
+    print('FONTS: lucide.ttf not found in pub cache - icons render as tofu.');
   } else {
     final data = await lucideFile.readAsBytes();
     for (final family in [
@@ -82,14 +82,14 @@ Future<void> _load() async {
 }
 
 /// Fonts that ship with the Flutter SDK: MaterialIcons (injected by Material
-/// widgets — ReorderableListView drag handles, ExpansionTile chevrons) and
+/// widgets - ReorderableListView drag handles, ExpansionTile chevrons) and
 /// Roboto (the ThemeData default family for widgets the ForUI bridge theme
 /// doesn't restyle).
 Future<void> _loadSdkFonts() async {
   final fontsDir = _sdkFontsDir();
   if (fontsDir == null) {
     print(
-      'FONTS: Flutter SDK font dir not found — '
+      'FONTS: Flutter SDK font dir not found - '
       'MaterialIcons/Roboto may render as tofu.',
     );
     return;
@@ -110,7 +110,7 @@ Future<void> _loadSdkFonts() async {
 
 Future<void> _loadFontFamily(File file, String family) async {
   if (!file.existsSync()) {
-    print('FONTS: ${file.path} not found — $family renders as tofu.');
+    print('FONTS: ${file.path} not found - $family renders as tofu.');
     return;
   }
   final data = await file.readAsBytes();
@@ -149,7 +149,7 @@ Directory? _sdkFontsDir() {
     if (dir.existsSync()) return dir;
   }
   // Fallback for exotic runners: flutter_tester lives at
-  // <sdk>/bin/cache/artifacts/engine/<host>/flutter_tester(.exe) — climb to
+  // <sdk>/bin/cache/artifacts/engine/<host>/flutter_tester(.exe) - climb to
   // the artifacts dir, which contains material_fonts/.
   var dir = File(Platform.resolvedExecutable).parent;
   for (var i = 0; i < 6; i++) {

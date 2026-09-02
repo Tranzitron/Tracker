@@ -8,7 +8,7 @@
 // pumps in one file.
 //
 // Note: the shell uses Offstage-Stacked nested Navigators, so every tab's page
-// is built (and can throw) even when not selected — the boot test therefore
+// is built (and can throw) even when not selected - the boot test therefore
 // also proves every tab resolves to a buildable screen.
 
 import 'package:flutter_test/flutter_test.dart';

@@ -24,7 +24,7 @@ void main() {
   setUp(() {
     // In-memory storage: the real HydratedStorage does file I/O behind a
     // static lock that deadlocks the widget-test fake-async zone once the
-    // app shell (HydratedCubits) is pumped — same setup as app_test.
+    // app shell (HydratedCubits) is pumped - same setup as app_test.
     HydratedBloc.storage = InMemoryStorage();
   });
 
@@ -170,7 +170,7 @@ void main() {
         ],
       );
 
-      // Switch to the CurrentWorkout tab (index 2) via the nav bar onChange —
+      // Switch to the CurrentWorkout tab (index 2) via the nav bar onChange -
       // hit-testing is brittle under the Offstage nested navigators.
       tester
           .widget<FBottomNavigationBar>(find.byType(FBottomNavigationBar))
@@ -198,7 +198,7 @@ void main() {
       await tester.enterText(weightField, '100');
       await tester.enterText(repsField, '5');
 
-      // Mark the set as warm-up before adding (tap the checkbox itself —
+      // Mark the set as warm-up before adding (tap the checkbox itself -
       // FCheckbox's label is not part of the hit target).
       await tester.tap(find.byType(FCheckbox));
       await tester.pump();

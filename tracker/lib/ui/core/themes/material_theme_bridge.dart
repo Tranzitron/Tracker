@@ -9,7 +9,7 @@ import 'package:forui/forui.dart';
 /// (switching the app root to `material_ui`'s `MaterialApp` is out of scope).
 /// This bridge maps the Forui palette onto the SDK `ColorScheme` so the
 /// remaining Material widgets (SliverAppBar, ExpansionTile,
-/// CircularProgressIndicator, …) inherit the Forui palette.
+/// CircularProgressIndicator, ...) inherit the Forui palette.
 extension FThemeMaterialBridge on FThemeData {
   ThemeData toCustomMaterialTheme() {
     final textTheme = TextTheme(

@@ -1,14 +1,11 @@
 import 'dart:collection';
 
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-
-import 'package:tracker/domain/services/analytics.dart';
-
 import 'package:tracker/data/repositories/tracker_repository.dart';
-
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
+import 'package:tracker/domain/services/analytics.dart';
 
 /// A single set logged during the in-progress workout.
 ///
@@ -255,7 +252,7 @@ class WorkoutState {
       .where((set) => !set.isWarmup)
       .fold<double>(0, (total, set) => total + set.weight * set.reps);
 
-  /// The resting (no workout) state — the app does not boot into a session.
+  /// The resting (no workout) state - the app does not boot into a session.
   static WorkoutState initial() => WorkoutState(isInProgress: false);
 
   Map<String, dynamic> toJson() => {

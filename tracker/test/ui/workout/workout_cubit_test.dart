@@ -1,4 +1,4 @@
-// Unit tests for WorkoutState (lib/pages/workout/workout_cubit.dart) — pure
+// Unit tests for WorkoutState (lib/pages/workout/workout_cubit.dart) - pure
 // JSON serialization, no Isar, no HydratedBloc. The WorkoutCubit flow (which
 // writes to Isar / HydratedStorage) is an integration test:
 // test/integration/workout_test.dart.

@@ -19,31 +19,31 @@ import 'package:forui/forui.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:isar_community/isar.dart';
 import 'package:tracker/data/repositories/tracker_repository.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/data/services/seed.dart';
-import 'package:tracker/main.dart';
 import 'package:tracker/domain/models/exercise.dart';
+import 'package:tracker/domain/models/graph_config.dart';
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/workout_session.dart';
 import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/domain/models/workout_split.dart';
+import 'package:tracker/main.dart';
 import 'package:tracker/ui/analytics/widgets/graph_editor.dart';
 import 'package:tracker/ui/analytics/widgets/progression_page.dart';
 import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/exercises/widgets/exercise_detail_page.dart';
 import 'package:tracker/ui/exercises/widgets/new_exercise_page.dart';
 import 'package:tracker/ui/feed/widgets/feed_page.dart';
 import 'package:tracker/ui/history/widgets/session_detail_page.dart';
-import 'package:tracker/ui/settings/widgets/gyms_page.dart';
-import 'package:tracker/domain/models/graph_config.dart';
 import 'package:tracker/ui/settings/view_models/settings_cubit.dart';
+import 'package:tracker/ui/settings/widgets/gyms_page.dart';
 import 'package:tracker/ui/settings/widgets/settings_page.dart';
+import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:tracker/ui/workout/widgets/exercise_picker_page.dart';
 import 'package:tracker/ui/workout/widgets/gym_picker.dart';
 import 'package:tracker/ui/workout/widgets/new_split_page.dart';
 import 'package:tracker/ui/workout/widgets/split_day_editor_page.dart';
 import 'package:tracker/ui/workout/widgets/split_day_page.dart';
-import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
 import 'package:tracker/ui/workout/widgets/workout_page.dart';
 
 import '../../testing/fakes/in_memory_storage.dart';
@@ -133,7 +133,7 @@ void main() {
             BlocProvider<SettingsCubit>(
               create: (_) => SettingsCubit()
                 ..addGraph(
-                  const GraphConfig(title: 'Strength — upper body progression'),
+                  const GraphConfig(title: 'Strength - upper body progression'),
                 ),
               lazy: false,
             ),
@@ -154,7 +154,7 @@ void main() {
         find.byType(Navigator).first,
       );
 
-      // Label of the screen being swept — failure attribution + _FAIL capture
+      // Label of the screen being swept - failure attribution + _FAIL capture
       // naming. Mutable, shared with the settle()/guarded() closures below.
       var current = 'app-start';
       final failures = <String>[];
@@ -165,7 +165,7 @@ void main() {
       // instead of being caught mid-flight. (No pumpAndSettle: loading
       // spinners animate forever under fake time.)
       //
-      // Frame exceptions (RenderFlex overflows etc.) do NOT throw in-body —
+      // Frame exceptions (RenderFlex overflows etc.) do NOT throw in-body -
       // they land in the binding's pending slot. takeException() retrieves
       // and clears it, tagging the failure with the current screen and
       // capturing it before the sweep moves on.
@@ -216,12 +216,12 @@ void main() {
       }
 
       // Push a page onto the root navigator (how the app really presents
-      // these screens — pushTo paints the route's theme background), capture
+      // these screens - pushTo paints the route's theme background), capture
       // after settle, then pop. Capture must happen before the pop:
       // afterwards the boundary shows the base page again.
       // [dataReady] gates the capture on stream-backed content arriving.
       //
-      // Route/dialog transitions are driven by the fake clock — runAsync
+      // Route/dialog transitions are driven by the fake clock - runAsync
       // delays don't advance them, so pump(350 ms) is what actually completes
       // the 250 ms pushTo transition (without it the pushed page
       // builds but stays invisible and the capture shows the page beneath).
@@ -253,7 +253,7 @@ void main() {
 
       await settle();
 
-      // Tab roots — real shell including the bottom bar. Tab switching via
+      // Tab roots - real shell including the bottom bar. Tab switching via
       // onChange (hit-testing is brittle under the Offstage navigators).
       await guarded('Feed tab', () async {
         await settleForData(dataLoaded);
@@ -369,7 +369,7 @@ void main() {
           context: pageContext,
           builder: (_, _, _) => GraphEditor(
             exercises: fixtures.exercises,
-            initial: const GraphConfig(title: 'Strength — upper body'),
+            initial: const GraphConfig(title: 'Strength - upper body'),
           ),
         ),
       );
@@ -380,7 +380,7 @@ void main() {
           builder: (_, _, _) => EditGymDialog(
             title: 'Edit Gym',
             initial: Gym(
-              name: 'Very Long Gym Name — Westfield Century City',
+              name: 'Very Long Gym Name - Westfield Century City',
               description: 'Busy hours',
               order: 1,
             ),
@@ -425,7 +425,7 @@ void main() {
         await settle();
       });
 
-      // The session is ended now — the Workout tab shows its idle state.
+      // The session is ended now - the Workout tab shows its idle state.
       await guarded('Workout tab (idle)', () async {
         switchTab(2);
         await settle();

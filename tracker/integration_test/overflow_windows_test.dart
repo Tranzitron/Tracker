@@ -2,8 +2,8 @@
 //
 // Unlike the widget-test sweep in `test/ui/layout_overflow_test.dart` (which
 // fakes the view), this drives the actual Windows window through the sizes a
-// desktop session hits — the 320x568 minimum set by `window_size`, a
-// snap-half 640x720, the 1280x720 default and the maximized frame — and
+// desktop session hits - the 320x568 minimum set by `window_size`, a
+// snap-half 640x720, the 1280x720 default and the maximized frame - and
 // visits every tab, page, dialog and sheet at each size. RenderFlex/RenderBox
 // overflow throws through FlutterError and fails the test; the last "SWEEP:"
 // line names the offending screen.
@@ -113,7 +113,7 @@ void main() {
   }
 
   // A bounded settle: real delays let Isar watchers fire, a pump renders. No
-  // pumpAndSettle — loading spinners animate forever.
+  // pumpAndSettle - loading spinners animate forever.
   Future<void> settle(WidgetTester tester) async {
     for (var i = 0; i < 2; i++) {
       await Future<void>.delayed(const Duration(milliseconds: 150));
@@ -206,7 +206,7 @@ void main() {
       );
       await settle(tester);
 
-      // Shell tab roots — the real app chrome (bottom bar + nested
+      // Shell tab roots - the real app chrome (bottom bar + nested
       // navigators) that the widget-test sweep never pumps.
       for (final tab in TabName.values) {
         _mark('tab ${tab.name} @ $label');
@@ -290,7 +290,7 @@ void main() {
           context: pageContext,
           builder: (_, _, _) => GraphEditor(
             exercises: fixtures.exercises,
-            initial: const GraphConfig(title: 'Strength — upper body'),
+            initial: const GraphConfig(title: 'Strength - upper body'),
           ),
         ),
       );
@@ -301,7 +301,7 @@ void main() {
           builder: (_, _, _) => EditGymDialog(
             title: 'Edit Gym',
             initial: Gym(
-              name: 'Very Long Gym Name — Westfield Century City',
+              name: 'Very Long Gym Name - Westfield Century City',
               description: 'Busy hours',
               order: 1,
             ),

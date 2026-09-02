@@ -1,6 +1,6 @@
 // Seeded fixtures shared by the layout-overflow and visual-screenshot sweeps:
 // real gyms/split/sessions with deliberately long titles and names designed to
-// stress tight card rows. Pure repository logic — no widget coupling.
+// stress tight card rows. Pure repository logic - no widget coupling.
 
 import 'package:tracker/data/repositories/tracker_repository.dart';
 import 'package:tracker/domain/models/exercise.dart';
@@ -46,7 +46,7 @@ Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
 
   final primaryGym = Gym(name: 'Iron Temple', isPrimary: true, order: 0);
   final secondaryGym = Gym(
-    name: 'Very Long Gym Name — Westfield Century City',
+    name: 'Very Long Gym Name - Westfield Century City',
     order: 1,
     multiplier: 0.9,
   );
@@ -54,7 +54,7 @@ Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
   await repo.gyms.put(secondaryGym);
 
   final split = WorkoutSplit(
-    title: 'Push Pull Legs — Complete Program',
+    title: 'Push Pull Legs - Complete Program',
     description: 'A three-day split for the weekday warrior',
     order: 0,
     splitDays: [
@@ -73,7 +73,7 @@ Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
         ],
       ),
       WorkoutSplitDay(
-        title: 'Pull Day — a rather long day title for overflow checks',
+        title: 'Pull Day - a rather long day title for overflow checks',
         description: 'Back and biceps',
         order: 1,
         exercises: [ExerciseItem(exerciseId: incline.id, order: 0)],
@@ -102,7 +102,7 @@ Future<SweepFixtures> seedSweepFixtures(TrackerRepository repo) async {
       ],
     ),
     WorkoutSession(
-      title: 'Pull Day — Long Session Title Meant To Stress Tight Card Rows',
+      title: 'Pull Day - Long Session Title Meant To Stress Tight Card Rows',
       startTime: now.subtract(const Duration(days: 3, hours: 1)),
       endTime: now.subtract(const Duration(days: 3)),
       gymId: secondaryGym.id,

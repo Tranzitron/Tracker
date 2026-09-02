@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/exercise.dart';
 import 'package:tracker/domain/models/gym.dart';
+import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/domain/models/workout_set.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
-import 'package:tracker/utils/form_validators.dart';
 import 'package:tracker/ui/core/ui/max_width.dart';
-import 'package:tracker/domain/models/weight_unit.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
 import 'package:tracker/ui/workout/view_models/workout_cubit.dart';
+import 'package:tracker/utils/form_validators.dart';
 
 import 'gym_picker.dart';
 
@@ -71,10 +71,11 @@ class _IdleView extends StatelessWidget {
           const SizedBox(height: 12),
           const Text('No workout in progress'),
           const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onStart,
-            icon: const Icon(FLucideIcons.play),
-            label: const Text('Start Workout'),
+          FButton(
+            mainAxisSize: MainAxisSize.min,
+            onPress: onStart,
+            prefix: const Icon(FLucideIcons.play),
+            child: const Text('Start Workout'),
           ),
         ],
       ),
@@ -618,11 +619,9 @@ class _AddSetFormState extends State<_AddSetForm> {
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 8),
         Row(
           children: <Widget>[
-            // Expanded keeps the label from being squeezed to one character
-            // per line when the Add-set button takes its intrinsic width.
             Expanded(
               child: FCheckbox(
                 label: const Text('Warm-up'),
@@ -630,7 +629,7 @@ class _AddSetFormState extends State<_AddSetForm> {
                 onChange: (v) => setState(() => _warmup = v),
               ),
             ),
-            FilledButton(onPressed: _add, child: const Text('Add set')),
+            FButton(onPress: _add, child: const Text('Add set')),
           ],
         ),
       ],

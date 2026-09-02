@@ -111,6 +111,7 @@ class _HistoryPageState extends State<HistoryPage> {
 
   Widget _sessionList(BuildContext context, List<WorkoutSession> sessions) {
     return ListView.builder(
+      padding: EdgeInsets.zero,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: sessions.length,

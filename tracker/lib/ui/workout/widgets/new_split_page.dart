@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/workout_split.dart';
+import 'package:tracker/domain/models/workout_split_templates.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
 import 'package:tracker/ui/core/ui/custom_route.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
-
-import 'package:tracker/domain/models/workout_split_templates.dart';
 
 import 'split_day_editor_page.dart';
 
@@ -235,7 +234,7 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                 Text('Days', style: context.theme.typography.body.md),
                 const SizedBox(height: 8),
                 if (_days.isEmpty)
-                  const Text('No days yet — add one below.')
+                  const Text('No days yet - add one below.')
                 else
                   for (var i = 0; i < _days.length; i++)
                     FItem(
@@ -258,8 +257,8 @@ class _SplitEditorPageState extends State<SplitEditorPage> {
                 ),
                 const SizedBox(height: 16),
                 if (!_isNew)
-                  FilledButton.tonal(
-                    onPressed: _deleteSplit,
+                  FButton(
+                    onPress: _deleteSplit,
                     child: const Text('Delete split'),
                   ),
               ],

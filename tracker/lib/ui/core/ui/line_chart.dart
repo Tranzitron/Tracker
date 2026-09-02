@@ -5,7 +5,7 @@ import 'package:forui/forui.dart';
 import 'package:tracker/domain/services/analytics.dart';
 
 /// Minimal dependency-free line chart for [ProgressionPoint] series
-/// (Milestone 6 analytics). A plain [CustomPainter] — no charting package —
+/// (Milestone 6 analytics). A plain [CustomPainter] - no charting package -
 /// plotting a polyline + point dots over a light grid with y-axis tick labels.
 class LineChart extends StatelessWidget {
   const LineChart({

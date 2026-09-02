@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/domain/services/analytics.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/domain/models/gym.dart';
 import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
-import 'package:tracker/utils/form_validators.dart';
 import 'package:tracker/ui/core/ui/max_width.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
+import 'package:tracker/utils/form_validators.dart';
 
 /// Gym management (Plan.md §2.2 / §2.3): create/edit gyms, mark one as the
 /// primary baseline (multiplier locked to 1.0), and set or auto-estimate each
@@ -221,7 +221,7 @@ class _GymsPageState extends State<GymsPage> {
                       if (gyms.isEmpty) {
                         return const Padding(
                           padding: EdgeInsets.only(top: 24),
-                          child: Text('No gyms yet — add one.'),
+                          child: Text('No gyms yet - add one.'),
                         );
                       }
                       return Column(

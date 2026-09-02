@@ -4,7 +4,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 ///
 /// HydratedStorage (Hive/file) performs real I/O behind a static lock that
 /// cannot complete or be rebuilt across the widget-test fake-async zone once a
-/// HydratedCubit has been pumped — so repeated pumps in one file hang. An
+/// HydratedCubit has been pumped - so repeated pumps in one file hang. An
 /// in-memory implementation avoids that entirely and is functionally equivalent
 /// for pages that don't need real persistence.
 class InMemoryStorage implements Storage {

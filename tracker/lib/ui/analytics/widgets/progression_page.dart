@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
-import 'package:tracker/domain/services/analytics.dart';
-import 'package:tracker/ui/core/ui/repository_scope.dart';
+import 'package:tracker/domain/models/weight_unit.dart';
 import 'package:tracker/domain/models/workout_session.dart';
+import 'package:tracker/domain/services/analytics.dart';
 import 'package:tracker/ui/core/ui/custom_app_bar.dart';
 import 'package:tracker/ui/core/ui/line_chart.dart';
-import 'package:tracker/domain/models/weight_unit.dart';
+import 'package:tracker/ui/core/ui/repository_scope.dart';
 import 'package:tracker/ui/core/ui/weight_format.dart';
 
 /// General progression analytics (Plan.md §2.4): overall strength and volume
@@ -135,10 +135,12 @@ class _ProgressionPageState extends State<ProgressionPage> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               _Stat(label: 'Workouts', value: '${summary.sessionCount}'),
+              const SizedBox(width: 8),
               _Stat(
                 label: 'Best 1RM',
                 value: formatWeight(context, summary.best1rm),
               ),
+              const SizedBox(width: 8),
               _Stat(
                 label: 'Peak volume',
                 value: formatWeight(context, summary.peakVolume),
