@@ -1,8 +1,11 @@
 # Production Readiness Roadmap - Tracker
 
-**Prepared:** 2026-08-31 - **Target release:** v1.0.0+1 - **Status: PLAN ONLY - NOT EXECUTED**
+**Prepared:** 2026-09-02 - **Target release:** v1.0.0+1 - **Status: PLAN ONLY - NOT EXECUTED**
 
 Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first, no account, no data collection** - this promise reshapes the standard Flutter launch checklist (see Phase 0). Items marked **N/A (offline)** are documented as intentionally skipped so nobody re-adds them later.
+
+**Execution order = document order.** Phases are numbered in the intended execution sequence - work
+top to bottom, no reordering needed
 
 ---
 
@@ -15,13 +18,30 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 - **Known current-state gates** (from CLAUDE.md / memory): batch 3 UI fixes remain; some features incomplete or absent; `tracker/ios/Podfile.lock` possibly stale; test-only `libisar.dylib` copy in `tracker/` (gitignored, fine, but keep it out of release tooling).
 - **Dependency pin is load-bearing:** `dependency_overrides: path_provider_android <2.3.0` works around a `jni` 1.0.x compile break. Re-verify when `path_provider_android` 2.3.x+ ships a fixed `jni`.
 
+### Decisions (2026-09-02)
+
+- **Platform scope: mobile-first.** v1.0 ships **iOS (App Store) + Android (Play) only**.
+  macOS / Windows / Linux are deferred to v1.1+ and would distribute via unsigned GitHub
+  Releases at that point. Postponed until then: macOS MAS-vs-notarization choice, Windows
+  cert-vs-MS-Store choice. Phase 5 signing inventory shrinks to **Android keystore + Apple
+  distribution cert**; desktop CI build jobs stay only as unsigned compile canaries (Phase 3).
+- **isar_community strategy: stay + document escape hatch.** No migration before 1.0. Phase 1
+  writes the one-paragraph drift/SQLite migration note as a decision record; CI pins exact
+  versions; dependabot watches the fork for releases/security fixes.
+
+*Phase 0 assumption checks passed 2026-09-02: override + fork pins present in `pubspec.yaml`;
+zero TODO/FIXME in `lib/`; `libisar.dylib` gitignored and out of release tooling.*
+
 ---
 
 ## Phase 1 - Codebase & Architecture Hardening
 
 ### Critical / Blocker
 
-- [ ] **Centralized error handling.** Add app-level handlers in `main.dart`: `runZonedGuarded`, `FlutterError.onError`, `PlatformDispatcher.instance.onError`, and a custom `ErrorWidget.builder`. Route everything into a tiny file-based ring-buffer logger (local-only; feeds Phase 4 bug reports).
+- [ ] **Centralized error handling.** Add app-level handlers in `main.dart`: `runZonedGuarded`,
+  `FlutterError.onError`, `PlatformDispatcher.instance.onError`, and a custom `ErrorWidget.builder`.
+  Route everything into a tiny file-based ring-buffer logger (local-only; feeds the offline
+  bug-report flow, see Phase 6).
 
   ```dart
   void main() {
@@ -90,43 +110,18 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 ---
 
-## Phase 2 - Performance & Resource Optimization
-
-### Critical / Blocker
-
-- [ ] **Profile release builds on real hardware** - at minimum one Android phone, one iPhone, one desktop. Debug builds lie.
-
-  ```bash
-  cd tracker
-  flutter run --profile          # DevTools -> Timeline / Frame Analysis
-  flutter build apk --release --analyze-size   # size audit
-  ```
-
-- [ ] **Isar query audit.** Add indexes for every queried/watched field (session dates, `exerciseId`, gym id). Confirm `watchAll()` and history/analytics paths never deserialize whole collections into memory; paginate or window the History list as session count grows.
-- [ ] **120 Hz check.** Test on a ProMotion iPhone / 120 Hz Android. Modern Flutter uses Impeller - watch the custom `LineChart` `CustomPainter` for shader/first-draw jank and recompute cost per frame; cache paths outside `paint()`.
-
-### High Priority
-
-- [ ] **Rebuild reduction.** `BlocBuilder` with `buildWhen` (or `context.select`) on the workout tab - the per-exercise cards must not all rebuild per logged set. `const` constructors on static subtrees; `ListView.builder` for any list that grows.
-- [ ] **Memory soak.** 30-minute simulated workout session with DevTools memory view: confirm Isar watchers, chart/controllers, and `ReorderableListView` state are disposed; single Isar instance (already true via `db.dart`).
-- [ ] **Bundle size.** AAB for Play; `--split-per-abi` only if distributing APKs directly. Subset Inter/Lucide fonts to used glyphs if fonts dominate size. Note `libisar` native libs are multi-MB on every desktop target - acceptable offline cost, but measure.
-- [ ] **Cold start budget.** Target < 2.5 s to interactive on a mid-range Android; defer seeding only if measured as a cost.
-
-### Nice-to-Have
-
-- [ ] Timeline events around `endWorkout` (Isar write + multiplier estimation) for future profiling.
-- [ ] Frame-budget regression tracking in the existing visual sweep.
-
----
-
-## Phase 3 - Security & Compliance
+## Phase 2 - Security & Compliance
 
 ### Critical / Blocker
 
 - [ ] **Data durability: export + auto-backup.** The flagship offline-app risk. Ship (a) user-facing export/import (canonical JSON of all collections), (b) automatic rotating local backup on app start (e.g., keep last 3 DB copies in app-support dir). Test the *restore* path, not just export.
 - [ ] **Explicit encryption decision.** Isar supports `Isar.open(..., encryptionKey: ...)`. Decide and document one of: (a) device-level encryption is sufficient for v1 (defensible default; document the decision), or (b) app-level DB encryption - then keys need `flutter_secure_storage` (note: Linux desktop backend requires `libsecret` at runtime).
 - [ ] **Privacy policy URL.** Both stores require one even with zero collection. One static page stating: all data stays on device, no analytics, no network use.
-- [ ] **Google Play Data Safety form.** Declare "no data collected, no data shared." Justified only if verified: run a full functional pass in **airplane mode** (see 4.3) and confirm no dependency makes network calls (flutter_bloc, forui, path_provider, window_size, isar_community - none do; the Flutter *runtime* does not phone home, only the Flutter *tool* sends dev-side analytics).
+- [ ] **Google Play Data Safety form.** Declare "no data collected, no data shared." Justified only
+  if verified: run a full functional pass in airplane mode (see Phase 3, airplane-mode release gate)
+  and confirm no dependency makes network calls (flutter_bloc, forui, path_provider, window_size,
+  isar_community - none do; the Flutter *runtime* does not phone home, only the Flutter *tool* sends
+  dev-side analytics).
 - [ ] **Android 16 KB page-size compliance.** Play requires 16 KB support for new apps targeting recent Android. Verify the fork's native binaries are 16 KB-aligned before trusting `isar_community 3.3.2`:
 
   ```bash
@@ -140,16 +135,17 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 ### High Priority
 
-- [ ] **Release hardening flags on every store build:**
+- [ ] **Release hardening flags on every store build** (v1.0 = mobile only; desktop lines
+  deferred to v1.1+ per Phase 0 decision):
 
   ```bash
   flutter build appbundle --release \
     --obfuscate --split-debug-info=build/symbols/android
   flutter build ipa --release \
     --obfuscate --split-debug-info=build/symbols/ios
-  flutter build windows --release --obfuscate --split-debug-info=build/symbols/windows
-  flutter build macos --release --obfuscate --split-debug-info=build/symbols/macos
-  flutter build linux --release --obfuscate --split-debug-info=build/symbols/linux
+  # v1.1+: flutter build windows --release --obfuscate --split-debug-info=build/symbols/windows
+  # v1.1+: flutter build macos --release --obfuscate --split-debug-info=build/symbols/macos
+  # v1.1+: flutter build linux --release --obfuscate --split-debug-info=build/symbols/linux
   ```
 
   Archive `build/symbols/*` per release for symbolication. Obfuscation is safe with Isar/build_runner codegen (no reflection).
@@ -164,7 +160,7 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 ---
 
-## Phase 4 - Testing & QA
+## Phase 3 - Testing & QA
 
 **Current base (strong):** domain unit tests, Isar CRUD tests, cubit/widget tests, overflow assertions, 66-screenshot visual sweep, `flutter analyze` + generated-code checks on CI (ubuntu).
 
@@ -172,12 +168,17 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 - [ ] **Coverage floors enforced in CI:** `flutter test --coverage` + a summary gate. Suggested floors: `domain/` + `data/` >= 80% lines, `ui/view_models/` >= 70%. UI widget coverage is tracked, not gated.
 - [ ] **Integration tests** (`integration_test` package) for the money paths, run on an Android emulator + iOS simulator in CI or pre-release locally: start plan workout -> log sets/warmups -> end workout -> session appears in History and analytics; settings unit switch reflects everywhere; split CRUD round-trip.
-- [ ] **Airplane-mode full pass as a release gate.** Entire smoke checklist on a device with radios off - this *is* the proof of the 100%-offline claim backing the Data Safety form.
-- [ ] **Manual per-platform smoke checklist** (one page, ~15 items): first-run seed, create workout, end workout, history, analytics graph CRUD, settings, export/import, backup restore. Execute on all five platforms before every store submission.
+- [ ] **Airplane-mode full pass as a release gate.** Entire smoke checklist on a device with radios
+  off - this *is* the proof of the 100%-offline claim backing the Data Safety form (Phase 2).
+- [ ] **Manual per-platform smoke checklist** (one page, ~15 items): first-run seed, create workout, end workout, history, analytics graph CRUD, settings, export/import, backup restore. Execute on both mobile platforms before every store submission (desktop joins at v1.1+).
 
 ### High Priority
 
-- [ ] **Crash/error reporting - for offline first app.** Standard Firebase Crashlytics.
+- [ ] **Crash/error reporting - the offline answer.** No Crashlytics/Sentry (Phase 0: no backend, no
+  analytics SDKs - the standard crash-reporting item of an online app is intentionally dropped). The
+  offline replacement: the Phase 1 ring-buffer logger plus a user-facing "export data + logs" action
+  built on the Phase 2 export feature, doubling as the bug-report mechanism (see Phase 6 support
+  loop).
 - [ ] **Cross-platform CI expansion.** Today: ubuntu (analyze, tests, sweep). Add: `macos-latest` job that builds iOS + macOS (unsigned) and a `windows-latest` job that builds Windows - build-passing gates catch platform breaks early; signing stays local/late.
 - [ ] **Accessibility pass.** TalkBack/VoiceOver over main flows; 200% text scale (the sweep covers 320x568 smallness - add largest-scale variants); contrast on the Forui theme; every tappable >= 44x44 pt.
 - [ ] **Real-device soak of the release build** (not just debug): one full workout logged on each mobile platform from the store-build artifact.
@@ -186,6 +187,47 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 - [ ] Golden tests for core screens derived from the existing sweep infra.
 - [ ] Beta rings: TestFlight internal (<= 5 testers) -> Play internal -> closed testing; desktop builds distributed via GitHub Releases to a friends ring.
+
+---
+
+## Phase 4 - Performance & Resource Optimization
+
+### Critical / Blocker
+
+- [ ] **Profile release builds on real hardware** - at minimum one Android phone, one iPhone, one
+  desktop. Debug builds lie.
+
+  ```bash
+  cd tracker
+  flutter run --profile          # DevTools -> Timeline / Frame Analysis
+  flutter build apk --release --analyze-size   # size audit
+  ```
+
+- [ ] **Isar query audit.** Add indexes for every queried/watched field (session dates,
+  `exerciseId`, gym id). Confirm `watchAll()` and history/analytics paths never deserialize whole
+  collections into memory; paginate or window the History list as session count grows.
+- [ ] **120 Hz check.** Test on a ProMotion iPhone / 120 Hz Android. Modern Flutter uses Impeller -
+  watch the custom `LineChart` `CustomPainter` for shader/first-draw jank and recompute cost per
+  frame; cache paths outside `paint()`.
+
+### High Priority
+
+- [ ] **Rebuild reduction.** `BlocBuilder` with `buildWhen` (or `context.select`) on the workout
+  tab - the per-exercise cards must not all rebuild per logged set. `const` constructors on static
+  subtrees; `ListView.builder` for any list that grows.
+- [ ] **Memory soak.** 30-minute simulated workout session with DevTools memory view: confirm Isar
+  watchers, chart/controllers, and `ReorderableListView` state are disposed; single Isar instance (
+  already true via `db.dart`).
+- [ ] **Bundle size.** AAB for Play; `--split-per-abi` only if distributing APKs directly. Subset
+  Inter/Lucide fonts to used glyphs if fonts dominate size. Note `libisar` native libs are multi-MB
+  on every desktop target - acceptable offline cost, but measure.
+- [ ] **Cold start budget.** Target < 2.5 s to interactive on a mid-range Android; defer seeding
+  only if measured as a cost.
+
+### Nice-to-Have
+
+- [ ] Timeline events around `endWorkout` (Isar write + multiplier estimation) for future profiling.
+- [ ] Frame-budget regression tracking in the existing visual sweep.
 
 ---
 
@@ -199,22 +241,23 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
   | --- | --- | --- |
   | Android | Upload keystore + passwords | **Back up offline twice.** Enroll Play App Signing so a lost key is survivable. |
   | iOS | Distribution cert + App Store profile | App Store Connect -> Certificates; match bundle ID. |
-  | macOS | Developer ID Application cert (+ App Store Connect API key for notarization) | Only for direct distribution; MAS path uses distribution cert. |
-  | Windows | Code-signing cert (OV minimum) | Unsigned = SmartScreen wall for every download. Decide: cert cost vs MS Store distribution (store validates for you). |
-  | Linux | None | AppImage/deb/flatpak unsigned is normal. |
-  
+  | macOS | *Deferred v1.1+* | Ships via unsigned GitHub Releases then; MAS/Developer-ID decision postponed (Phase 0). |
+  | Windows | *Deferred v1.1+* | Unsigned GitHub Releases then; SmartScreen warning accepted at first; cert-vs-MS-Store decision postponed (Phase 0). |
+  | Linux | *Deferred v1.1+* | AppImage/deb/flatpak unsigned is normal when it ships. |
+
   Secrets go in GitHub Actions secrets; raw keys never in repo.
 
-- [ ] **Tag-driven release workflow** on GitHub Actions (extend existing `dart.yml`):
+- [ ] **Tag-driven release workflow** on GitHub Actions (extend existing `dart.yml`) — v1.0
+  ships the two store jobs only; desktop jobs return at v1.1+ (Phase 0):
 
   ```yaml
   on: { push: { tags: ["v*"] } }
   jobs:
     android: { runs-on: ubuntu-latest,  steps: [checkout, java, flutter, build appbundle, upload artifact] }
     ios:     { runs-on: macos-latest,   steps: [checkout, flutter, build ipa, upload artifact] }
-    macos:   { runs-on: macos-latest,   steps: [checkout, flutter, build macos, notarize, zip, upload] }
-    windows: { runs-on: windows-latest, steps: [checkout, flutter, build windows, sign msix, upload] }
-    linux:   { runs-on: ubuntu-latest,  steps: [checkout, flutter, build linux, appimage/deb, upload] }
+    # v1.1+: macos   { runs-on: macos-latest,   steps: [checkout, flutter, build macos, zip, upload] }
+    # v1.1+: windows { runs-on: windows-latest, steps: [checkout, flutter, build windows, msix, upload] }
+    # v1.1+: linux   { runs-on: ubuntu-latest,  steps: [checkout, flutter, build linux, appimage/deb, upload] }
   ```
 
   First milestone: unsigned artifacts + drafted GitHub Release per tag. Then layer signing, then store uploads.
@@ -240,7 +283,7 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 
 - [ ] **Feature completeness gate.** Batch 3 UI fixes done; no placeholder screens reachable in prod; every visible control does something; the "features completely absent" list is either built or gated out (Phase 1).
 - [ ] **Store listings.** App Store Connect record + Play Console app created. Per store: final name, subtitle/short description, keyword field (iOS), category (Health & Fitness), content-rating questionnaires, health/fitness data declaration (**"data stored only on device"**), support URL, privacy policy URL, support email.
-- [ ] **Screenshots.** Required sizes: iOS 6.9" phone + 13" iPad (macOS app needs none if MAS; Play: phone 7"/tablet 10"). The visual sweep's renders are a starting base, but re-capture on real devices/simulators - stores accept synthetic frames only if they look real. 3-5 shots each telling the story: plan split -> log workout -> progression graphs.
+- [ ] **Screenshots.** Required sizes: iOS 6.9" phone + 13" iPad; Play: phone 7"/tablet 10". The visual sweep's renders are a starting base, but re-capture on real devices/simulators - stores accept synthetic frames only if they look real. 3-5 shots each telling the story: plan split -> log workout -> progression graphs.
 - [ ] **App identity.** Final display name everywhere; bundle IDs (`com.<you>.tracker`) reserved on both stores; app icons for all five platforms (`flutter_launcher_icons`, Android adaptive icons, macOS `.icns`); native splash screens; sensible desktop min-window sizes (already via `window_size`).
 - [ ] **Export compliance (iOS).** No custom cryptography -> `ITSAppUsesNonExemptEncryption = false` in Info.plist to skip the per-build export question.
 - [ ] **OSS license page.** Add `LicensePage` (or `showLicensePage`) reachable from Settings - Flutter auto-collects pub dependency licenses; required by most licenses and trivially cheap.
@@ -250,7 +293,8 @@ Platforms: iOS, Android, macOS, Windows, Linux. Product promise: **offline first
 - [ ] **Localization.** `flutter_localizations` is already a dependency. Wire `intl`/`gen_l10n` with English-only `.arb` files for v1 so strings are extracted once and future translations are data, not refactor. Localize store metadata only for languages actually supported.
 - [ ] **Staged rollout.** Play: internal -> closed -> production at 10% -> 50% -> 100% with halt criteria (rating drop, review complaints, GitHub issue spike). App Store: 7-day phased release (can pause). Desktop: manual control by channel.
 - [ ] **Reviewer notes.** Both stores: state plainly "offline app, no account required, all data stored on device" - this preempts the top review questions for fitness apps. Avoid medical claims ("builds muscle") - health claims trigger stricter review.
-- [ ] **Support & feedback loop.** Support email monitored; in-app "export data + logs" flow doubles as the bug-report mechanism (offline answer to crash reporting).
+- [ ] **Support & feedback loop.** Support email monitored; in-app "export data + logs" flow doubles
+  as the bug-report mechanism (offline answer to crash reporting, see Phase 3).
 
 ### Nice-to-Have
 
@@ -271,12 +315,14 @@ flutter build ipa --release --obfuscate --split-debug-info=build/symbols/ios
 flutter build macos --release --obfuscate --split-debug-info=build/symbols/macos
 codesign --deep --force --options runtime --sign "Developer ID Application: ..." Build/Products/Release/tracker.app
 xcrun notarytool submit Tracker.zip --keychain-profile ac --wait && xcrun stapler staple Tracker.app
-# Windows
+# Windows (deferred v1.1+)
 flutter build windows --release --obfuscate --split-debug-info=build/symbols/windows
 # then package msix (msix pub package) and sign with signtool
-# Linux
+# Linux (deferred v1.1+)
 flutter build linux --release --obfuscate --split-debug-info=build/symbols/linux
 # then AppImage/deb packaging
 ```
 
-**Suggested execution order:** Phase 1 -> Phase 3 (durability + 16 KB verification early - they can force architecture decisions) -> Phase 4 -> Phase 2 -> Phase 5 -> Phase 6.
+**Execution order:** document order (Phase 1 -> 6, top to bottom). No reordering needed - the
+2026-09-02 reorder already put durability + 16 KB verification early (Phase 2, they can force
+architecture decisions) and performance tuning after tests exist (Phase 4).
