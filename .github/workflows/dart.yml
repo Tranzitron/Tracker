@@ -28,6 +28,7 @@ jobs:
       with:
         channel: stable
         flutter-version-file: tracker/pubspec.yaml
+        architecture: X64
     - name: Install Dependencies
       run: flutter pub get
     - name: Analyze
